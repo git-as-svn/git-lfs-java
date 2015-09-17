@@ -1,0 +1,41 @@
+task wrapper(type: Wrapper) {
+  gradleVersion = "2.7"
+}
+
+def javaVersion = JavaVersion.VERSION_1_7
+
+allprojects {
+  repositories {
+    mavenCentral()
+  }
+
+  apply plugin: "idea"
+}
+
+subprojects {
+  apply plugin: "java"
+
+  sourceCompatibility = javaVersion
+
+  dependencies {
+    compile "org.jetbrains:annotations:13.0"
+
+    testCompile "org.testng:testng:6.8.8"
+  }
+
+  idea {
+    module {
+      jdkName = sourceCompatibility
+      downloadJavadoc = true
+      downloadSources = true
+    }
+  }
+
+  tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+  }
+
+  test {
+    maxHeapSize = "256m"
+  }
+}

@@ -1,0 +1,4 @@
+dependencies {
+  compile "com.fasterxml.jackson.core:jackson-annotations:2.5.4"
+  testCompile "org.glassfish.jersey.media:jersey-media-json-jackson:2.21"
+}

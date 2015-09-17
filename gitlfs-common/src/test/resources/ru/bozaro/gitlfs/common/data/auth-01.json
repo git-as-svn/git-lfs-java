@@ -1,0 +1,7 @@
+{
+  "href": "https://api.github.com/lfs/bozaro/git-lfs-java",
+  "header": {
+    "Authorization": "RemoteAuth secret"
+  },
+  "expires_at": "2015-09-17T19:17:31Z"
+}
