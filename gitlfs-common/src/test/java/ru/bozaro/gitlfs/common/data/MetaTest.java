@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -10,8 +11,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Test Meta deserialization.
@@ -27,9 +26,6 @@ public class MetaTest {
     try (InputStream stream = getClass().getResourceAsStream("meta-01.json")) {
       Assert.assertNotNull(stream);
 
-      final Map<String, String> headers = new TreeMap<>();
-      headers.put("Authorization", "Basic ...");
-
       final Meta meta = mapper.readValue(stream, Meta.class);
       Assert.assertNotNull(meta);
       Assert.assertEquals(meta.getOid(), "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
@@ -39,7 +35,11 @@ public class MetaTest {
       final Link link = meta.getLinks().get("upload");
       Assert.assertNotNull(link);
       Assert.assertEquals(link.getHref(), new URI("https://storage-server.com/OID"));
-      Assert.assertEquals(link.getHeader(), headers);
+      Assert.assertEquals(link.getHeader(),
+          ImmutableMap.builder()
+              .put("Authorization", "Basic ...")
+              .build()
+      );
     }
   }
 }

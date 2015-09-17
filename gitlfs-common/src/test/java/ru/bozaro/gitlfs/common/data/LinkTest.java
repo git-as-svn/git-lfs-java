@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -27,13 +28,14 @@ public class LinkTest {
     try (InputStream stream = getClass().getResourceAsStream("link-01.json")) {
       Assert.assertNotNull(stream);
 
-      final Map<String, String> headers = new TreeMap<>();
-      headers.put("Authorization", "Basic ...");
-
       final Auth auth = mapper.readValue(stream, Auth.class);
       Assert.assertNotNull(auth);
       Assert.assertEquals(auth.getHref(), new URI("https://storage-server.com/OID"));
-      Assert.assertEquals(auth.getHeader(), headers);
+      Assert.assertEquals(auth.getHeader(),
+          ImmutableMap.builder()
+              .put("Authorization", "Basic ...")
+              .build()
+      );
     }
   }
 }
