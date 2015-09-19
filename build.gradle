@@ -14,8 +14,19 @@ allprojects {
 
 subprojects {
   apply plugin: "java"
+  apply plugin: "maven"
+  apply plugin: "signing"
+
+  group = "ru.bozaro.gitlfs"
+  version = "0.0.1-SNAPSHOT"
 
   sourceCompatibility = javaVersion
+
+  ext."signing.secretKeyRingFile" = "${rootProject.projectDir}/secring.gpg"
+  ext."signing.keyId" = "4B49488E"
+  ext."signing.password" = System.getenv("SIGNING_PASSWORD") ?: ""
+  ext.ossrhUsername = System.getenv("OSSRH_USERNAME") ?: ""
+  ext.ossrhPassword = System.getenv("OSSRH_PASSWORD") ?: ""
 
   dependencies {
     compile "org.jetbrains:annotations:13.0"
@@ -38,5 +49,66 @@ subprojects {
 
   test {
     maxHeapSize = "256m"
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+  }
+
+  artifacts {
+    archives sourcesJar
+  }
+
+  signing {
+    sign configurations.archives
+  }
+
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        if (ossrhUsername == "") {
+          repository(url: rootProject.projectDir.toURI().resolve(".maven"))
+
+          snapshotRepository(url: rootProject.projectDir.toURI().resolve(".maven"))
+        } else {
+          repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+          }
+
+          snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+          }
+        }
+
+        pom.project {
+          name "Java git-lfs library"
+          packaging "jar"
+          url "https://github.com/bozaro/git-lfs-java"
+
+          scm {
+            connection "scm:git:git://github.com/bozaro/git-lfs-java.git"
+            url "https://github.com/bozaro/git-lfs-java"
+          }
+
+          licenses {
+            license {
+              name "Lesser General Public License, version 3 or greater"
+              url "http://www.gnu.org/licenses/lgpl.html"
+            }
+          }
+
+          developers {
+            developer {
+              id "bozaro"
+              name "Artem V. Navrotskiy"
+              email "bozaro@yandex.ru"
+            }
+          }
+        }
+      }
+    }
   }
 }
