@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -13,39 +14,39 @@ import java.util.TreeMap;
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
 public final class Meta {
-    @JsonProperty(value = "oid", required = true)
-    @Nullable
-    private String oid = "";
+  @JsonProperty(value = "oid", required = true)
+  @Nullable
+  private String oid = "";
 
-    @JsonProperty(value = "size", required = true)
-    @Nullable
-    private Long size = 0L;
+  @JsonProperty(value = "size", required = true)
+  @Nullable
+  private Long size = 0L;
 
-    @JsonProperty(value = "_links", required = true)
-    @NotNull
-    private Map<String, Link> links = new TreeMap<>();
+  @JsonProperty(value = "_links", required = true)
+  @Nullable
+  private Map<String, Link> links = new TreeMap<>();
 
-    protected Meta() {
-    }
+  protected Meta() {
+  }
 
-    public Meta(@Nullable String oid, @Nullable Long size, @NotNull Map<String, Link> links) {
-        this.oid = oid;
-        this.size = size;
-        this.links = links;
-    }
+  public Meta(@Nullable String oid, @Nullable Long size, @Nullable Map<String, Link> links) {
+    this.oid = oid;
+    this.size = size;
+    this.links = links;
+  }
 
-    @Nullable
-    public String getOid() {
-        return oid;
-    }
+  @Nullable
+  public String getOid() {
+    return oid;
+  }
 
-    @Nullable
-    public Long getSize() {
-        return size;
-    }
+  @Nullable
+  public Long getSize() {
+    return size;
+  }
 
-    @NotNull
-    public Map<String, Link> getLinks() {
-        return links;
-    }
+  @NotNull
+  public Map<String, Link> getLinks() {
+    return links == null ? Collections.<String, Link>emptyMap() : links;
+  }
 }
