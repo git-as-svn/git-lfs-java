@@ -47,6 +47,17 @@ public class PointerTest {
     }
   }
 
+  @Test
+  public void parseAndSerialize() {
+    final Map<String, String> pointer = Pointer.createPointer("sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", 12345);
+    Assert.assertEquals(pointer.get("oid"), "sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393");
+    Assert.assertEquals(pointer.get("size"), "12345");
+    Assert.assertEquals(pointer.size(), 3);
+    final byte[] bytes = Pointer.serializePointer(pointer);
+    final Map<String, String> parsed = Pointer.parsePointer(bytes);
+    Assert.assertEquals(parsed, pointer);
+  }
+
   @DataProvider(name = "parseInvalidProvider")
   public static Object[][] parseInvalidProvider() {
     return new Object[][]{

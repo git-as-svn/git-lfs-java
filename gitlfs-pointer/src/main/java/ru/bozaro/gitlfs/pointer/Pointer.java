@@ -67,6 +67,22 @@ public class Pointer {
   }
 
   /**
+   * Create pointer with oid and size.
+   *
+   * @param oid  Object oid.
+   * @param size Object size.
+   * @return Return pointer data.
+   */
+  @NotNull
+  public static Map<String, String> createPointer(@NotNull String oid, long size) {
+    final Map<String, String> pointer = new TreeMap<>();
+    pointer.put(VERSION, VERSION_URL);
+    pointer.put(OID, oid);
+    pointer.put(SIZE, Long.toString(size));
+    return pointer;
+  }
+
+  /**
    * Read pointer data.
    *
    * @param stream Input stream.
