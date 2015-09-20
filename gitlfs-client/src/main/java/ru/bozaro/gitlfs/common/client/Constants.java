@@ -16,6 +16,8 @@ public class Constants {
   @NotNull
   public static final String HEADER_LOCATION = "Location";
   @NotNull
+  public static final String LINK_DOWNLOAD = "download";
+  @NotNull
   public static final String MIME_TYPE = "application/vnd.git-lfs+json";
   @NotNull
   public static final String OBJECTS = "/objects";

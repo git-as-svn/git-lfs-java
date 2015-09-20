@@ -13,13 +13,17 @@ import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.common.client.internal.Request;
 import ru.bozaro.gitlfs.common.client.internal.Work;
 import ru.bozaro.gitlfs.common.data.Auth;
+import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
 import static ru.bozaro.gitlfs.common.client.Constants.HEADER_LOCATION;
+import static ru.bozaro.gitlfs.common.client.Constants.LINK_DOWNLOAD;
 
 /**
  * Git LFS client.
@@ -63,6 +67,52 @@ public class Client {
         return doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + Constants.OBJECTS + "/" + hash));
       }
     }, AuthProvider.Mode.Download);
+  }
+
+  /**
+   * Download object by hash.
+   *
+   * @param hash Object hash.
+   * @return Object stream.
+   * @throws IOException
+   */
+  @NotNull
+  public InputStream openObject(@NotNull final String hash) throws IOException {
+    return doWork(new Work<InputStream>() {
+      @Override
+      public InputStream exec(@NotNull Auth auth) throws IOException {
+        return openObject(doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + Constants.OBJECTS + "/" + hash)));
+      }
+    }, AuthProvider.Mode.Download);
+  }
+
+  /**
+   * Download object by metadata.
+   *
+   * @param meta Object metadata.
+   * @return Object stream.
+   * @throws IOException
+   */
+  @NotNull
+  public InputStream openObject(@NotNull final Meta meta) throws IOException {
+    final Link link = meta.getLinks().get(LINK_DOWNLOAD);
+    if ((link == null) || (link.getHref() == null)) {
+      throw new FileNotFoundException();
+    }
+    return doRequest(null, new Request<HttpMethod, InputStream>() {
+      @NotNull
+      @Override
+      public HttpMethod createRequest(@NotNull String url) {
+        final GetMethod request = new GetMethod(url);
+        addHeaders(request, link);
+        return request;
+      }
+
+      @Override
+      public InputStream processResponse(@NotNull HttpMethod request) throws IOException {
+        return request.getResponseBodyAsStream();
+      }
+    }, link.getHref());
   }
 
   private <T> T doWork(@NotNull Work<T> work, @NotNull AuthProvider.Mode mode) throws IOException {
@@ -126,9 +176,9 @@ public class Client {
     }
   }
 
-  private void addHeaders(@NotNull HttpMethod req, @Nullable Auth auth) {
-    if (auth != null) {
-      for (Map.Entry<String, String> entry : auth.getHeader().entrySet()) {
+  private void addHeaders(@NotNull HttpMethod req, @Nullable Link link) {
+    if (link != null) {
+      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
         req.addRequestHeader(entry.getKey(), entry.getValue());
       }
     }
