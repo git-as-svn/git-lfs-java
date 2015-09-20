@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class ForbiddenException extends HttpException {
+public class ForbiddenException extends RequestException {
   public ForbiddenException(@NotNull HttpMethod request) {
-    super(request, true);
+    super(request);
   }
 }

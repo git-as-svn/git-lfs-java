@@ -31,6 +31,22 @@ public interface AuthProvider {
     }
   }
 
+  /**
+   * Get auth data.
+   * Auth data can be cached in this method.
+   *
+   * @param mode Auth mode.
+   * @return Auth data.
+   * @throws IOException
+   */
   @NotNull
   Auth getAuth(@NotNull Mode mode) throws IOException;
+
+  /**
+   * Set auth as expired.
+   *
+   * @param mode Auth mode.
+   * @param auth Expired auth data.
+   */
+  void invalidateAuth(@NotNull Mode mode, @NotNull Auth auth);
 }

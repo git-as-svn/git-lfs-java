@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class UnauthorizedException extends HttpException {
+public class UnauthorizedException extends RequestException {
   public UnauthorizedException(@NotNull HttpMethod request) {
-    super(request, false);
+    super(request);
   }
 }

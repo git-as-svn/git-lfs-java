@@ -8,12 +8,15 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.client.exceptions.ForbiddenException;
-import ru.bozaro.gitlfs.common.client.exceptions.HttpException;
+import ru.bozaro.gitlfs.common.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
+import ru.bozaro.gitlfs.common.client.internal.Request;
+import ru.bozaro.gitlfs.common.client.internal.Work;
 import ru.bozaro.gitlfs.common.data.Auth;
 import ru.bozaro.gitlfs.common.data.Meta;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 
 import static ru.bozaro.gitlfs.common.client.Constants.HEADER_LOCATION;
@@ -24,7 +27,9 @@ import static ru.bozaro.gitlfs.common.client.Constants.HEADER_LOCATION;
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
 public class Client {
-  private static final int MAX_RETRY = 5;
+  private static final int MAX_AUTH_COUNT = 2;
+  private static final int MAX_RETRY_COUNT = 2;
+  private static final int MAX_REDIRECT_COUNT = 5;
   @NotNull
   private final ObjectMapper mapper;
   @NotNull
@@ -51,74 +56,103 @@ public class Client {
    * @throws IOException
    */
   @Nullable
-  public Meta getMeta(@NotNull String hash) throws IOException {
-    Auth auth = authProvider.getAuth(AuthProvider.Mode.Download);
-    String href = auth.getHref() + Constants.OBJECTS + "/" + hash;
-    for (int pass = 0; ; ++pass) {
-      final GetMethod req = new GetMethod(href);
+  public Meta getMeta(@NotNull final String hash) throws IOException {
+    return doWork(new Work<Meta>() {
+      @Override
+      public Meta exec(@NotNull Auth auth) throws IOException {
+        return doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + Constants.OBJECTS + "/" + hash));
+      }
+    }, AuthProvider.Mode.Download);
+  }
+
+  private <T> T doWork(@NotNull Work<T> work, @NotNull AuthProvider.Mode mode) throws IOException {
+    Auth auth = authProvider.getAuth(mode);
+    int authCount = 0;
+    while (true) {
+      try {
+        return work.exec(auth);
+      } catch (UnauthorizedException e) {
+        if (authCount >= MAX_AUTH_COUNT) {
+          throw e;
+        }
+        authCount++;
+        // Get new authentication data.
+        authProvider.invalidateAuth(AuthProvider.Mode.Download, auth);
+        final Auth newAuth = authProvider.getAuth(AuthProvider.Mode.Download);
+        if (newAuth.getHeader().equals(auth.getHeader())) {
+          throw e;
+        }
+        auth = newAuth;
+      }
+    }
+  }
+
+  private <T extends HttpMethod, R> R doRequest(@Nullable Auth auth, @NotNull Request<T, R> task, @NotNull URI url) throws IOException {
+    int redirectCount = 0;
+    int retryCount = 0;
+    while (true) {
+      final T request = task.createRequest(url.toString());
+      addHeaders(request, auth);
+      http.executeMethod(request);
+      switch (request.getStatusCode()) {
+        case HttpStatus.SC_UNAUTHORIZED:
+          throw new UnauthorizedException(request);
+        case HttpStatus.SC_FORBIDDEN:
+          throw new ForbiddenException(request);
+        case HttpStatus.SC_MOVED_PERMANENTLY:
+        case HttpStatus.SC_MOVED_TEMPORARILY:
+        case HttpStatus.SC_SEE_OTHER:
+        case HttpStatus.SC_TEMPORARY_REDIRECT:
+          // Follow by redirect.
+          final String location = request.getRequestHeader(HEADER_LOCATION).getValue();
+          if (location == null || redirectCount >= MAX_REDIRECT_COUNT) {
+            throw new RequestException(request);
+          }
+          ++redirectCount;
+          url = url.resolve(location);
+          continue;
+        case HttpStatus.SC_BAD_GATEWAY:
+        case HttpStatus.SC_GATEWAY_TIMEOUT:
+        case HttpStatus.SC_SERVICE_UNAVAILABLE:
+        case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+          // Temporary error. need to retry.
+          if (retryCount >= MAX_RETRY_COUNT) {
+            throw new RequestException(request);
+          }
+          ++retryCount;
+          continue;
+      }
+      return task.processResponse(request);
+    }
+  }
+
+  private void addHeaders(@NotNull HttpMethod req, @Nullable Auth auth) {
+    if (auth != null) {
+      for (Map.Entry<String, String> entry : auth.getHeader().entrySet()) {
+        req.addRequestHeader(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  private class ObjectsGet implements Request<GetMethod, Meta> {
+    @NotNull
+    @Override
+    public GetMethod createRequest(@NotNull String url) {
+      final GetMethod req = new GetMethod(url);
       req.addRequestHeader(Constants.HEADER_ACCEPT, Constants.MIME_TYPE);
-      addHeaders(req, auth);
-      http.executeMethod(req);
-      if (req.getStatusCode() == HttpStatus.SC_OK) {
-        return mapper.readValue(req.getResponseBodyAsStream(), Meta.class);
-      }
-      if (req.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-        return null;
-      }
-      href = getNextUrl(req, href);
-      final HttpException exception = createException(req);
-      if (pass >= MAX_RETRY || exception.isPermanent()) {
-        throw exception;
-      }
-      if (req.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-        auth = updateAuth(req, auth, AuthProvider.Mode.Download);
-      }
+      return req;
     }
-  }
 
-  private void addHeaders(@NotNull HttpMethod req, @NotNull Auth auth) {
-    for (Map.Entry<String, String> entry : auth.getHeader().entrySet()) {
-      req.addRequestHeader(entry.getKey(), entry.getValue());
-    }
-  }
-
-  @NotNull
-  private Auth updateAuth(@NotNull HttpMethod req, @NotNull Auth oldAuth, @NotNull AuthProvider.Mode mode) throws IOException {
-    final Auth newAuth = authProvider.getAuth(mode);
-    if (newAuth.getHeader().equals(oldAuth.getHeader())) {
-      throw new UnauthorizedException(req);
-    }
-    return newAuth;
-  }
-
-  @NotNull
-  private String getNextUrl(@NotNull HttpMethod req, @NotNull String href) {
-    switch (req.getStatusCode()) {
-      case HttpStatus.SC_MOVED_PERMANENTLY:
-      case HttpStatus.SC_MOVED_TEMPORARILY:
-      case HttpStatus.SC_SEE_OTHER:
-      case HttpStatus.SC_TEMPORARY_REDIRECT:
-        final String location = req.getRequestHeader(HEADER_LOCATION).getValue();
-        return location == null ? href : location;
-      default:
-        return href;
-    }
-  }
-
-  @NotNull
-  private HttpException createException(@NotNull HttpMethod req) {
-    switch (req.getStatusCode()) {
-      case HttpStatus.SC_UNAUTHORIZED:
-        return new UnauthorizedException(req);
-      case HttpStatus.SC_FORBIDDEN:
-        return new ForbiddenException(req);
-      case HttpStatus.SC_BAD_REQUEST:
-      case HttpStatus.SC_METHOD_NOT_ALLOWED:
-      case HttpStatus.SC_NOT_ACCEPTABLE:
-      case HttpStatus.SC_NOT_IMPLEMENTED:
-        return new HttpException(req, true);
-      default:
-        return new HttpException(req, false);
+    @Override
+    public Meta processResponse(@NotNull GetMethod request) throws IOException {
+      switch (request.getStatusCode()) {
+        case HttpStatus.SC_OK:
+          return mapper.readValue(request.getResponseBodyAsStream(), Meta.class);
+        case HttpStatus.SC_NOT_FOUND:
+          return null;
+        default:
+          throw new RequestException(request);
+      }
     }
   }
 }

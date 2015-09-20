@@ -12,14 +12,12 @@ import java.io.IOException;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class HttpException extends IOException {
+public class RequestException extends IOException {
   @NotNull
   private final HttpMethod request;
-  private final boolean permanent;
 
-  public HttpException(@NotNull HttpMethod request, boolean permanent) {
+  public RequestException(@NotNull HttpMethod request) {
     this.request = request;
-    this.permanent = permanent;
   }
 
   public int getStatusCode() {
@@ -68,9 +66,5 @@ public class HttpException extends IOException {
     } catch (URIException e) {
       return "<unknown url>";
     }
-  }
-
-  public boolean isPermanent() {
-    return permanent;
   }
 }
