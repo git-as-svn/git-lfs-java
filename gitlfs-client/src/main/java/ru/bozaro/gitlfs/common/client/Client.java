@@ -1,10 +1,13 @@
 package ru.bozaro.gitlfs.common.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.client.exceptions.ForbiddenException;
@@ -22,8 +25,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import static ru.bozaro.gitlfs.common.client.Constants.HEADER_LOCATION;
-import static ru.bozaro.gitlfs.common.client.Constants.LINK_DOWNLOAD;
+import static ru.bozaro.gitlfs.common.client.Constants.*;
 
 /**
  * Git LFS client.
@@ -64,9 +66,27 @@ public class Client {
     return doWork(new Work<Meta>() {
       @Override
       public Meta exec(@NotNull Auth auth) throws IOException {
-        return doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + Constants.OBJECTS + "/" + hash));
+        return doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
       }
-    }, AuthProvider.Mode.Download);
+    }, AuthAccess.Download);
+  }
+
+  /**
+   * Get metadata for object by hash.
+   *
+   * @param hash Object hash.
+   * @param size Object size.
+   * @return Object metadata or null, if object not found.
+   * @throws IOException
+   */
+  @Nullable
+  public Meta postMeta(@NotNull final String hash, final long size) throws IOException {
+    return doWork(new Work<Meta>() {
+      @Override
+      public Meta exec(@NotNull Auth auth) throws IOException {
+        return doRequest(auth, new ObjectsPost(hash, size), URI.create(auth.getHref() + OBJECTS));
+      }
+    }, AuthAccess.Upload);
   }
 
   /**
@@ -74,16 +94,17 @@ public class Client {
    *
    * @param hash Object hash.
    * @return Object stream.
-   * @throws IOException
+   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
+   * @throws IOException           On some errors.
    */
   @NotNull
   public InputStream openObject(@NotNull final String hash) throws IOException {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Auth auth) throws IOException {
-        return openObject(doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + Constants.OBJECTS + "/" + hash)));
+        return openObject(doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash)));
       }
-    }, AuthProvider.Mode.Download);
+    }, AuthAccess.Download);
   }
 
   /**
@@ -91,7 +112,8 @@ public class Client {
    *
    * @param meta Object metadata.
    * @return Object stream.
-   * @throws IOException
+   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
+   * @throws IOException           On some errors.
    */
   @NotNull
   public InputStream openObject(@NotNull final Meta meta) throws IOException {
@@ -115,7 +137,7 @@ public class Client {
     }, link.getHref());
   }
 
-  private <T> T doWork(@NotNull Work<T> work, @NotNull AuthProvider.Mode mode) throws IOException {
+  private <T> T doWork(@NotNull Work<T> work, @NotNull AuthAccess mode) throws IOException {
     Auth auth = authProvider.getAuth(mode);
     int authCount = 0;
     while (true) {
@@ -127,8 +149,8 @@ public class Client {
         }
         authCount++;
         // Get new authentication data.
-        authProvider.invalidateAuth(AuthProvider.Mode.Download, auth);
-        final Auth newAuth = authProvider.getAuth(AuthProvider.Mode.Download);
+        authProvider.invalidateAuth(AuthAccess.Download, auth);
+        final Auth newAuth = authProvider.getAuth(AuthAccess.Download);
         if (newAuth.getHeader().equals(auth.getHeader())) {
           throw e;
         }
@@ -189,7 +211,7 @@ public class Client {
     @Override
     public GetMethod createRequest(@NotNull String url) {
       final GetMethod req = new GetMethod(url);
-      req.addRequestHeader(Constants.HEADER_ACCEPT, Constants.MIME_TYPE);
+      req.addRequestHeader(HEADER_ACCEPT, MIME_TYPE);
       return req;
     }
 
@@ -200,6 +222,38 @@ public class Client {
           return mapper.readValue(request.getResponseBodyAsStream(), Meta.class);
         case HttpStatus.SC_NOT_FOUND:
           return null;
+        default:
+          throw new RequestException(request);
+      }
+    }
+  }
+
+  private class ObjectsPost implements Request<PostMethod, Meta> {
+    @NotNull
+    private final String hash;
+    private final long size;
+
+    public ObjectsPost(@NotNull String hash, long size) {
+      this.hash = hash;
+      this.size = size;
+    }
+
+    @NotNull
+    @Override
+    public PostMethod createRequest(@NotNull String url) throws JsonProcessingException {
+      final PostMethod req = new PostMethod(url);
+      req.addRequestHeader(HEADER_ACCEPT, MIME_TYPE);
+      final byte[] content = mapper.writeValueAsBytes(new Meta(hash, size, null));
+      req.setRequestEntity(new ByteArrayRequestEntity(content, MIME_TYPE));
+      return req;
+    }
+
+    @Override
+    public Meta processResponse(@NotNull PostMethod request) throws IOException {
+      switch (request.getStatusCode()) {
+        case HttpStatus.SC_OK:
+        case HttpStatus.SC_ACCEPTED:
+          return mapper.readValue(request.getResponseBodyAsStream(), Meta.class);
         default:
           throw new RequestException(request);
       }

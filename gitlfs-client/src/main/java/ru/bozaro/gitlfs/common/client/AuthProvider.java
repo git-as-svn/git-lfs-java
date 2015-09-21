@@ -11,25 +11,6 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
 public interface AuthProvider {
-  enum Mode {
-    Upload("upload"),
-    Download("download");
-
-    @NotNull
-    private final String token;
-
-    /**
-     * The name is given by a string constant to avoid problems with obfuscation.
-     */
-    Mode(@NotNull String token) {
-      this.token = token;
-    }
-
-    @NotNull
-    public String getToken() {
-      return token;
-    }
-  }
 
   /**
    * Get auth data.
@@ -40,7 +21,7 @@ public interface AuthProvider {
    * @throws IOException
    */
   @NotNull
-  Auth getAuth(@NotNull Mode mode) throws IOException;
+  Auth getAuth(@NotNull AuthAccess mode) throws IOException;
 
   /**
    * Set auth as expired.
@@ -48,5 +29,5 @@ public interface AuthProvider {
    * @param mode Auth mode.
    * @param auth Expired auth data.
    */
-  void invalidateAuth(@NotNull Mode mode, @NotNull Auth auth);
+  void invalidateAuth(@NotNull AuthAccess mode, @NotNull Auth auth);
 }

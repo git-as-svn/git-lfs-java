@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public interface Request<T extends HttpMethod, R> {
   @NotNull
-  T createRequest(@NotNull String url);
+  T createRequest(@NotNull String url) throws IOException;
 
   R processResponse(@NotNull T request) throws IOException;
 }
