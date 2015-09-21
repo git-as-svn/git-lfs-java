@@ -18,7 +18,7 @@ subprojects {
   apply plugin: "signing"
 
   group = "ru.bozaro.gitlfs"
-  version = "0.0.1-SNAPSHOT"
+  version = "0.1.0-SNAPSHOT"
 
   sourceCompatibility = javaVersion
 
@@ -60,14 +60,20 @@ subprojects {
     archives sourcesJar
   }
 
-  signing {
-    sign configurations.archives
+  if (System.getenv("SIGNING_PASSWORD") != null) {
+    signing {
+      sign configurations.archives
+    }
   }
 
   uploadArchives {
     repositories {
       mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        if (System.getenv("SIGNING_PASSWORD") != null) {
+          beforeDeployment {
+            MavenDeployment deployment -> signing.signPom(deployment)
+          }
+        }
 
         if (ossrhUsername == "") {
           repository(url: rootProject.projectDir.toURI().resolve(".maven"))
@@ -90,6 +96,7 @@ subprojects {
 
           scm {
             connection "scm:git:git://github.com/bozaro/git-lfs-java.git"
+            tag System.getenv("TRAVIS_COMMIT") ?: ""
             url "https://github.com/bozaro/git-lfs-java"
           }
 

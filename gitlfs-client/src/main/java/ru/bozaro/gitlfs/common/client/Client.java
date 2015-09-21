@@ -1,20 +1,16 @@
 package ru.bozaro.gitlfs.common.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.common.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
-import ru.bozaro.gitlfs.common.client.internal.Request;
-import ru.bozaro.gitlfs.common.client.internal.Work;
+import ru.bozaro.gitlfs.common.client.internal.*;
 import ru.bozaro.gitlfs.common.data.Auth;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -23,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import static ru.bozaro.gitlfs.common.client.Constants.*;
@@ -42,6 +40,10 @@ public class Client {
   private final AuthProvider authProvider;
   @NotNull
   private final HttpClient http;
+
+  public Client(@NotNull AuthProvider authProvider) {
+    this(authProvider, new HttpClient());
+  }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull HttpClient http) {
     this.authProvider = authProvider;
@@ -66,7 +68,7 @@ public class Client {
     return doWork(new Work<Meta>() {
       @Override
       public Meta exec(@NotNull Auth auth) throws IOException {
-        return doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
+        return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
       }
     }, AuthAccess.Download);
   }
@@ -84,7 +86,7 @@ public class Client {
     return doWork(new Work<Meta>() {
       @Override
       public Meta exec(@NotNull Auth auth) throws IOException {
-        return doRequest(auth, new ObjectsPost(hash, size), URI.create(auth.getHref() + OBJECTS));
+        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS));
       }
     }, AuthAccess.Upload);
   }
@@ -98,11 +100,11 @@ public class Client {
    * @throws IOException           On some errors.
    */
   @NotNull
-  public InputStream openObject(@NotNull final String hash) throws IOException {
+  public InputStream getObject(@NotNull final String hash) throws IOException {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Auth auth) throws IOException {
-        return openObject(doRequest(auth, new ObjectsGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash)));
+        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash)));
       }
     }, AuthAccess.Download);
   }
@@ -116,28 +118,81 @@ public class Client {
    * @throws IOException           On some errors.
    */
   @NotNull
-  public InputStream openObject(@NotNull final Meta meta) throws IOException {
+  public InputStream getObject(@NotNull final Meta meta) throws IOException {
     final Link link = meta.getLinks().get(LINK_DOWNLOAD);
     if ((link == null) || (link.getHref() == null)) {
       throw new FileNotFoundException();
     }
-    return doRequest(null, new Request<HttpMethod, InputStream>() {
-      @NotNull
-      @Override
-      public HttpMethod createRequest(@NotNull String url) {
-        final GetMethod request = new GetMethod(url);
-        addHeaders(request, link);
-        return request;
-      }
-
-      @Override
-      public InputStream processResponse(@NotNull HttpMethod request) throws IOException {
-        return request.getResponseBodyAsStream();
-      }
-    }, link.getHref());
+    return doRequest(link, new ObjectGet(), link.getHref());
   }
 
-  private <T> T doWork(@NotNull Work<T> work, @NotNull AuthAccess mode) throws IOException {
+  /**
+   * Upload object.
+   *
+   * @param streamProvider Object stream provider.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider) throws IOException {
+    final MessageDigest digest = sha256();
+    final byte[] buffer = new byte[0x10000];
+    long size = 0;
+    try (InputStream stream = streamProvider.getStream()) {
+      while (true) {
+        int read = stream.read(buffer);
+        if (read <= 0) break;
+        digest.update(buffer, 0, read);
+        size += read;
+      }
+    }
+    final String hash = new String(Hex.encodeHex(digest.digest()));
+    return putObject(streamProvider, hash, size);
+  }
+
+  /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param hash           Object hash.
+   * @param size           Object size.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
+    return doWork(new Work<Boolean>() {
+      @Override
+      public Boolean exec(@NotNull Auth auth) throws IOException {
+        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS)), streamProvider);
+      }
+    }, AuthAccess.Upload);
+  }
+
+  /**
+   * Upload object by metadata.
+   *
+   * @param meta           Object metadata.
+   * @param streamProvider Object stream provider.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final Meta meta, @NotNull final StreamProvider streamProvider) throws IOException {
+    if (meta.getLinks().containsKey(LINK_DOWNLOAD)) {
+      return false;
+    }
+    final Link uploadLink = meta.getLinks().get(LINK_UPLOAD);
+    if ((uploadLink == null) || (uploadLink.getHref() == null)) {
+      throw new IOException("Upload link not found");
+    }
+    doRequest(uploadLink, new ObjectPut(streamProvider), uploadLink.getHref());
+
+    final Link verifyLink = meta.getLinks().get(LINK_VERIFY);
+    if (verifyLink != null && verifyLink.getHref() != null) {
+      doRequest(verifyLink, new ObjectVerify(), verifyLink.getHref());
+    }
+    return true;
+  }
+
+  protected <T> T doWork(@NotNull Work<T> work, @NotNull AuthAccess mode) throws IOException {
     Auth auth = authProvider.getAuth(mode);
     int authCount = 0;
     while (true) {
@@ -159,12 +214,12 @@ public class Client {
     }
   }
 
-  private <T extends HttpMethod, R> R doRequest(@Nullable Auth auth, @NotNull Request<T, R> task, @NotNull URI url) throws IOException {
+  protected <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<T, R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
-      final T request = task.createRequest(url.toString());
-      addHeaders(request, auth);
+      final T request = task.createRequest(mapper, url.toString());
+      addHeaders(request, link);
       http.executeMethod(request);
       switch (request.getStatusCode()) {
         case HttpStatus.SC_UNAUTHORIZED:
@@ -194,11 +249,11 @@ public class Client {
           ++retryCount;
           continue;
       }
-      return task.processResponse(request);
+      return task.processResponse(mapper, request);
     }
   }
 
-  private void addHeaders(@NotNull HttpMethod req, @Nullable Link link) {
+  protected void addHeaders(@NotNull HttpMethod req, @Nullable Link link) {
     if (link != null) {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
         req.addRequestHeader(entry.getKey(), entry.getValue());
@@ -206,57 +261,11 @@ public class Client {
     }
   }
 
-  private class ObjectsGet implements Request<GetMethod, Meta> {
-    @NotNull
-    @Override
-    public GetMethod createRequest(@NotNull String url) {
-      final GetMethod req = new GetMethod(url);
-      req.addRequestHeader(HEADER_ACCEPT, MIME_TYPE);
-      return req;
-    }
-
-    @Override
-    public Meta processResponse(@NotNull GetMethod request) throws IOException {
-      switch (request.getStatusCode()) {
-        case HttpStatus.SC_OK:
-          return mapper.readValue(request.getResponseBodyAsStream(), Meta.class);
-        case HttpStatus.SC_NOT_FOUND:
-          return null;
-        default:
-          throw new RequestException(request);
-      }
-    }
-  }
-
-  private class ObjectsPost implements Request<PostMethod, Meta> {
-    @NotNull
-    private final String hash;
-    private final long size;
-
-    public ObjectsPost(@NotNull String hash, long size) {
-      this.hash = hash;
-      this.size = size;
-    }
-
-    @NotNull
-    @Override
-    public PostMethod createRequest(@NotNull String url) throws JsonProcessingException {
-      final PostMethod req = new PostMethod(url);
-      req.addRequestHeader(HEADER_ACCEPT, MIME_TYPE);
-      final byte[] content = mapper.writeValueAsBytes(new Meta(hash, size, null));
-      req.setRequestEntity(new ByteArrayRequestEntity(content, MIME_TYPE));
-      return req;
-    }
-
-    @Override
-    public Meta processResponse(@NotNull PostMethod request) throws IOException {
-      switch (request.getStatusCode()) {
-        case HttpStatus.SC_OK:
-        case HttpStatus.SC_ACCEPTED:
-          return mapper.readValue(request.getResponseBodyAsStream(), Meta.class);
-        default:
-          throw new RequestException(request);
-      }
+  protected static MessageDigest sha256() {
+    try {
+      return MessageDigest.getInstance("SHA-256");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
     }
   }
 }
