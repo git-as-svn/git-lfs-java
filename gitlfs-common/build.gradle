@@ -1,3 +1,5 @@
+description = "Java Git-LFS common structures"
+
 dependencies {
   compile "com.fasterxml.jackson.core:jackson-annotations:2.5.4"
   testCompile "com.fasterxml.jackson.core:jackson-databind:2.5.4"

@@ -18,7 +18,7 @@ subprojects {
   apply plugin: "signing"
 
   group = "ru.bozaro.gitlfs"
-  version = "0.1.0-SNAPSHOT"
+  version = "0.1.0"
 
   sourceCompatibility = javaVersion
 
@@ -56,8 +56,14 @@ subprojects {
     from sourceSets.main.allSource
   }
 
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = "javadoc"
+    from javadoc.destinationDir
+  }
+
   artifacts {
     archives sourcesJar
+    archives javadocJar
   }
 
   if (System.getenv("SIGNING_PASSWORD") != null) {
@@ -89,8 +95,14 @@ subprojects {
           }
         }
 
+        pom*.whenConfigured { pom ->
+          pom.project {
+            name "Java git-lfs library"
+            description project.description
+          }
+        }
+
         pom.project {
-          name "Java git-lfs library"
           packaging "jar"
           url "https://github.com/bozaro/git-lfs-java"
 
