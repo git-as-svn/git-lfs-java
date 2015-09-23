@@ -16,7 +16,7 @@ import static ru.bozaro.gitlfs.common.client.Constants.MIME_BINARY;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class ObjectPut implements Request<HttpMethod, Void> {
+public class ObjectPut implements Request<Void> {
   private final StreamProvider streamProvider;
 
   public ObjectPut(StreamProvider streamProvider) {

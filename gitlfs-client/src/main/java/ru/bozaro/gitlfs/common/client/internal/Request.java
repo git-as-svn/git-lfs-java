@@ -11,9 +11,9 @@ import java.io.IOException;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public interface Request<T extends HttpMethod, R> {
+public interface Request<R> {
   @NotNull
-  T createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException;
+  HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException;
 
-  R processResponse(@NotNull ObjectMapper mapper, @NotNull T request) throws IOException;
+  R processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException;
 }

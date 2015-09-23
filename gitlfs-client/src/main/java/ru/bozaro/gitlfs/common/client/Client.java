@@ -13,7 +13,8 @@ import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.common.client.internal.*;
 import ru.bozaro.gitlfs.common.data.Auth;
 import ru.bozaro.gitlfs.common.data.Link;
-import ru.bozaro.gitlfs.common.data.Meta;
+import ru.bozaro.gitlfs.common.data.Links;
+import ru.bozaro.gitlfs.common.data.ObjectRes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -64,10 +65,10 @@ public class Client {
    * @throws IOException
    */
   @Nullable
-  public Meta getMeta(@NotNull final String hash) throws IOException {
-    return doWork(new Work<Meta>() {
+  public ObjectRes getMeta(@NotNull final String hash) throws IOException {
+    return doWork(new Work<ObjectRes>() {
       @Override
-      public Meta exec(@NotNull Auth auth) throws IOException {
+      public ObjectRes exec(@NotNull Auth auth) throws IOException {
         return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
       }
     }, AuthAccess.Download);
@@ -82,10 +83,10 @@ public class Client {
    * @throws IOException
    */
   @Nullable
-  public Meta postMeta(@NotNull final String hash, final long size) throws IOException {
-    return doWork(new Work<Meta>() {
+  public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
+    return doWork(new Work<ObjectRes>() {
       @Override
-      public Meta exec(@NotNull Auth auth) throws IOException {
+      public ObjectRes exec(@NotNull Auth auth) throws IOException {
         return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS));
       }
     }, AuthAccess.Upload);
@@ -112,14 +113,14 @@ public class Client {
   /**
    * Download object by metadata.
    *
-   * @param meta Object metadata.
+   * @param links Object links.
    * @return Object stream.
    * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
    * @throws IOException           On some errors.
    */
   @NotNull
-  public InputStream getObject(@NotNull final Meta meta) throws IOException {
-    final Link link = meta.getLinks().get(LINK_DOWNLOAD);
+  public InputStream getObject(@NotNull final Links links) throws IOException {
+    final Link link = links.getLinks().get(LINK_DOWNLOAD);
     if ((link == null) || (link.getHref() == null)) {
       throw new FileNotFoundException();
     }
@@ -170,22 +171,22 @@ public class Client {
   /**
    * Upload object by metadata.
    *
-   * @param meta           Object metadata.
+   * @param links          Object links.
    * @param streamProvider Object stream provider.
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final Meta meta, @NotNull final StreamProvider streamProvider) throws IOException {
-    if (meta.getLinks().containsKey(LINK_DOWNLOAD)) {
+  public boolean putObject(@NotNull final Links links, @NotNull final StreamProvider streamProvider) throws IOException {
+    if (links.getLinks().containsKey(LINK_DOWNLOAD)) {
       return false;
     }
-    final Link uploadLink = meta.getLinks().get(LINK_UPLOAD);
+    final Link uploadLink = links.getLinks().get(LINK_UPLOAD);
     if ((uploadLink == null) || (uploadLink.getHref() == null)) {
       throw new IOException("Upload link not found");
     }
     doRequest(uploadLink, new ObjectPut(streamProvider), uploadLink.getHref());
 
-    final Link verifyLink = meta.getLinks().get(LINK_VERIFY);
+    final Link verifyLink = links.getLinks().get(LINK_VERIFY);
     if (verifyLink != null && verifyLink.getHref() != null) {
       doRequest(verifyLink, new ObjectVerify(), verifyLink.getHref());
     }
@@ -214,11 +215,11 @@ public class Client {
     }
   }
 
-  protected <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<T, R> task, @NotNull URI url) throws IOException {
+  protected <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
-      final T request = task.createRequest(mapper, url.toString());
+      final HttpMethod request = task.createRequest(mapper, url.toString());
       addHeaders(request, link);
       http.executeMethod(request);
       switch (request.getStatusCode()) {

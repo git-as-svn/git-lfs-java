@@ -12,7 +12,7 @@ import java.io.IOException;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class ObjectVerify implements Request<HttpMethod, Void> {
+public class ObjectVerify implements Request<Void> {
   @NotNull
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {

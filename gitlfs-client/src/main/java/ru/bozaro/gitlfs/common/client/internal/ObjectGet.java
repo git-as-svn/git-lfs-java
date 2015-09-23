@@ -13,7 +13,7 @@ import java.io.InputStream;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class ObjectGet implements Request<HttpMethod, InputStream> {
+public class ObjectGet implements Request<InputStream> {
   @NotNull
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
