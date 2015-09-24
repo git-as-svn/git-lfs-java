@@ -1,9 +1,12 @@
 package ru.bozaro.gitlfs.common.data;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -12,17 +15,32 @@ import java.util.TreeMap;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public final class ObjectRes extends Meta implements Links {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public final class ObjectRes implements Links {
   @JsonProperty(value = "_links", required = true)
   @NotNull
-  private Map<String, Link> links = new TreeMap<>();
+  private final Map<String, Link> links;
+  @Nullable
+  private final Meta meta;
 
-  protected ObjectRes() {
+  @JsonCreator
+  public ObjectRes(
+      @JsonProperty(value = "oid", required = false)
+      @Nullable
+      String oid,
+      @JsonProperty(value = "size", required = false)
+      long size,
+      @JsonProperty(value = "_links", required = true)
+      @NotNull
+      Map<String, Link> links
+  ) {
+    this.meta = oid == null ? null : new Meta(oid, size);
+    this.links = Collections.unmodifiableMap(new TreeMap<>(links));
   }
 
-  public ObjectRes(@Nullable String oid, @Nullable Long size, @NotNull Map<String, Link> links) {
-    super(oid, size);
-    this.links = links;
+  @Nullable
+  public Meta getMeta() {
+    return meta;
   }
 
   @Override

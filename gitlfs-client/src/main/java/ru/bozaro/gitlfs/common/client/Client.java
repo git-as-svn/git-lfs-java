@@ -11,7 +11,6 @@ import ru.bozaro.gitlfs.common.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.common.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.common.client.internal.*;
-import ru.bozaro.gitlfs.common.data.Auth;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Links;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
@@ -68,7 +67,7 @@ public class Client {
   public ObjectRes getMeta(@NotNull final String hash) throws IOException {
     return doWork(new Work<ObjectRes>() {
       @Override
-      public ObjectRes exec(@NotNull Auth auth) throws IOException {
+      public ObjectRes exec(@NotNull Link auth) throws IOException {
         return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
       }
     }, AuthAccess.Download);
@@ -86,7 +85,7 @@ public class Client {
   public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
     return doWork(new Work<ObjectRes>() {
       @Override
-      public ObjectRes exec(@NotNull Auth auth) throws IOException {
+      public ObjectRes exec(@NotNull Link auth) throws IOException {
         return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS));
       }
     }, AuthAccess.Upload);
@@ -104,7 +103,7 @@ public class Client {
   public InputStream getObject(@NotNull final String hash) throws IOException {
     return doWork(new Work<InputStream>() {
       @Override
-      public InputStream exec(@NotNull Auth auth) throws IOException {
+      public InputStream exec(@NotNull Link auth) throws IOException {
         return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash)));
       }
     }, AuthAccess.Download);
@@ -121,7 +120,7 @@ public class Client {
   @NotNull
   public InputStream getObject(@NotNull final Links links) throws IOException {
     final Link link = links.getLinks().get(LINK_DOWNLOAD);
-    if ((link == null) || (link.getHref() == null)) {
+    if (link == null) {
       throw new FileNotFoundException();
     }
     return doRequest(link, new ObjectGet(), link.getHref());
@@ -162,7 +161,7 @@ public class Client {
   public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
     return doWork(new Work<Boolean>() {
       @Override
-      public Boolean exec(@NotNull Auth auth) throws IOException {
+      public Boolean exec(@NotNull Link auth) throws IOException {
         return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS)), streamProvider);
       }
     }, AuthAccess.Upload);
@@ -181,20 +180,20 @@ public class Client {
       return false;
     }
     final Link uploadLink = links.getLinks().get(LINK_UPLOAD);
-    if ((uploadLink == null) || (uploadLink.getHref() == null)) {
+    if (uploadLink == null) {
       throw new IOException("Upload link not found");
     }
     doRequest(uploadLink, new ObjectPut(streamProvider), uploadLink.getHref());
 
     final Link verifyLink = links.getLinks().get(LINK_VERIFY);
-    if (verifyLink != null && verifyLink.getHref() != null) {
+    if (verifyLink != null) {
       doRequest(verifyLink, new ObjectVerify(), verifyLink.getHref());
     }
     return true;
   }
 
   protected <T> T doWork(@NotNull Work<T> work, @NotNull AuthAccess mode) throws IOException {
-    Auth auth = authProvider.getAuth(mode);
+    Link auth = authProvider.getAuth(mode);
     int authCount = 0;
     while (true) {
       try {
@@ -206,8 +205,8 @@ public class Client {
         authCount++;
         // Get new authentication data.
         authProvider.invalidateAuth(AuthAccess.Download, auth);
-        final Auth newAuth = authProvider.getAuth(AuthAccess.Download);
-        if (newAuth.getHeader().equals(auth.getHeader())) {
+        final Link newAuth = authProvider.getAuth(AuthAccess.Download);
+        if (newAuth.getHeader().equals(auth.getHeader()) && newAuth.getHref().equals(auth.getHref())) {
           throw e;
         }
         auth = newAuth;

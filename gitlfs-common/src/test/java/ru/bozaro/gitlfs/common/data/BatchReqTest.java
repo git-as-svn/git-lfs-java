@@ -12,12 +12,17 @@ import java.text.ParseException;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class MetaTest {
+public class BatchReqTest {
   @Test
   public void parse01() throws IOException, ParseException, URISyntaxException {
-    final Meta meta = SerializeTester.deserialize("meta-01.json", Meta.class);
+    final BatchReq data = SerializeTester.deserialize("batch-req-01.json", BatchReq.class);
+    Assert.assertNotNull(data);
+    Assert.assertEquals(data.getOperation(), "upload");
+
+    Assert.assertEquals(1, data.getObjects().size());
+    final Meta meta = data.getObjects().get(0);
     Assert.assertNotNull(meta);
-    Assert.assertEquals(meta.getOid(), "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
-    Assert.assertEquals(meta.getSize(), 130L);
+    Assert.assertEquals(meta.getOid(), "1111111");
+    Assert.assertEquals(meta.getSize(), 123L);
   }
 }

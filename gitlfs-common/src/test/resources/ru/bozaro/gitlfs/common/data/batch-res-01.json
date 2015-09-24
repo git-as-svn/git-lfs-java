@@ -1,0 +1,25 @@
+{
+  "objects": [
+    {
+      "oid": "1111111",
+      "size": 123,
+      "actions": {
+        "download": {
+          "href": "https://some-download.com",
+          "header": {
+            "Authorization": "Basic ..."
+          },
+          "expires_at": "2015-07-27T21:15:01Z"
+        }
+      }
+    },
+    {
+      "oid": "2222222",
+      "size": 234,
+      "error": {
+        "code": 404,
+        "message": "Object does not exist on the server"
+      }
+    }
+  ]
+}

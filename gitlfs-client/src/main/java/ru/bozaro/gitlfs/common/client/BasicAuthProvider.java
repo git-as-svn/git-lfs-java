@@ -3,7 +3,7 @@ package ru.bozaro.gitlfs.common.client;
 import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.bozaro.gitlfs.common.data.Auth;
+import ru.bozaro.gitlfs.common.data.Link;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,7 +19,7 @@ import java.util.TreeMap;
  */
 public class BasicAuthProvider implements AuthProvider {
   @NotNull
-  private final Auth auth;
+  private final Link auth;
 
   public BasicAuthProvider(@NotNull URI href) {
     this(href, null, null);
@@ -42,7 +42,7 @@ public class BasicAuthProvider implements AuthProvider {
     final String userInfo = authLogin + ':' + authPassword;
     header.put(Constants.HEADER_AUTHORIZATION, new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
     try {
-      this.auth = new Auth(new URI(href.getScheme(), href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);
+      this.auth = new Link(new URI(href.getScheme(), href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);
     } catch (URISyntaxException e) {
       throw new IllegalStateException(e);
     }
@@ -50,12 +50,12 @@ public class BasicAuthProvider implements AuthProvider {
 
   @NotNull
   @Override
-  public Auth getAuth(@NotNull AuthAccess mode) throws IOException {
+  public Link getAuth(@NotNull AuthAccess mode) throws IOException {
     return auth;
   }
 
   @Override
-  public void invalidateAuth(@NotNull AuthAccess mode, @NotNull Auth auth) {
+  public void invalidateAuth(@NotNull AuthAccess mode, @NotNull Link auth) {
   }
 
   private static boolean isEmpty(@Nullable String value) {

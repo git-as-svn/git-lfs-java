@@ -1,11 +1,13 @@
 package ru.bozaro.gitlfs.common.data;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
-import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -14,29 +16,48 @@ import java.util.TreeMap;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Link {
   @JsonProperty(value = "href", required = true)
-  @Nullable
-  private URI href;
+  @NotNull
+  private final URI href;
   @JsonProperty("header")
+  @NotNull
+  private final Map<String, String> header;
+  @JsonProperty("expires_at")
   @Nullable
-  private Map<String, String> header = new TreeMap<>();
+  private final Date expiresAt;
 
-  protected Link() {
-  }
-
-  public Link(@Nullable URI href, @Nullable Map<String, String> header) {
+  @JsonCreator
+  public Link(
+      @JsonProperty(value = "href", required = true)
+      @NotNull
+      URI href,
+      @JsonProperty("header")
+      @NotNull
+      Map<String, String> header,
+      @JsonProperty("expires_at")
+      @Nullable
+      Date expiresAt
+  ) {
     this.href = href;
-    this.header = header;
+    this.header = new TreeMap<>(header);
+    this.expiresAt = expiresAt != null ? new Date(expiresAt.getTime()) : null;
   }
 
-  @Nullable
+  @NotNull
   public URI getHref() {
     return href;
   }
 
   @NotNull
   public Map<String, String> getHeader() {
-    return header == null ? Collections.<String, String>emptyMap() : header;
+    return header;
   }
+
+  @Nullable
+  public Date getExpiresAt() {
+    return expiresAt != null ? new Date(expiresAt.getTime()) : null;
+  }
+
 }

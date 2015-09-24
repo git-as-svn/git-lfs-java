@@ -1,7 +1,7 @@
 package ru.bozaro.gitlfs.common.client;
 
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.common.data.Auth;
+import ru.bozaro.gitlfs.common.data.Link;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public interface AuthProvider {
    * @throws IOException
    */
   @NotNull
-  Auth getAuth(@NotNull AuthAccess mode) throws IOException;
+  Link getAuth(@NotNull AuthAccess mode) throws IOException;
 
   /**
    * Set auth as expired.
@@ -29,5 +29,5 @@ public interface AuthProvider {
    * @param mode Auth mode.
    * @param auth Expired auth data.
    */
-  void invalidateAuth(@NotNull AuthAccess mode, @NotNull Auth auth);
+  void invalidateAuth(@NotNull AuthAccess mode, @NotNull Link auth);
 }

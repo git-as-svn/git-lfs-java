@@ -1,0 +1,10 @@
+{
+  "_links": {
+    "upload": {
+      "href": "https://some-upload.com",
+      "header": {
+        "Authorization": "Basic ..."
+      }
+    }
+  }
+}

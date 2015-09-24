@@ -1,13 +1,10 @@
 package ru.bozaro.gitlfs.common.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -18,28 +15,41 @@ import java.text.ParseException;
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
 public class ObjectResTest {
-  @NotNull
-  private final ObjectMapper mapper = new ObjectMapper();
-
   @Test
   public void parse01() throws IOException, ParseException, URISyntaxException {
-    try (InputStream stream = getClass().getResourceAsStream("object-res-01.json")) {
-      Assert.assertNotNull(stream);
+    final ObjectRes res = SerializeTester.deserialize("object-res-01.json", ObjectRes.class);
+    Assert.assertNotNull(res);
 
-      final ObjectRes meta = mapper.readValue(stream, ObjectRes.class);
-      Assert.assertNotNull(meta);
-      Assert.assertEquals(meta.getOid(), "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
-      Assert.assertEquals(meta.getSize(), Long.valueOf(130L));
-      Assert.assertEquals(1, meta.getLinks().size());
+    final Meta meta = res.getMeta();
+    Assert.assertNotNull(meta);
+    Assert.assertEquals(meta.getOid(), "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
+    Assert.assertEquals(meta.getSize(), 130L);
+    Assert.assertEquals(1, res.getLinks().size());
 
-      final Link link = meta.getLinks().get("upload");
-      Assert.assertNotNull(link);
-      Assert.assertEquals(link.getHref(), new URI("https://storage-server.com/OID"));
-      Assert.assertEquals(link.getHeader(),
-          ImmutableMap.builder()
-              .put("Authorization", "Basic ...")
-              .build()
-      );
-    }
+    final Link link = res.getLinks().get("upload");
+    Assert.assertNotNull(link);
+    Assert.assertEquals(link.getHref(), new URI("https://storage-server.com/OID"));
+    Assert.assertEquals(link.getHeader(),
+        ImmutableMap.builder()
+            .put("Authorization", "Basic ...")
+            .build()
+    );
+  }
+
+  @Test
+  public void parse02() throws IOException, ParseException, URISyntaxException {
+    final ObjectRes res = SerializeTester.deserialize("object-res-02.json", ObjectRes.class);
+    Assert.assertNotNull(res);
+    Assert.assertNull(res.getMeta());
+    Assert.assertEquals(1, res.getLinks().size());
+
+    final Link link = res.getLinks().get("upload");
+    Assert.assertNotNull(link);
+    Assert.assertEquals(link.getHref(), new URI("https://some-upload.com"));
+    Assert.assertEquals(link.getHeader(),
+        ImmutableMap.builder()
+            .put("Authorization", "Basic ...")
+            .build()
+    );
   }
 }
