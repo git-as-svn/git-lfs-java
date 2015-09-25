@@ -5,6 +5,10 @@
 
 ## Changes
 
+Version 0.2.0
+
+ * Support [Git LFS v1 Batch API](https://github.com/github/git-lfs/blob/master/docs/api/http-v1-batch.md)
+
 Version 0.1.0
 
  * Initital version;
