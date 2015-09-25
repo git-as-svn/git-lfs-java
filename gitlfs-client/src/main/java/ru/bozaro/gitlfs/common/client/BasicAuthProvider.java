@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Link;
+import ru.bozaro.gitlfs.common.data.Operation;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,12 +51,12 @@ public class BasicAuthProvider implements AuthProvider {
 
   @NotNull
   @Override
-  public Link getAuth(@NotNull AuthAccess mode) throws IOException {
+  public Link getAuth(@NotNull Operation operation) throws IOException {
     return auth;
   }
 
   @Override
-  public void invalidateAuth(@NotNull AuthAccess mode, @NotNull Link auth) {
+  public void invalidateAuth(@NotNull Operation operation, @NotNull Link auth) {
   }
 
   private static boolean isEmpty(@Nullable String value) {

@@ -17,7 +17,7 @@ public class BatchReqTest {
   public void parse01() throws IOException, ParseException, URISyntaxException {
     final BatchReq data = SerializeTester.deserialize("batch-req-01.json", BatchReq.class);
     Assert.assertNotNull(data);
-    Assert.assertEquals(data.getOperation(), "upload");
+    Assert.assertEquals(data.getOperation(), Operation.Upload);
 
     Assert.assertEquals(1, data.getObjects().size());
     final Meta meta = data.getObjects().get(0);

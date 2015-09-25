@@ -23,6 +23,14 @@ public final class BatchItem extends Meta implements Links {
   @Nullable
   private final Error error;
 
+  public BatchItem(@NotNull Meta meta, @NotNull Map<String, Link> links) {
+    this(meta.getOid(), meta.getSize(), links, null);
+  }
+
+  public BatchItem(@NotNull Meta meta, @NotNull Error error) {
+    this(meta.getOid(), meta.getSize(), null, error);
+  }
+
   public BatchItem(
       @JsonProperty(value = "oid", required = true)
       @NotNull

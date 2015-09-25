@@ -11,9 +11,7 @@ import ru.bozaro.gitlfs.common.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.common.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.common.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.common.client.internal.*;
-import ru.bozaro.gitlfs.common.data.Link;
-import ru.bozaro.gitlfs.common.data.Links;
-import ru.bozaro.gitlfs.common.data.ObjectRes;
+import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,9 +66,9 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash));
+        return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + PATH_OBJECTS + "/" + hash));
       }
-    }, AuthAccess.Download);
+    }, Operation.Download);
   }
 
   /**
@@ -86,9 +84,26 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS));
+        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS));
       }
-    }, AuthAccess.Upload);
+    }, Operation.Upload);
+  }
+
+  /**
+   * Send batch request to the LFS-server.
+   *
+   * @param batchReq Batch request.
+   * @return Object metadata.
+   * @throws IOException
+   */
+  @NotNull
+  public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
+    return doWork(new Work<BatchRes>() {
+      @Override
+      public BatchRes exec(@NotNull Link auth) throws IOException {
+        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), URI.create(auth.getHref() + PATH_BATCH));
+      }
+    }, batchReq.getOperation());
   }
 
   /**
@@ -104,9 +119,9 @@ public class Client {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Link auth) throws IOException {
-        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + OBJECTS + "/" + hash)));
+        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + PATH_OBJECTS + "/" + hash)));
       }
-    }, AuthAccess.Download);
+    }, Operation.Download);
   }
 
   /**
@@ -162,9 +177,9 @@ public class Client {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + OBJECTS)), streamProvider);
+        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS)), streamProvider);
       }
-    }, AuthAccess.Upload);
+    }, Operation.Upload);
   }
 
   /**
@@ -192,8 +207,8 @@ public class Client {
     return true;
   }
 
-  protected <T> T doWork(@NotNull Work<T> work, @NotNull AuthAccess mode) throws IOException {
-    Link auth = authProvider.getAuth(mode);
+  protected <T> T doWork(@NotNull Work<T> work, @NotNull Operation operation) throws IOException {
+    Link auth = authProvider.getAuth(operation);
     int authCount = 0;
     while (true) {
       try {
@@ -204,8 +219,8 @@ public class Client {
         }
         authCount++;
         // Get new authentication data.
-        authProvider.invalidateAuth(AuthAccess.Download, auth);
-        final Link newAuth = authProvider.getAuth(AuthAccess.Download);
+        authProvider.invalidateAuth(operation, auth);
+        final Link newAuth = authProvider.getAuth(operation);
         if (newAuth.getHeader().equals(auth.getHeader()) && newAuth.getHref().equals(auth.getHref())) {
           throw e;
         }

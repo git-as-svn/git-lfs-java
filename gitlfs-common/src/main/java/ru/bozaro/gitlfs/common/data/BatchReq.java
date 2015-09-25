@@ -17,7 +17,7 @@ import java.util.List;
 public final class BatchReq {
   @JsonProperty(value = "operation", required = true)
   @NotNull
-  private final String operation;
+  private final Operation operation;
 
   @JsonProperty(value = "objects", required = true)
   @NotNull
@@ -26,7 +26,7 @@ public final class BatchReq {
   public BatchReq(
       @JsonProperty(value = "operation", required = true)
       @NotNull
-      String operation,
+      Operation operation,
       @JsonProperty(value = "objects", required = true)
       @NotNull
       List<Meta> objects
@@ -36,7 +36,7 @@ public final class BatchReq {
   }
 
   @NotNull
-  public String getOperation() {
+  public Operation getOperation() {
     return operation;
   }
 

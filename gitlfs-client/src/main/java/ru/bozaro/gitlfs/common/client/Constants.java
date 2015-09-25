@@ -28,5 +28,7 @@ public class Constants {
   @NotNull
   public static final String MIME_BINARY = "application/octet-stream";
   @NotNull
-  public static final String OBJECTS = "/objects";
+  public static final String PATH_OBJECTS = "/objects";
+  @NotNull
+  public static final String PATH_BATCH = "/objects/batch";
 }
