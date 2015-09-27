@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client.exceptions;
+package ru.bozaro.gitlfs.client.exceptions;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;

@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client.internal;
+package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.httpclient.HttpMethod;

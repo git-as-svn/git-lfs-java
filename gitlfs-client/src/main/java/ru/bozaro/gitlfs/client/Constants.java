@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client;
+package ru.bozaro.gitlfs.client;
 
 import org.jetbrains.annotations.NotNull;
 

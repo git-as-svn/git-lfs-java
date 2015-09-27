@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client.internal;
+package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,12 +7,10 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.common.client.exceptions.RequestException;
+import ru.bozaro.gitlfs.client.Constants;
+import ru.bozaro.gitlfs.client.exceptions.RequestException;
 
 import java.io.IOException;
-
-import static ru.bozaro.gitlfs.common.client.Constants.HEADER_ACCEPT;
-import static ru.bozaro.gitlfs.common.client.Constants.MIME_LFS_JSON;
 
 /**
  * POST simple JSON request.
@@ -34,9 +32,9 @@ public class JsonPost<Req, Res> implements Request<Res> {
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
     final PostMethod method = new PostMethod(url);
-    method.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
+    method.addRequestHeader(Constants.HEADER_ACCEPT, Constants.MIME_LFS_JSON);
     final byte[] content = mapper.writeValueAsBytes(req);
-    method.setRequestEntity(new ByteArrayRequestEntity(content, MIME_LFS_JSON));
+    method.setRequestEntity(new ByteArrayRequestEntity(content, Constants.MIME_LFS_JSON));
     return method;
   }
 

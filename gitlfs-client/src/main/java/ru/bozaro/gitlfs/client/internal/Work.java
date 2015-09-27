@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client.internal;
+package ru.bozaro.gitlfs.client.internal;
 
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Link;

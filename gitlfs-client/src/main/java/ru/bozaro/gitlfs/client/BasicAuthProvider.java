@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.common.client;
+package ru.bozaro.gitlfs.client;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
