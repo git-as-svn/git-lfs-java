@@ -7,10 +7,10 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
-import ru.bozaro.gitlfs.client.internal.*;
 import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.RequestException;
+import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
+import ru.bozaro.gitlfs.client.internal.*;
 import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.FileNotFoundException;
@@ -20,6 +20,8 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+
+import static ru.bozaro.gitlfs.client.Constants.*;
 
 /**
  * Git LFS client.
@@ -35,13 +37,22 @@ public class Client {
   @NotNull
   private final AuthProvider authProvider;
   @NotNull
-  private final HttpClient http;
+  private final HttpExecutor http;
 
   public Client(@NotNull AuthProvider authProvider) {
     this(authProvider, new HttpClient());
   }
 
-  public Client(@NotNull AuthProvider authProvider, @NotNull HttpClient http) {
+  public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {
+    this(authProvider, new HttpExecutor() {
+      @Override
+      public void executeMethod(@NotNull HttpMethod request) throws IOException {
+        http.executeMethod(request);
+      }
+    });
+  }
+
+  public Client(@NotNull AuthProvider authProvider, @NotNull HttpExecutor http) {
     this.authProvider = authProvider;
     this.mapper = createMapper();
     this.http = http;
@@ -82,7 +93,7 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + Constants.PATH_OBJECTS));
+        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS));
       }
     }, Operation.Upload);
   }
@@ -99,7 +110,7 @@ public class Client {
     return doWork(new Work<BatchRes>() {
       @Override
       public BatchRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), URI.create(auth.getHref() + Constants.PATH_BATCH));
+        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), URI.create(auth.getHref() + PATH_BATCH));
       }
     }, batchReq.getOperation());
   }
@@ -117,7 +128,7 @@ public class Client {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Link auth) throws IOException {
-        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + Constants.PATH_OBJECTS + "/" + hash)));
+        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + PATH_OBJECTS + "/" + hash)));
       }
     }, Operation.Download);
   }
@@ -132,7 +143,7 @@ public class Client {
    */
   @NotNull
   public InputStream getObject(@NotNull final Links links) throws IOException {
-    final Link link = links.getLinks().get(Constants.LINK_DOWNLOAD);
+    final Link link = links.getLinks().get(LINK_DOWNLOAD);
     if (link == null) {
       throw new FileNotFoundException();
     }
@@ -175,7 +186,7 @@ public class Client {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + Constants.PATH_OBJECTS)), streamProvider);
+        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS)), streamProvider);
       }
     }, Operation.Upload);
   }
@@ -189,16 +200,16 @@ public class Client {
    * @throws IOException On some errors.
    */
   public boolean putObject(@NotNull final Links links, @NotNull final StreamProvider streamProvider) throws IOException {
-    if (links.getLinks().containsKey(Constants.LINK_DOWNLOAD)) {
+    if (links.getLinks().containsKey(LINK_DOWNLOAD)) {
       return false;
     }
-    final Link uploadLink = links.getLinks().get(Constants.LINK_UPLOAD);
+    final Link uploadLink = links.getLinks().get(LINK_UPLOAD);
     if (uploadLink == null) {
       throw new IOException("Upload link not found");
     }
     doRequest(uploadLink, new ObjectPut(streamProvider), uploadLink.getHref());
 
-    final Link verifyLink = links.getLinks().get(Constants.LINK_VERIFY);
+    final Link verifyLink = links.getLinks().get(LINK_VERIFY);
     if (verifyLink != null) {
       doRequest(verifyLink, new ObjectVerify(), verifyLink.getHref());
     }
@@ -244,7 +255,7 @@ public class Client {
         case HttpStatus.SC_SEE_OTHER:
         case HttpStatus.SC_TEMPORARY_REDIRECT:
           // Follow by redirect.
-          final String location = request.getRequestHeader(Constants.HEADER_LOCATION).getValue();
+          final String location = request.getRequestHeader(HEADER_LOCATION).getValue();
           if (location == null || redirectCount >= MAX_REDIRECT_COUNT) {
             throw new RequestException(request);
           }

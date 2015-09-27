@@ -5,11 +5,13 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.Constants;
 import ru.bozaro.gitlfs.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
 
 import java.io.IOException;
+
+import static ru.bozaro.gitlfs.client.Constants.HEADER_ACCEPT;
+import static ru.bozaro.gitlfs.client.Constants.MIME_LFS_JSON;
 
 /**
  * GET object metadata request.
@@ -21,7 +23,7 @@ public class MetaGet implements Request<ObjectRes> {
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
     final GetMethod req = new GetMethod(url);
-    req.addRequestHeader(Constants.HEADER_ACCEPT, Constants.MIME_LFS_JSON);
+    req.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     return req;
   }
 
