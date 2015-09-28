@@ -1,6 +1,8 @@
 package ru.bozaro.gitlfs.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -60,7 +62,11 @@ public class Client {
 
   @NotNull
   public static ObjectMapper createMapper() {
-    return new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    return mapper;
   }
 
   /**

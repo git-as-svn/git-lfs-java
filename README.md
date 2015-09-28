@@ -5,6 +5,10 @@
 
 ## Changes
 
+Version 0.3.0
+
+ * Add authenticator for git-lfs-authenticate command (experimental)
+
 Version 0.2.0
 
  * Support [Git LFS v1 Batch API](https://github.com/github/git-lfs/blob/master/docs/api/http-v1-batch.md)
