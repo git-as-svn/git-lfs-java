@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,14 +35,14 @@ public class Link {
       @NotNull
       URI href,
       @JsonProperty("header")
-      @NotNull
+      @Nullable
       Map<String, String> header,
       @JsonProperty("expires_at")
       @Nullable
       Date expiresAt
   ) {
     this.href = href;
-    this.header = new TreeMap<>(header);
+    this.header = header == null ? Collections.<String, String>emptyMap() : new TreeMap<>(header);
     this.expiresAt = expiresAt != null ? new Date(expiresAt.getTime()) : null;
   }
 
