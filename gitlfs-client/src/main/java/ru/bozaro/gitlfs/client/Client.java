@@ -46,12 +46,7 @@ public class Client {
   }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {
-    this(authProvider, new HttpExecutor() {
-      @Override
-      public void executeMethod(@NotNull HttpMethod request) throws IOException {
-        http.executeMethod(request);
-      }
-    });
+    this(authProvider, new HttpClientExecutor(http));
   }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull HttpExecutor http) {
