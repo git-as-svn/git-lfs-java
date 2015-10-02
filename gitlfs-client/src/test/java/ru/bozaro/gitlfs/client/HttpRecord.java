@@ -138,13 +138,12 @@ public class HttpRecord {
       this.href = method.getURI().getURI();
       this.method = method.getName();
       this.headers = new TreeMap<>();
-      for (Header header : method.getRequestHeaders()) {
-        headers.put(header.getName(), header.getValue());
-      }
-      headers.remove(HttpHeaders.HOST);
-      headers.remove(HttpHeaders.USER_AGENT);
       final RequestEntity entity = method instanceof EntityEnclosingMethod ? ((EntityEnclosingMethod) method).getRequestEntity() : null;
       if (entity != null) {
+        if (entity.getContentLength() >= 0) {
+          headers.put(HttpHeaders.CONTENT_LENGTH, String.valueOf(entity.getContentLength()));
+        }
+        headers.put(HttpHeaders.CONTENT_TYPE, entity.getContentType());
         Assert.assertTrue(entity.isRepeatable());
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
           entity.writeRequest(buffer);
@@ -153,6 +152,11 @@ public class HttpRecord {
       } else {
         body = null;
       }
+      for (Header header : method.getRequestHeaders()) {
+        headers.put(header.getName(), header.getValue());
+      }
+      headers.remove(HttpHeaders.HOST);
+      headers.remove(HttpHeaders.USER_AGENT);
     }
 
     @Override

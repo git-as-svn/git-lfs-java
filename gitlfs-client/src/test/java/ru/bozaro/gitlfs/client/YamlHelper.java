@@ -5,6 +5,9 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Helper for YAML.
  *
@@ -27,5 +30,14 @@ public class YamlHelper {
     final Yaml yaml = new Yaml(new YamlConstructor(), new YamlRepresenter(), options);
     yaml.setBeanAccess(BeanAccess.FIELD);
     return yaml;
+  }
+
+  @NotNull
+  public static HttpReplay createReplay(@NotNull String resource) {
+    final List<HttpRecord> records = new ArrayList<>();
+    for (Object item : YamlHelper.get().loadAll(YamlHelper.class.getResourceAsStream(resource))) {
+      records.add((HttpRecord) item);
+    }
+    return new HttpReplay(records);
   }
 }
