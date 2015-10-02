@@ -1,0 +1,78 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/objects
+  method: POST
+response:
+  body: !text |-
+    {"message":"You need Push access to upload Git LFS objects.","documentation_url":"https://github.com/contact"}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 403
+  statusText: Forbidden
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-2
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/objects
+  method: POST
+response:
+  body: !text |-
+    {"message":"You need Push access to upload Git LFS objects.","documentation_url":"https://github.com/contact"}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-2
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 403
+  statusText: Forbidden
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "e6ba93fef485f9cb6748286d3ad610123bcf37f6ceb8a0f847a5d4f20ed31af3",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-3
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: https://api.github.com/lfs/bozaro/test/objects
+  method: POST
+response:
+  body: !text |-
+    {"message":"You need Push access to upload Git LFS objects.","documentation_url":"https://github.com/contact"}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-3
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 403
+  statusText: Forbidden

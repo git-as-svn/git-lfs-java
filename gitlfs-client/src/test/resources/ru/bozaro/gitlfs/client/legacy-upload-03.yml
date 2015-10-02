@@ -1,0 +1,102 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/objects
+  method: POST
+response:
+  body: !text |-
+    {"message":"You need Push access to upload Git LFS objects.","documentation_url":"https://github.com/contact"}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 403
+  statusText: Forbidden
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-2
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/objects
+  method: POST
+response:
+  body: !text |-
+    {"_links":{"upload":{"href":"https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138","header":{"Authorization":"AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=e13e0b8615cd2e56b547895f8a9fd6b42ed2f04d38d451d406142293d6706df0","x-amz-content-sha256":"b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e","x-amz-date":"20151002T180739Z"}},"verify":{"href":"https://api.github.com/lfs/bozaro/test/objects/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e/verify","header":{"Authorization":"RemoteAuth ACWCGu7nufaX-64PlRGCIN7NT0Rdd1Pyks5WEBlrwA==","Accept":"application/vnd.git-lfs+json"}}}}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth 40a488f3-dd0e-4f61-862b-10350d273b7e
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 202
+  statusText: Accepted
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    Fri Oct 02 21:07:33 MSK 2015
+  headers:
+    Authorization: AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=e13e0b8615cd2e56b547895f8a9fd6b42ed2f04d38d451d406142293d6706df0
+    Content-Length: '28'
+    Content-Type: application/octet-stream
+    x-amz-content-sha256: b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e
+    x-amz-date: 20151002T180739Z
+  href: https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138
+  method: PUT
+response:
+  body: !text ""
+  headers:
+    Authorization: AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=e13e0b8615cd2e56b547895f8a9fd6b42ed2f04d38d451d406142293d6706df0
+    Content-Length: '28'
+    Content-Type: application/octet-stream
+    Host: github-cloud.s3.amazonaws.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+    x-amz-content-sha256: b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e
+    x-amz-date: 20151002T180739Z
+  statusCode: 200
+  statusText: OK
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+      "size" : 28
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth ACWCGu7nufaX-64PlRGCIN7NT0Rdd1Pyks5WEBlrwA==
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+  href: https://api.github.com/lfs/bozaro/test/objects/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e/verify
+  method: POST
+response:
+  body: !text |-
+    {}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth ACWCGu7nufaX-64PlRGCIN7NT0Rdd1Pyks5WEBlrwA==
+    Content-Length: '95'
+    Content-Type: application/vnd.git-lfs+json
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 200
+  statusText: OK

@@ -31,7 +31,7 @@ import static ru.bozaro.gitlfs.client.Constants.*;
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
 public class Client {
-  private static final int MAX_AUTH_COUNT = 2;
+  private static final int MAX_AUTH_COUNT = 1;
   private static final int MAX_RETRY_COUNT = 2;
   private static final int MAX_REDIRECT_COUNT = 5;
   @NotNull
@@ -248,7 +248,7 @@ public class Client {
     while (true) {
       try {
         return work.exec(auth);
-      } catch (UnauthorizedException e) {
+      } catch (UnauthorizedException | ForbiddenException e) {
         if (authCount >= MAX_AUTH_COUNT) {
           throw e;
         }

@@ -29,4 +29,8 @@ public class HttpReplay implements HttpExecutor {
     Assert.assertEquals(record.getRequest().toString(), new HttpRecord.Request(request).toString());
     record.getResponse().apply(request);
   }
+
+  public void close() {
+    Assert.assertTrue(records.isEmpty());
+  }
 }
