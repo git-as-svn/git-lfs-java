@@ -4,10 +4,13 @@ import com.google.common.base.Utf8;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HttpHeaders;
 import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.ExpectContinueMethod;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.testng.Assert;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +31,11 @@ public class HttpRecord {
   public HttpRecord(@NotNull HttpMethod method) throws IOException {
     this.request = new Request(method);
     this.response = new Response(method);
+  }
 
+  protected HttpRecord() {
+    this.request = new Request();
+    this.response = new Response();
   }
 
   @NotNull
@@ -58,6 +65,13 @@ public class HttpRecord {
     private final TreeMap<String, String> headers;
     @Nullable
     private final byte[] body;
+
+    protected Response() {
+      this.statusCode = 0;
+      this.statusText = "";
+      this.headers = new TreeMap<>();
+      this.body = null;
+    }
 
     public Response(@NotNull HttpMethod method) throws IOException {
       this.statusCode = method.getStatusCode();
@@ -105,7 +119,7 @@ public class HttpRecord {
 
   public static class Request {
     @NotNull
-    private final URI href;
+    private final String href;
     @NotNull
     private final String method;
     @NotNull
@@ -113,8 +127,15 @@ public class HttpRecord {
     @Nullable
     private final byte[] body;
 
+    protected Request() {
+      href = "";
+      method = "";
+      headers = new TreeMap<>();
+      body = null;
+    }
+
     public Request(@NotNull HttpMethod method) throws IOException {
-      this.href = method.getURI();
+      this.href = method.getURI().getURI();
       this.method = method.getName();
       this.headers = new TreeMap<>();
       for (Header header : method.getRequestHeaders()) {
@@ -122,8 +143,13 @@ public class HttpRecord {
       }
       headers.remove(HttpHeaders.HOST);
       headers.remove(HttpHeaders.USER_AGENT);
-      if (method instanceof ExpectContinueMethod) {
-        body = method.getResponseBody();
+      final RequestEntity entity = method instanceof EntityEnclosingMethod ? ((EntityEnclosingMethod) method).getRequestEntity() : null;
+      if (entity != null) {
+        Assert.assertTrue(entity.isRepeatable());
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+          entity.writeRequest(buffer);
+          body = buffer.toByteArray();
+        }
       } else {
         body = null;
       }
@@ -132,7 +158,7 @@ public class HttpRecord {
     @Override
     public String toString() {
       final StringBuilder sb = new StringBuilder();
-      sb.append(method).append(" ").append(href.toString()).append("\n");
+      sb.append(method).append(" ").append(href).append("\n");
       for (Map.Entry<String, String> header : headers.entrySet()) {
         sb.append(header.getKey()).append(": ").append(header.getValue()).append("\n");
       }

@@ -187,7 +187,7 @@ public class Client {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS)), streamProvider);
+        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS)), streamProvider, size);
       }
     }, Operation.Upload);
   }
@@ -197,10 +197,11 @@ public class Client {
    *
    * @param links          Object links.
    * @param streamProvider Object stream provider.
+   * @param size           Object size.
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final Links links, @NotNull final StreamProvider streamProvider) throws IOException {
+  public boolean putObject(@NotNull final Links links, @NotNull final StreamProvider streamProvider, long size) throws IOException {
     if (links.getLinks().containsKey(LINK_DOWNLOAD)) {
       return false;
     }
@@ -208,7 +209,7 @@ public class Client {
     if (uploadLink == null) {
       throw new IOException("Upload link not found");
     }
-    doRequest(uploadLink, new ObjectPut(streamProvider), uploadLink.getHref());
+    doRequest(uploadLink, new ObjectPut(streamProvider, size), uploadLink.getHref());
 
     final Link verifyLink = links.getLinks().get(LINK_VERIFY);
     if (verifyLink != null) {
