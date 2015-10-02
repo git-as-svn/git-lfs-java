@@ -1,0 +1,38 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: null
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+  href: http://gitlfs.local/test.git/info/lfs/objects/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e
+  method: GET
+response:
+  body: !text |-
+    {"oid":"b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e","size":28,"_links":{"self":{"href":"https://api.github.com/lfs/bozaro/test/objects/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e"},"download":{"href":"https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138","header":{"Authorization":"AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=4f1ee7f7294be783a6243cfb01bf524bdfd292af8183ce313360c7d0b3dc2ed9","x-amz-content-sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","x-amz-date":"20151002T185112Z"}}}}
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Host: api.github.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+  statusCode: 200
+  statusText: OK
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: null
+  headers:
+    Authorization: AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=4f1ee7f7294be783a6243cfb01bf524bdfd292af8183ce313360c7d0b3dc2ed9
+    x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    x-amz-date: 20151002T185112Z
+  href: https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138
+  method: GET
+response:
+  body: !text |-
+    Fri Oct 02 21:07:33 MSK 2015
+  headers:
+    Authorization: AWS4-HMAC-SHA256 Credential=AKIAIMWPLRQEC4XCWWPA/20151002/us-east-1/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date,Signature=4f1ee7f7294be783a6243cfb01bf524bdfd292af8183ce313360c7d0b3dc2ed9
+    Host: github-cloud.s3.amazonaws.com
+    User-Agent: Jakarta Commons-HttpClient/3.1
+    x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    x-amz-date: 20151002T185112Z
+  statusCode: 200
+  statusText: OK
