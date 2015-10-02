@@ -23,12 +23,10 @@ import static ru.bozaro.gitlfs.client.Constants.MIME_LFS_JSON;
  */
 public class MetaPost implements Request<ObjectRes> {
   @NotNull
-  private final String hash;
-  private final long size;
+  private final Meta meta;
 
-  public MetaPost(@NotNull String hash, long size) {
-    this.hash = hash;
-    this.size = size;
+  public MetaPost(@NotNull Meta meta) {
+    this.meta = meta;
   }
 
   @NotNull
@@ -36,7 +34,7 @@ public class MetaPost implements Request<ObjectRes> {
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
     final PostMethod req = new PostMethod(url);
     req.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
-    final byte[] content = mapper.writeValueAsBytes(new Meta(hash, size));
+    final byte[] content = mapper.writeValueAsBytes(meta);
     req.setRequestEntity(new ByteArrayRequestEntity(content, MIME_LFS_JSON));
     return req;
   }

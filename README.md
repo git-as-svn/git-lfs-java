@@ -8,6 +8,7 @@
 Version 0.3.0
 
  * Add authenticator for git-lfs-authenticate command (experimental)
+ * Fix verify url bug
 
 Version 0.2.0
 

@@ -91,10 +91,22 @@ public class Client {
    */
   @Nullable
   public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
+    return postMeta(new Meta(hash, size));
+  }
+
+  /**
+   * Get metadata for object by hash.
+   *
+   * @param meta Object meta.
+   * @return Object metadata or null, if object not found.
+   * @throws IOException
+   */
+  @Nullable
+  public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS));
+        return doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS));
       }
     }, Operation.Upload);
   }
@@ -184,10 +196,22 @@ public class Client {
    * @throws IOException On some errors.
    */
   public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
+    return putObject(streamProvider, new Meta(hash, size));
+  }
+
+  /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param meta           Object metadata.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        return putObject(doRequest(auth, new MetaPost(hash, size), URI.create(auth.getHref() + PATH_OBJECTS)), streamProvider, size);
+        return putObject(streamProvider, meta, doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS)));
       }
     }, Operation.Upload);
   }
@@ -197,11 +221,11 @@ public class Client {
    *
    * @param links          Object links.
    * @param streamProvider Object stream provider.
-   * @param size           Object size.
+   * @param meta           Object metadata.
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final Links links, @NotNull final StreamProvider streamProvider, long size) throws IOException {
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
     if (links.getLinks().containsKey(LINK_DOWNLOAD)) {
       return false;
     }
@@ -209,11 +233,11 @@ public class Client {
     if (uploadLink == null) {
       throw new IOException("Upload link not found");
     }
-    doRequest(uploadLink, new ObjectPut(streamProvider, size), uploadLink.getHref());
+    doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref());
 
     final Link verifyLink = links.getLinks().get(LINK_VERIFY);
     if (verifyLink != null) {
-      doRequest(verifyLink, new ObjectVerify(), verifyLink.getHref());
+      doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref());
     }
     return true;
   }
