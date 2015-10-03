@@ -3,6 +3,36 @@
 [![Build Status](https://travis-ci.org/bozaro/git-lfs-java.svg?branch=master)](https://travis-ci.org/bozaro/git-lfs-java)
 [![Maven Central](https://img.shields.io/maven-central/v/ru.bozaro.gitlfs/gitlfs-common.svg)](http://mvnrepository.com/artifact/ru.bozaro.gitlfs)
 
+## What is this?
+
+This is Git LFS Java API implementation.
+
+This project contains:
+
+ * gitlfs-common - Common structures for serialization/deserialization Git LFS messages
+ * gitlfs-pointer - Git LFS pointer serialization/deserialization
+ * gitlfs-client - API for uploading/downloading Git LFS objects from server
+
+## How to use?
+
+You can download latest stable version from [Maven Central](http://mvnrepository.com/artifact/ru.bozaro.gitlfs).
+
+### Uploading object to Git LFS server
+
+```java
+  final AuthProvider auth = AuthHelper.create("git@github.com:foo/bar.git");
+  final Client client = new Client(auth);
+  client.putObject(new FileStreamProvider(new File("foo.bin")));
+```
+
+### Downloading object from Git LFS server
+
+```java
+  final AuthProvider auth = AuthHelper.create("git@github.com:foo/bar.git");
+  final Client client = new Client(auth);
+  final InputStream stream = client.getObject("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393");
+```
+
 ## Changes
 
 Version 0.3.0
