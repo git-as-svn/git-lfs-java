@@ -213,7 +213,8 @@ public class Client {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        return putObject(streamProvider, meta, doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS)));
+        final ObjectRes links = doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS));
+        return links != null && putObject(streamProvider, meta, links);
       }
     }, Operation.Upload);
   }

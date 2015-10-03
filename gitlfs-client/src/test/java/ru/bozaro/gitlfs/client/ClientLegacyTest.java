@@ -22,7 +22,7 @@ public class ClientLegacyTest {
   public void legacyUpload01() throws IOException {
     final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/legacy-upload-01.yml");
     final Client client = new Client(new FakeAuthProvider(), replay);
-    client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015"));
+    Assert.assertTrue(client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015")));
     replay.close();
   }
 
@@ -44,7 +44,18 @@ public class ClientLegacyTest {
   public void legacyUpload03() throws IOException {
     final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/legacy-upload-03.yml");
     final Client client = new Client(new FakeAuthProvider(), replay);
-    client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015"));
+    Assert.assertTrue(client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015")));
+    replay.close();
+  }
+
+  /**
+   * Already uploaded,
+   */
+  @Test
+  public void legacyUpload04() throws IOException {
+    final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/legacy-upload-04.yml");
+    final Client client = new Client(new FakeAuthProvider(), replay);
+    Assert.assertFalse(client.putObject(new StringStreamProvider("Hello, world!!!")));
     replay.close();
   }
 

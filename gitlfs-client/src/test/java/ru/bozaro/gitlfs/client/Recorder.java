@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 
 /**
  * Simple code for recording replay.
@@ -35,6 +34,6 @@ public class Recorder {
   }
 
   private static void doWork(@NotNull Client client) throws IOException {
-    client.putObject(new ByteArrayStreamProvider(new Date().toString().getBytes()));
+    client.putObject(new ByteArrayStreamProvider("Hello, world!!!".getBytes()));
   }
 }

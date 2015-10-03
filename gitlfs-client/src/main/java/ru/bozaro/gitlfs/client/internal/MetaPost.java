@@ -43,6 +43,7 @@ public class MetaPost implements Request<ObjectRes> {
   public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
     switch (request.getStatusCode()) {
       case HttpStatus.SC_OK:
+        return null;
       case HttpStatus.SC_ACCEPTED:
         return mapper.readValue(request.getResponseBodyAsStream(), ObjectRes.class);
       default:

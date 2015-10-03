@@ -11,6 +11,7 @@ Version 0.3.0
  * Add AuthHelper class for simple AuthProvider creation
  * Fix verify url bug
  * Fix basic authentication
+ * Fix already uploaded behaviour
 
 Version 0.2.0
 
