@@ -8,6 +8,7 @@
 Version 0.3.0
 
  * Add authenticator for git-lfs-authenticate command (experimental)
+ * Add AuthHelper class for simple AuthProvider creation
  * Fix verify url bug
  * Fix basic authentication
 

@@ -5,7 +5,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.StreamProvider;
+import ru.bozaro.gitlfs.client.io.StreamProvider;
 
 import java.io.IOException;
 import java.io.InputStream;

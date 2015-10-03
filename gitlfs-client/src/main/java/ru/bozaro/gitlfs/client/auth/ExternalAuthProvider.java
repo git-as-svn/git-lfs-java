@@ -1,12 +1,14 @@
-package ru.bozaro.gitlfs.client;
+package ru.bozaro.gitlfs.client.auth;
 
 import org.jetbrains.annotations.NotNull;
+import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -22,7 +24,7 @@ public class ExternalAuthProvider implements AuthProvider {
   @NotNull
   private final Object lock = new Object();
   @NotNull
-  private final String host;
+  private final String authority;
   @NotNull
   private final String path;
 
@@ -31,13 +33,24 @@ public class ExternalAuthProvider implements AuthProvider {
    *
    * @param gitUrl Git URL like: git@github.com:bozaro/git-lfs-java.git
    */
-  public ExternalAuthProvider(@NotNull String gitUrl) {
+  public ExternalAuthProvider(@NotNull String gitUrl) throws MalformedURLException {
     final int separator = gitUrl.indexOf(':');
     if (separator < 0) {
-      throw new IllegalArgumentException("Can't find separator ':' in gitUrl: " + gitUrl);
+      throw new MalformedURLException("Can't find separator ':' in gitUrl: " + gitUrl);
     }
-    this.host = gitUrl.substring(0, separator);
+    this.authority = gitUrl.substring(0, separator);
     this.path = gitUrl.substring(separator + 1);
+  }
+
+  /**
+   * Create authentication wrapper for git-lfs-authenticate command.
+   *
+   * @param authority SSH server authority with user name
+   * @param path      Repostiry path
+   */
+  public ExternalAuthProvider(@NotNull String authority, @NotNull String path) {
+    this.authority = authority;
+    this.path = path;
   }
 
   @NotNull
@@ -64,7 +77,7 @@ public class ExternalAuthProvider implements AuthProvider {
   protected String[] getCommand(@NotNull Operation operation) {
     return new String[]{
         "ssh",
-        getHost(),
+        getAuthority(),
         "-C",
         "git-lfs-authenticate",
         getPath(),
@@ -99,8 +112,8 @@ public class ExternalAuthProvider implements AuthProvider {
   }
 
   @NotNull
-  public String getHost() {
-    return host;
+  public String getAuthority() {
+    return authority;
   }
 
   @NotNull

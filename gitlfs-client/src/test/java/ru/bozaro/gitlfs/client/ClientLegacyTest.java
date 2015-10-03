@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
+import ru.bozaro.gitlfs.client.io.StringStreamProvider;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

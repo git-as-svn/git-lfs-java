@@ -1,8 +1,9 @@
-package ru.bozaro.gitlfs.client;
+package ru.bozaro.gitlfs.client.auth;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.bozaro.gitlfs.client.Constants;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
@@ -43,7 +44,8 @@ public class BasicAuthProvider implements AuthProvider {
     final String userInfo = authLogin + ':' + authPassword;
     header.put(Constants.HEADER_AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
     try {
-      this.auth = new Link(new URI(href.getScheme(), href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);
+      final String scheme = "git".equals(href.getScheme()) ? "https" : href.getScheme();
+      this.auth = new Link(new URI(scheme, href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);
     } catch (URISyntaxException e) {
       throw new IllegalStateException(e);
     }
