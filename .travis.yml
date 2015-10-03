@@ -14,4 +14,4 @@ env:
 before_install:
 - openssl aes-256-cbc -K $encrypted_8e5c960335c9_key -iv $encrypted_8e5c960335c9_iv -in secring.gpg.enc -out secring.gpg -d
 after_success:
-- if [ "$TRAVIS_BRANCH" == "master" ]; then gradle uploadArchives; fi
+- if [ "$TRAVIS_BRANCH" == "master" ] || [ -n "$TRAVIS_TAG" ] ; then gradle uploadArchives; fi
