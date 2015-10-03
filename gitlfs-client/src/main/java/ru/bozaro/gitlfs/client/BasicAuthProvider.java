@@ -41,7 +41,7 @@ public class BasicAuthProvider implements AuthProvider {
     }
     final TreeMap<String, String> header = new TreeMap<>();
     final String userInfo = authLogin + ':' + authPassword;
-    header.put(Constants.HEADER_AUTHORIZATION, new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
+    header.put(Constants.HEADER_AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
     try {
       this.auth = new Link(new URI(href.getScheme(), href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);
     } catch (URISyntaxException e) {
