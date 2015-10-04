@@ -87,10 +87,10 @@ public class PointerTest {
   }
 
   @Test(dataProvider = "parseInvalidProvider")
-  public void parseInvalid(@NotNull String fileName, @NotNull String commit) throws IOException {
+  public void parseInvalid(@NotNull String fileName, @NotNull String description) throws IOException {
     try (InputStream stream = getClass().getResourceAsStream(fileName)) {
       Assert.assertNotNull(stream);
-      Assert.assertNull(Pointer.parsePointer(stream));
+      Assert.assertNull(Pointer.parsePointer(stream), description);
     }
   }
 }
