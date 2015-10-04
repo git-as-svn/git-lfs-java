@@ -5,7 +5,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.exceptions.RequestException;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
 
 import java.io.IOException;
@@ -27,6 +27,15 @@ public class MetaGet implements Request<ObjectRes> {
     return req;
   }
 
+  @Nullable
+  @Override
+  public int[] statusCodes() {
+    return new int[]{
+        HttpStatus.SC_OK,
+        HttpStatus.SC_NOT_FOUND,
+    };
+  }
+
   @Override
   public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
     switch (request.getStatusCode()) {
@@ -35,7 +44,7 @@ public class MetaGet implements Request<ObjectRes> {
       case HttpStatus.SC_NOT_FOUND:
         return null;
       default:
-        throw new RequestException(request);
+        throw new IllegalStateException();
     }
   }
 }

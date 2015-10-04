@@ -2,11 +2,10 @@ package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.exceptions.RequestException;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
 
 import java.io.IOException;
@@ -37,14 +36,14 @@ public class ObjectVerify implements Request<Void> {
     return req;
   }
 
+  @Nullable
+  @Override
+  public int[] statusCodes() {
+    return null;
+  }
+
   @Override
   public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    switch (request.getStatusCode()) {
-      case HttpStatus.SC_OK:
-      case HttpStatus.SC_ACCEPTED:
-        return null;
-      default:
-        throw new RequestException(request);
-    }
+    return null;
   }
 }

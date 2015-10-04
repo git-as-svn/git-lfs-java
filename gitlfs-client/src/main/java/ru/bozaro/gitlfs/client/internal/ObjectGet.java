@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,12 @@ public class ObjectGet implements Request<InputStream> {
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
     return new GetMethod(url);
+  }
+
+  @Nullable
+  @Override
+  public int[] statusCodes() {
+    return null;
   }
 
   @Override

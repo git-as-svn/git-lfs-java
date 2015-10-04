@@ -5,6 +5,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 
 import java.io.IOException;
@@ -60,6 +61,12 @@ public class ObjectPut implements Request<Void> {
       }
     });
     return req;
+  }
+
+  @Nullable
+  @Override
+  public int[] statusCodes() {
+    return null;
   }
 
   @Override

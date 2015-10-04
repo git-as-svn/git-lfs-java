@@ -36,6 +36,18 @@ public class PointerTest {
                 .put("size", "12345")
                 .build()
         },
+        new Object[]{
+            "pointer-valid-03.dat",
+            ImmutableMap.builder()
+                .put("version", "https://git-lfs.github.com/spec/v1")
+                .put("object-name", " Foo")
+                .put("object.id", "F1")
+                .put("object0123456789", ":)")
+                .put("oid", "sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393")
+                .put("name", "Текст в UTF-8")
+                .put("size", "12345")
+                .build()
+        },
     };
   }
 
@@ -70,6 +82,7 @@ public class PointerTest {
         new Object[]{"pointer-invalid-07.dat", "Non utf-8"},
         new Object[]{"pointer-invalid-08.dat", "Size is not number"},
         new Object[]{"pointer-invalid-09.dat", "Duplicate line"},
+        new Object[]{"pointer-invalid-10.dat", "Duplicate version"},
     };
   }
 

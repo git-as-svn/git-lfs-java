@@ -37,6 +37,10 @@ public class Client {
   private static final int MAX_RETRY_COUNT = 2;
   private static final int MAX_REDIRECT_COUNT = 5;
   @NotNull
+  private static final int[] DEFAULT_HTTP_SUCCESS = new int[]{
+      HttpStatus.SC_OK
+  };
+  @NotNull
   private final ObjectMapper mapper;
   @NotNull
   private final AuthProvider authProvider;
@@ -302,7 +306,17 @@ public class Client {
           ++retryCount;
           continue;
       }
-      return task.processResponse(mapper, request);
+      int[] success = task.statusCodes();
+      if (success == null) {
+        success = DEFAULT_HTTP_SUCCESS;
+      }
+      for (int item : success) {
+        if (request.getStatusCode() == item) {
+          return task.processResponse(mapper, request);
+        }
+      }
+      // Unexpected status code.
+      throw new RequestException(request);
     }
   }
 

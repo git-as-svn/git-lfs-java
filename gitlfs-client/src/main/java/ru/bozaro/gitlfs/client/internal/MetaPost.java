@@ -7,7 +7,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.exceptions.RequestException;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
 
@@ -39,6 +39,15 @@ public class MetaPost implements Request<ObjectRes> {
     return req;
   }
 
+  @Nullable
+  @Override
+  public int[] statusCodes() {
+    return new int[]{
+        HttpStatus.SC_OK,
+        HttpStatus.SC_ACCEPTED,
+    };
+  }
+
   @Override
   public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
     switch (request.getStatusCode()) {
@@ -47,7 +56,7 @@ public class MetaPost implements Request<ObjectRes> {
       case HttpStatus.SC_ACCEPTED:
         return mapper.readValue(request.getResponseBodyAsStream(), ObjectRes.class);
       default:
-        throw new RequestException(request);
+        throw new IllegalStateException();
     }
   }
 }
