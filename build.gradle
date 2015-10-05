@@ -48,7 +48,9 @@ subprojects {
   }
 
   test {
+    useTestNG()
     maxHeapSize = "256m"
+    ignoreFailures = "$testIgnoreFailures".toBoolean()
   }
 
   task sourcesJar(type: Jar, dependsOn: classes) {
