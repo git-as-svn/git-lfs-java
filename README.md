@@ -35,6 +35,10 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 
 ## Changes
 
+Version 0.4.0
+
+ * Fix url concatenation
+
 Version 0.3.0
 
  * Add authenticator for git-lfs-authenticate command (experimental)

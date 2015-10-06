@@ -78,7 +78,7 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaGet(), URI.create(auth.getHref() + Constants.PATH_OBJECTS + "/" + hash));
+        return doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), Constants.PATH_OBJECTS + "/" + hash));
       }
     }, Operation.Download);
   }
@@ -108,7 +108,7 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS));
+        return doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
       }
     }, Operation.Upload);
   }
@@ -143,7 +143,7 @@ public class Client {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Link auth) throws IOException {
-        return getObject(doRequest(auth, new MetaGet(), URI.create(auth.getHref() + PATH_OBJECTS + "/" + hash)));
+        return getObject(doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash)));
       }
     }, Operation.Download);
   }
@@ -213,7 +213,7 @@ public class Client {
     return doWork(new Work<Boolean>() {
       @Override
       public Boolean exec(@NotNull Link auth) throws IOException {
-        final ObjectRes links = doRequest(auth, new MetaPost(meta), URI.create(auth.getHref() + PATH_OBJECTS));
+        final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
         return links != null && putObject(streamProvider, meta, links);
       }
     }, Operation.Upload);

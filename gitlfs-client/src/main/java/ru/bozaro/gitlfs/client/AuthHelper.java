@@ -7,6 +7,7 @@ import ru.bozaro.gitlfs.client.auth.ExternalAuthProvider;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Utility class.
@@ -41,7 +42,7 @@ public final class AuthHelper {
         case "https":
         case "http":
         case "git":
-          return new BasicAuthProvider(uri.resolve(path + (path.endsWith("/") ? "" : "/") + "info/lfs"));
+          return new BasicAuthProvider(join(uri, "info/lfs"));
         case "ssh":
           return new ExternalAuthProvider(uri.getAuthority(), path.startsWith("/") ? path.substring(1) : path);
         default:
@@ -49,5 +50,14 @@ public final class AuthHelper {
       }
     }
     return new ExternalAuthProvider(gitURL);
+  }
+
+  @NotNull
+  public static URI join(@NotNull URI href, @NotNull String path) {
+    try {
+      return new URI(href.getScheme(), href.getAuthority(), href.getPath() + (href.getPath().endsWith("/") ? "" : "/"), null, null).resolve(path);
+    } catch (URISyntaxException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }
