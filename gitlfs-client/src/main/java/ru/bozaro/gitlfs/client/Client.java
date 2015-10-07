@@ -1,8 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -15,6 +13,7 @@ import ru.bozaro.gitlfs.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.client.internal.*;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
+import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.FileNotFoundException;
@@ -57,17 +56,8 @@ public class Client {
 
   public Client(@NotNull AuthProvider authProvider, @NotNull HttpExecutor http) {
     this.authProvider = authProvider;
-    this.mapper = createMapper();
+    this.mapper = JsonHelper.createMapper();
     this.http = http;
-  }
-
-  @NotNull
-  public static ObjectMapper createMapper() {
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-    mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    return mapper;
   }
 
   /**

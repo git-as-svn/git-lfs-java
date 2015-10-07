@@ -1,7 +1,7 @@
 package ru.bozaro.gitlfs.client.auth;
 
 import org.jetbrains.annotations.NotNull;
-import ru.bozaro.gitlfs.client.Client;
+import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
@@ -103,7 +103,7 @@ public class ExternalAuthProvider implements AuthProvider {
     if (exitValue != 0) {
       throw new IOException("Command returned with non-zero exit code " + exitValue + ": " + Arrays.toString(builder.command().toArray()));
     }
-    return Client.createMapper().readValue(stdoutData.toByteArray(), Link.class);
+    return JsonHelper.createMapper().readValue(stdoutData.toByteArray(), Link.class);
   }
 
   @Override
