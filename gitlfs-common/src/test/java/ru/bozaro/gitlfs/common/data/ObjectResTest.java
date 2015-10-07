@@ -26,12 +26,12 @@ public class ObjectResTest {
     Assert.assertEquals(meta.getSize(), 130L);
     Assert.assertEquals(2, res.getLinks().size());
 
-    final Link self = res.getLinks().get("self");
+    final Link self = res.getLinks().get(LinkType.Self);
     Assert.assertNotNull(self);
     Assert.assertEquals(self.getHref(), new URI("https://storage-server.com/info/lfs/objects/01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"));
     Assert.assertTrue(self.getHeader().isEmpty());
 
-    final Link link = res.getLinks().get("upload");
+    final Link link = res.getLinks().get(LinkType.Upload);
     Assert.assertNotNull(link);
     Assert.assertEquals(link.getHref(), new URI("https://storage-server.com/OID"));
     Assert.assertEquals(link.getHeader(),
@@ -48,7 +48,7 @@ public class ObjectResTest {
     Assert.assertNull(res.getMeta());
     Assert.assertEquals(1, res.getLinks().size());
 
-    final Link link = res.getLinks().get("upload");
+    final Link link = res.getLinks().get(LinkType.Upload);
     Assert.assertNotNull(link);
     Assert.assertEquals(link.getHref(), new URI("https://some-upload.com"));
     Assert.assertEquals(link.getHeader(),

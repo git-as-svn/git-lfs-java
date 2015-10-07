@@ -35,7 +35,7 @@ public class BatchResTest {
       Assert.assertNull(item.getError());
 
       Assert.assertEquals(1, item.getLinks().size());
-      final Link link = item.getLinks().get("download");
+      final Link link = item.getLinks().get(LinkType.Download);
       Assert.assertNotNull(link);
       Assert.assertEquals(link.getHref(), new URI("https://some-download.com"));
       Assert.assertEquals(link.getHeader(),

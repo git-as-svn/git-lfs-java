@@ -18,12 +18,6 @@ public class Constants {
   @NotNull
   public static final String HEADER_LOCATION = "Location";
   @NotNull
-  public static final String LINK_DOWNLOAD = "download";
-  @NotNull
-  public static final String LINK_UPLOAD = "upload";
-  @NotNull
-  public static final String LINK_VERIFY = "verify";
-  @NotNull
   public static final String MIME_LFS_JSON = "application/vnd.git-lfs+json";
   @NotNull
   public static final String MIME_BINARY = "application/octet-stream";

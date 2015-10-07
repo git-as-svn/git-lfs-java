@@ -19,7 +19,7 @@ import java.util.TreeMap;
 public final class ObjectRes implements Links {
   @JsonProperty(value = "_links", required = true)
   @NotNull
-  private final Map<String, Link> links;
+  private final Map<LinkType, Link> links;
   @Nullable
   private final Meta meta;
 
@@ -32,7 +32,7 @@ public final class ObjectRes implements Links {
       long size,
       @JsonProperty(value = "_links", required = true)
       @NotNull
-      Map<String, Link> links
+      Map<LinkType, Link> links
   ) {
     this.meta = oid == null ? null : new Meta(oid, size);
     this.links = Collections.unmodifiableMap(new TreeMap<>(links));
@@ -45,7 +45,7 @@ public final class ObjectRes implements Links {
 
   @Override
   @NotNull
-  public Map<String, Link> getLinks() {
+  public Map<LinkType, Link> getLinks() {
     return links;
   }
 }

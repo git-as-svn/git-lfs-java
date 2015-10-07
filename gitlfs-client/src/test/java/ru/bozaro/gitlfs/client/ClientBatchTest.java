@@ -35,14 +35,13 @@ public class ClientBatchTest {
         Arrays.asList(
             new BatchItem(
                 new Meta("b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e", 28),
-                ImmutableMap.<String, Link>builder()
-
+                ImmutableMap.<LinkType, Link>builder()
                     .build()
             ),
             new BatchItem(
                 new Meta("1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa", 3),
-                ImmutableMap.<String, Link>builder()
-                    .put("upload", new Link(
+                ImmutableMap.<LinkType, Link>builder()
+                    .put(LinkType.Upload, new Link(
                         URI.create("https://github-cloud.s3.amazonaws.com/alambic/media/111975537/1c/be/1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa?actor_id=2458138"),
                         ImmutableMap.<String, String>builder()
                             .put("Authorization", "AWS4-HMAC-SHA256 Credential=Token-2")
@@ -51,7 +50,7 @@ public class ClientBatchTest {
                             .build(),
                         null
                     ))
-                    .put("verify", new Link(
+                    .put(LinkType.Verify, new Link(
                         URI.create("https://api.github.com/lfs/bozaro/test/objects/1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa/verify"),
                         ImmutableMap.<String, String>builder()
                             .put("Accept", "application/vnd.git-lfs+json")
@@ -84,8 +83,8 @@ public class ClientBatchTest {
         Arrays.asList(
             new BatchItem(
                 new Meta("b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e", 28),
-                ImmutableMap.<String, Link>builder()
-                    .put("download", new Link(
+                ImmutableMap.<LinkType, Link>builder()
+                    .put(LinkType.Download, new Link(
                         URI.create("https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138"),
                         ImmutableMap.<String, String>builder()
                             .put("Authorization", "Token-2")

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public enum Operation {
+public enum LinkType {
   Download {
     @Override
     public String toValue() {
@@ -20,7 +20,8 @@ public enum Operation {
     public <R> R visit(@NotNull Visitor<R> visitor) {
       return visitor.visitDownload();
     }
-  }, Upload {
+  },
+  Upload {
     @Override
     public String toValue() {
       return "upload";
@@ -30,11 +31,33 @@ public enum Operation {
     public <R> R visit(@NotNull Visitor<R> visitor) {
       return visitor.visitUpload();
     }
+  },
+  Verify {
+    @Override
+    public String toValue() {
+      return "verify";
+    }
+
+    @Override
+    public <R> R visit(@NotNull Visitor<R> visitor) {
+      return visitor.visitVerify();
+    }
+  },
+  Self {
+    @Override
+    public String toValue() {
+      return "self";
+    }
+
+    @Override
+    public <R> R visit(@NotNull Visitor<R> visitor) {
+      return visitor.visitSelf();
+    }
   };
 
   @JsonCreator
-  public static Operation forValue(@NotNull String value) {
-    for (Operation item : values()) {
+  public static LinkType forValue(@NotNull String value) {
+    for (LinkType item : values()) {
       if (item.toValue().equals(value)) {
         return item;
       }
@@ -51,5 +74,9 @@ public enum Operation {
     R visitDownload();
 
     R visitUpload();
+
+    R visitVerify();
+
+    R visitSelf();
   }
 }

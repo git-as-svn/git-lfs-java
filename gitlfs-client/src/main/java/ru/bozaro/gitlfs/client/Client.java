@@ -156,7 +156,7 @@ public class Client {
    */
   @NotNull
   public InputStream getObject(@NotNull final Links links) throws IOException {
-    final Link link = links.getLinks().get(LINK_DOWNLOAD);
+    final Link link = links.getLinks().get(LinkType.Download);
     if (link == null) {
       throw new FileNotFoundException();
     }
@@ -237,16 +237,16 @@ public class Client {
    * @throws IOException On some errors.
    */
   public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
-    if (links.getLinks().containsKey(LINK_DOWNLOAD)) {
+    if (links.getLinks().containsKey(LinkType.Download)) {
       return false;
     }
-    final Link uploadLink = links.getLinks().get(LINK_UPLOAD);
+    final Link uploadLink = links.getLinks().get(LinkType.Upload);
     if (uploadLink == null) {
       throw new IOException("Upload link not found");
     }
     doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref());
 
-    final Link verifyLink = links.getLinks().get(LINK_VERIFY);
+    final Link verifyLink = links.getLinks().get(LinkType.Verify);
     if (verifyLink != null) {
       doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref());
     }

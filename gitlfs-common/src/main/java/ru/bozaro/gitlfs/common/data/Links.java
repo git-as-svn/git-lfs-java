@@ -11,5 +11,5 @@ import java.util.Map;
  */
 public interface Links {
   @NotNull
-  Map<String, Link> getLinks();
+  Map<LinkType, Link> getLinks();
 }

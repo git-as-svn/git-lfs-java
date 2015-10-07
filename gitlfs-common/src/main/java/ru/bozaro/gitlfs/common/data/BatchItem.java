@@ -18,12 +18,12 @@ import java.util.TreeMap;
 public final class BatchItem extends Meta implements Links {
   @JsonProperty(value = "actions")
   @NotNull
-  private final Map<String, Link> links;
+  private final Map<LinkType, Link> links;
   @JsonProperty(value = "error")
   @Nullable
   private final Error error;
 
-  public BatchItem(@NotNull Meta meta, @NotNull Map<String, Link> links) {
+  public BatchItem(@NotNull Meta meta, @NotNull Map<LinkType, Link> links) {
     this(meta.getOid(), meta.getSize(), links, null);
   }
 
@@ -39,19 +39,19 @@ public final class BatchItem extends Meta implements Links {
       long size,
       @JsonProperty(value = "actions")
       @Nullable
-      Map<String, Link> links,
+      Map<LinkType, Link> links,
       @JsonProperty(value = "error")
       @Nullable
       Error error
   ) {
     super(oid, size);
-    this.links = links == null ? Collections.<String, Link>emptyMap() : Collections.unmodifiableMap(new TreeMap<>(links));
+    this.links = links == null ? Collections.<LinkType, Link>emptyMap() : Collections.unmodifiableMap(new TreeMap<>(links));
     this.error = error;
   }
 
   @Override
   @NotNull
-  public Map<String, Link> getLinks() {
+  public Map<LinkType, Link> getLinks() {
     return links;
   }
 
