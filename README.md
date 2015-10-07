@@ -38,6 +38,7 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 Version 0.4.0
 
  * Fix url concatenation
+ * Fix downloading for not uploaded object (404 error)
 
 Version 0.3.0
 

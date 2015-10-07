@@ -129,7 +129,7 @@ public class Client {
     return doWork(new Work<BatchRes>() {
       @Override
       public BatchRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), URI.create(auth.getHref() + PATH_BATCH));
+        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
       }
     }, batchReq.getOperation());
   }
@@ -147,7 +147,11 @@ public class Client {
     return doWork(new Work<InputStream>() {
       @Override
       public InputStream exec(@NotNull Link auth) throws IOException {
-        return getObject(doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash)));
+        final ObjectRes links = doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
+        if (links == null) {
+          throw new FileNotFoundException();
+        }
+        return getObject(links);
       }
     }, Operation.Download);
   }
@@ -177,6 +181,17 @@ public class Client {
    * @throws IOException On some errors.
    */
   public boolean putObject(@NotNull final StreamProvider streamProvider) throws IOException {
+    return putObject(streamProvider, generateMeta(streamProvider));
+  }
+
+  /**
+   * Generate object metadata.
+   *
+   * @param streamProvider Object stream provider.
+   * @return Return object metadata.
+   * @throws IOException On some errors.
+   */
+  public Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
     final MessageDigest digest = sha256();
     final byte[] buffer = new byte[0x10000];
     long size = 0;
@@ -188,8 +203,7 @@ public class Client {
         size += read;
       }
     }
-    final String hash = new String(Hex.encodeHex(digest.digest()));
-    return putObject(streamProvider, hash, size);
+    return new Meta(new String(Hex.encodeHex(digest.digest())), size);
   }
 
   /**

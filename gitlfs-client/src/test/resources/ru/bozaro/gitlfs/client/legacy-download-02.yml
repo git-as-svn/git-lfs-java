@@ -1,0 +1,32 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: null
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+  href: http://gitlfs.local/test.git/info/lfs/objects/01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+  method: GET
+response:
+  body: !text |-
+    {"message":"Not Found","documentation_url":"https://github.com/contact"}
+  headers:
+    Access-Control-Allow-Credentials: 'true'
+    Access-Control-Allow-Origin: '*'
+    Access-Control-Expose-Headers: ETag, Link, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval
+    Content-Length: '72'
+    Content-Security-Policy: default-src 'none'
+    Content-Type: application/json; charset=utf-8
+    Date: Wed, 07 Oct 2015 04:06:04 GMT
+    Server: GitHub.com
+    Status: 404 Not Found
+    Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+    X-Content-Type-Options: nosniff
+    X-Frame-Options: deny
+    X-GitHub-Media-Type: unknown
+    X-GitHub-Request-Id: 4FA5AFEC:17F56:60D2406:56149A2C
+    X-RateLimit-Limit: '3000'
+    X-RateLimit-Remaining: '2999'
+    X-RateLimit-Reset: '1444190824'
+    X-XSS-Protection: 1; mode=block
+  statusCode: 404
+  statusText: Not Found

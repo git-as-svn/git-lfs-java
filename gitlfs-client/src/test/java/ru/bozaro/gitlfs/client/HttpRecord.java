@@ -77,7 +77,7 @@ public class HttpRecord {
       this.statusCode = method.getStatusCode();
       this.statusText = method.getStatusText();
       this.headers = new TreeMap<>();
-      for (Header header : method.getRequestHeaders()) {
+      for (Header header : method.getResponseHeaders()) {
         headers.put(header.getName(), header.getValue());
       }
       this.body = method.getResponseBody();
