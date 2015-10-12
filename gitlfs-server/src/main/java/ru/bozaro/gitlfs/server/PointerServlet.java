@@ -77,7 +77,10 @@ public class PointerServlet<T> extends HttpServlet {
         return;
       }
     } catch (ServerError e) {
-
+      resp.setStatus(e.getStatusCode());
+      resp.setContentType(Constants.MIME_LFS_JSON);
+      JsonHelper.createMapper().writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
+      return;
     }
     super.doPost(req, resp);
   }
