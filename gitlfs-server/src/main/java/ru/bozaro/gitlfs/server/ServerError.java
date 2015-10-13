@@ -8,6 +8,11 @@ package ru.bozaro.gitlfs.server;
 public class ServerError extends Exception {
   private final int statusCode;
 
+  public ServerError(int statusCode, String message) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+
   public ServerError(int statusCode, String message, Throwable cause) {
     super(message, cause);
     this.statusCode = statusCode;
