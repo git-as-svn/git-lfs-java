@@ -22,7 +22,7 @@ public interface ContentManager<T> {
    * @param operation Requested operation.
    * @return Return some user information.
    */
-  T checkAccess(@NotNull HttpServletRequest request, @NotNull Operation operation) throws IOException, ServerError;
+  T checkAccess(@NotNull HttpServletRequest request, @NotNull Operation operation) throws IOException, ForbiddenError, UnauthorizedError;
 
   /**
    * Get metadata of uploaded object.

@@ -1,5 +1,9 @@
 package ru.bozaro.gitlfs.server;
 
+import org.jetbrains.annotations.NotNull;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Server side error exception.
  *
@@ -20,5 +24,8 @@ public class ServerError extends Exception {
 
   public int getStatusCode() {
     return statusCode;
+  }
+
+  public void updateHeaders(@NotNull HttpServletResponse response) {
   }
 }
