@@ -1,5 +1,6 @@
 package ru.bozaro.gitlfs.server;
 
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
@@ -7,7 +8,6 @@ import ru.bozaro.gitlfs.common.data.Error;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
-import java.util.TreeMap;
 
 /**
  * Pointer manager for local ContentManager.
@@ -48,16 +48,14 @@ public class LocalPointerManager<T> implements PointerManager<T> {
 
   @NotNull
   public BatchItem getLocation(T context, @NotNull URI selfUrl, @NotNull Operation operation, @NotNull Meta meta) throws IOException {
-    final TreeMap<LinkType, Link> links = new TreeMap<>();
     final Meta storageMeta = manager.getMetadata(meta.getOid());
     if (storageMeta == null) {
-      links.put(LinkType.Upload, createLink(context, selfUrl, meta));
+      return new BatchItem(meta, ImmutableMap.of(LinkType.Upload, createLink(context, selfUrl, meta)));
     } else if ((meta.getSize() >= 0) && (storageMeta.getSize() != meta.getSize())) {
       return new BatchItem(meta, new Error(422, "Invalid object size"));
     } else {
-      links.put(LinkType.Download, createLink(context, selfUrl, storageMeta));
+      return new BatchItem(storageMeta, ImmutableMap.of(LinkType.Download, createLink(context, selfUrl, storageMeta)));
     }
-    return new BatchItem(meta, links);
   }
 
   public Link createLink(T context, @NotNull URI selfUrl, @NotNull Meta meta) {
