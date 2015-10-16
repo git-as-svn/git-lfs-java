@@ -24,7 +24,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import static ru.bozaro.gitlfs.client.Constants.*;
+import static ru.bozaro.gitlfs.client.Constants.HEADER_LOCATION;
+import static ru.bozaro.gitlfs.common.Constants.*;
 
 /**
  * Git LFS client.

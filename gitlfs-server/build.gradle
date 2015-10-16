@@ -1,0 +1,11 @@
+description = "Java Git-LFS server implementation-free library"
+
+dependencies {
+  compile project(":gitlfs-common")
+  compile "com.google.guava:guava:18.0"
+  compile "javax.servlet:javax.servlet-api:3.1.0"
+
+  testCompile project(":gitlfs-client")
+  testCompile "org.eclipse.jetty:jetty-server:9.2.13.v20150730"
+  testCompile "org.eclipse.jetty:jetty-servlet:9.2.13.v20150730"
+}
