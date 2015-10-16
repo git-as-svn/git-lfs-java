@@ -7,6 +7,7 @@ import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
+import ru.bozaro.gitlfs.server.internal.LocalPointerManager;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
@@ -38,7 +39,7 @@ import java.util.regex.Pattern;
  */
 public class PointerServlet<T> extends HttpServlet {
   @NotNull
-  private final Pattern PATTERN_OID = Pattern.compile("^\\/[0-9a-f]{64}$");
+  private final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
   @NotNull
   private final ObjectMapper mapper;
   @NotNull
@@ -47,6 +48,16 @@ public class PointerServlet<T> extends HttpServlet {
   public PointerServlet(@NotNull PointerManager<T> manager) {
     this.manager = manager;
     this.mapper = JsonHelper.createMapper();
+  }
+
+  /**
+   * Create pointer manager for local ContentManager.
+   *
+   * @param manager         Content manager.
+   * @param contentLocation Absolute or relative URL to ContentServlet.
+   */
+  public PointerServlet(@NotNull ContentManager<T> manager, @NotNull String contentLocation) {
+    this(new LocalPointerManager<>(manager, contentLocation));
   }
 
   @Override
@@ -88,7 +99,7 @@ public class PointerServlet<T> extends HttpServlet {
   @NotNull
   private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
     final T access = manager.checkAccess(req, Operation.Download);
-    final BatchItem[] locations = manager.getLocations(access, Operation.Download, new Meta[]{new Meta(oid, -1)});
+    final BatchItem[] locations = manager.getLocations(access, req, Operation.Download, new Meta[]{new Meta(oid, -1)});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -109,7 +120,7 @@ public class PointerServlet<T> extends HttpServlet {
   private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final T access = manager.checkAccess(req, Operation.Upload);
     final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
-    final BatchItem[] locations = manager.getLocations(access, Operation.Upload, new Meta[]{meta});
+    final BatchItem[] locations = manager.getLocations(access, req, Operation.Upload, new Meta[]{meta});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -133,7 +144,7 @@ public class PointerServlet<T> extends HttpServlet {
   private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final BatchReq batchReq = mapper.readValue(req.getInputStream(), BatchReq.class);
     final T access = manager.checkAccess(req, batchReq.getOperation());
-    final BatchItem[] locations = manager.getLocations(access, batchReq.getOperation(), batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
+    final BatchItem[] locations = manager.getLocations(access, req, batchReq.getOperation(), batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
     // Invalid locations list.
     if (locations.length != batchReq.getObjects().size()) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);

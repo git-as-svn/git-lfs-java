@@ -26,7 +26,7 @@ public class MemoryStorage implements ContentManager<AuthContext> {
   private final Map<String, byte[]> storage = new HashMap<>();
 
   @Override
-  public AuthContext checkAccess(@NotNull HttpServletRequest request, @NotNull Operation operation) throws IOException, ServerError {
+  public AuthContext checkAccess(@NotNull HttpServletRequest request, @NotNull Operation operation) throws IOException {
     return new AuthContext(operation);
   }
 
