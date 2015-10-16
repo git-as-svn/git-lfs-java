@@ -12,6 +12,7 @@ This project contains:
  * gitlfs-common - Common structures for serialization/deserialization Git LFS messages
  * gitlfs-pointer - Git LFS pointer serialization/deserialization
  * gitlfs-client - API for uploading/downloading Git LFS objects from server
+ * gitlfs-server - Servlets for creating custom LFS server
 
 ## How to use?
 
@@ -37,8 +38,10 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 
 Version 0.4.0
 
+ * Initial server implementation
  * Fix url concatenation
  * Fix downloading for not uploaded object (404 error)
+ * Fix minor bugs
 
 Version 0.3.0
 
