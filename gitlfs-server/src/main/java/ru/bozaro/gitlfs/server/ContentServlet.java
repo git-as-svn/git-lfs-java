@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
+import ru.bozaro.gitlfs.server.internal.InputStreamValidator;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
@@ -64,7 +65,7 @@ public class ContentServlet<T> extends HttpServlet {
   private ResponseWriter processPut(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
     final T access = manager.checkAccess(req, Operation.Upload);
     final Meta meta = new Meta(oid, -1);
-    manager.saveObject(access, meta, req.getInputStream());
+    manager.saveObject(access, meta, new InputStreamValidator(req.getInputStream(), meta));
     return new ObjectResponse(HttpServletResponse.SC_OK, meta);
   }
 

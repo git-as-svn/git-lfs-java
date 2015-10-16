@@ -7,7 +7,6 @@ import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
-import ru.bozaro.gitlfs.server.internal.LocalPointerManager;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 

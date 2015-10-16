@@ -1,12 +1,8 @@
-package ru.bozaro.gitlfs.server.internal;
+package ru.bozaro.gitlfs.server;
 
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
-import ru.bozaro.gitlfs.server.ContentManager;
-import ru.bozaro.gitlfs.server.ForbiddenError;
-import ru.bozaro.gitlfs.server.PointerManager;
-import ru.bozaro.gitlfs.server.UnauthorizedError;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
