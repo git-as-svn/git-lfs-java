@@ -7,7 +7,6 @@ import ru.bozaro.gitlfs.common.data.Error;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.TreeMap;
 
 /**
@@ -39,40 +38,29 @@ public class LocalPointerManager<T> implements PointerManager<T> {
 
   @NotNull
   @Override
-  public BatchItem[] getLocations(T context, @NotNull HttpServletRequest req, @NotNull Operation operation, @NotNull Meta[] metas) throws IOException {
+  public BatchItem[] getLocations(T context, @NotNull URI selfUrl, @NotNull Operation operation, @NotNull Meta[] metas) throws IOException {
     final BatchItem[] result = new BatchItem[metas.length];
     for (int i = 0; i < metas.length; ++i) {
-      result[i] = getLocation(context, req, operation, metas[i]);
+      result[i] = getLocation(context, selfUrl, operation, metas[i]);
     }
     return result;
   }
 
   @NotNull
-  public BatchItem getLocation(T context, @NotNull HttpServletRequest req, @NotNull Operation operation, @NotNull Meta meta) throws IOException {
+  public BatchItem getLocation(T context, @NotNull URI selfUrl, @NotNull Operation operation, @NotNull Meta meta) throws IOException {
     final TreeMap<LinkType, Link> links = new TreeMap<>();
-    links.put(LinkType.Self, new Link(getSelfRef(req), null, null));
     final Meta storageMeta = manager.getMetadata(meta.getOid());
     if (storageMeta == null) {
-      links.put(LinkType.Upload, createLink(context, req, meta));
+      links.put(LinkType.Upload, createLink(context, selfUrl, meta));
     } else if ((meta.getSize() >= 0) && (storageMeta.getSize() != meta.getSize())) {
       return new BatchItem(meta, new Error(422, "Invalid object size"));
     } else {
-      links.put(LinkType.Download, createLink(context, req, storageMeta));
+      links.put(LinkType.Download, createLink(context, selfUrl, storageMeta));
     }
     return new BatchItem(meta, links);
   }
 
-  public Link createLink(T context, @NotNull HttpServletRequest req, @NotNull Meta meta) {
-    final URI baseUri = getSelfRef(req).resolve(contentLocation);
-    return new Link(baseUri.resolve(meta.getOid()), null, null);
-  }
-
-  @NotNull
-  public URI getSelfRef(@NotNull HttpServletRequest req) {
-    try {
-      return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), req.getServletPath(), null, null);
-    } catch (URISyntaxException e) {
-      throw new IllegalStateException("Can't create request URL", e);
-    }
+  public Link createLink(T context, @NotNull URI selfUrl, @NotNull Meta meta) {
+    return new Link(selfUrl.resolve(contentLocation).resolve(meta.getOid()), null, null);
   }
 }

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -98,7 +99,7 @@ public class PointerServlet<T> extends HttpServlet {
   @NotNull
   private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
     final T access = manager.checkAccess(req, Operation.Download);
-    final BatchItem[] locations = manager.getLocations(access, req, Operation.Download, new Meta[]{new Meta(oid, -1)});
+    final BatchItem[] locations = manager.getLocations(access, getSelfUrl(req), Operation.Download, new Meta[]{new Meta(oid, -1)});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -116,10 +117,20 @@ public class PointerServlet<T> extends HttpServlet {
   }
 
   @NotNull
+  protected URI getSelfUrl(@NotNull HttpServletRequest req) {
+    try {
+      return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), req.getServletPath(), null, null);
+    } catch (URISyntaxException e) {
+      throw new IllegalStateException("Can't create request URL", e);
+    }
+  }
+
+  @NotNull
   private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final T access = manager.checkAccess(req, Operation.Upload);
     final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
-    final BatchItem[] locations = manager.getLocations(access, req, Operation.Upload, new Meta[]{meta});
+    final URI selfUrl = getSelfUrl(req);
+    final BatchItem[] locations = manager.getLocations(access, selfUrl, Operation.Upload, new Meta[]{meta});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -130,11 +141,13 @@ public class PointerServlet<T> extends HttpServlet {
     if (error != null) {
       throw new ServerError(error.getCode(), error.getMessage(), null);
     }
-    if (location.getLinks().containsKey(LinkType.Download)) {
-      return new ObjectResponse(HttpServletResponse.SC_OK, new ObjectRes(location.getOid(), location.getSize(), filterLocation(req, location.getLinks(), LinkType.Download)));
+    final Map<LinkType, Link> links = new TreeMap<>(location.getLinks());
+    links.put(LinkType.Self, new Link(selfUrl, null, null));
+    if (links.containsKey(LinkType.Download)) {
+      return new ObjectResponse(HttpServletResponse.SC_OK, new ObjectRes(location.getOid(), location.getSize(), filterLocation(req, links, LinkType.Download)));
     }
-    if (location.getLinks().containsKey(LinkType.Upload)) {
-      return new ObjectResponse(HttpServletResponse.SC_ACCEPTED, new ObjectRes(location.getOid(), location.getSize(), filterLocation(req, location.getLinks(), LinkType.Upload, LinkType.Verify)));
+    if (links.containsKey(LinkType.Upload)) {
+      return new ObjectResponse(HttpServletResponse.SC_ACCEPTED, new ObjectRes(location.getOid(), location.getSize(), filterLocation(req, links, LinkType.Upload, LinkType.Verify)));
     }
     throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Invalid locations list", null);
   }
@@ -143,7 +156,7 @@ public class PointerServlet<T> extends HttpServlet {
   private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final BatchReq batchReq = mapper.readValue(req.getInputStream(), BatchReq.class);
     final T access = manager.checkAccess(req, batchReq.getOperation());
-    final BatchItem[] locations = manager.getLocations(access, req, batchReq.getOperation(), batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
+    final BatchItem[] locations = manager.getLocations(access, getSelfUrl(req), batchReq.getOperation(), batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
     // Invalid locations list.
     if (locations.length != batchReq.getObjects().size()) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);

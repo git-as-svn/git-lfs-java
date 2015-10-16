@@ -7,6 +7,7 @@ import ru.bozaro.gitlfs.common.data.Operation;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * Interface for lookup pointer information.
@@ -26,12 +27,12 @@ public interface PointerManager<T> {
 
   /**
    * @param context   Some user information.
-   * @param req       Http request for current URL information.
+   * @param selfUrl   Http URL for this request.
    * @param operation Requested operation.
    * @param metas     Object hash array (note: metadata can have negative size for GET object request).
    * @return Return batch items with same order and same count as metas array.
    * @throws IOException
    */
   @NotNull
-  BatchItem[] getLocations(T context, @NotNull HttpServletRequest req, @NotNull Operation operation, @NotNull Meta[] metas) throws IOException;
+  BatchItem[] getLocations(T context, @NotNull URI selfUrl, @NotNull Operation operation, @NotNull Meta[] metas) throws IOException;
 }
