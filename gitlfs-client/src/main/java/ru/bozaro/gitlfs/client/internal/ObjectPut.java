@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static ru.bozaro.gitlfs.client.Constants.MIME_BINARY;
+import static ru.bozaro.gitlfs.common.Constants.MIME_BINARY;
 
 /**
  * PUT object request.

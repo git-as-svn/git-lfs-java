@@ -24,7 +24,7 @@ public class ServerTest {
   public void simpleTest() throws Exception {
     try (final EmbeddedHttpServer server = new EmbeddedHttpServer()) {
       final MemoryStorage storage = new MemoryStorage();
-      server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet<>(storage, "/foo/bar.git/info/lfs/storage/"));
+      server.addServlet("/foo/bar.git/info/lfs/objects/*", PointerServlet.create(storage, "/foo/bar.git/info/lfs/storage/"));
       server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet<>(storage));
 
       final BasicAuthProvider auth = new BasicAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));

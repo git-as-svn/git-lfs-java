@@ -36,6 +36,10 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 
 ## Changes
 
+Version 0.5.0
+
+ * Server implemetation stabilization
+
 Version 0.4.0
 
  * Initial server implementation

@@ -24,7 +24,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import static ru.bozaro.gitlfs.client.Constants.HEADER_LOCATION;
 import static ru.bozaro.gitlfs.common.Constants.*;
 
 /**
@@ -73,7 +72,7 @@ public class Client {
     return doWork(new Work<ObjectRes>() {
       @Override
       public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), Constants.PATH_OBJECTS + "/" + hash));
+        return doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
       }
     }, Operation.Download);
   }

@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.client.auth;
 import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.bozaro.gitlfs.client.Constants;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
@@ -13,6 +12,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.TreeMap;
+
+import static ru.bozaro.gitlfs.common.Constants.HEADER_AUTHORIZATION;
 
 /**
  * Auth provider for basic authentication.
@@ -42,7 +43,7 @@ public class BasicAuthProvider implements AuthProvider {
     }
     final TreeMap<String, String> header = new TreeMap<>();
     final String userInfo = authLogin + ':' + authPassword;
-    header.put(Constants.HEADER_AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
+    header.put(HEADER_AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(userInfo.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
     try {
       final String scheme = "git".equals(href.getScheme()) ? "https" : href.getScheme();
       this.auth = new Link(new URI(scheme, href.getAuthority(), href.getPath(), null, null), Collections.unmodifiableMap(header), null);

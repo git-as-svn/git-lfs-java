@@ -56,8 +56,8 @@ public class PointerServlet<T> extends HttpServlet {
    * @param manager         Content manager.
    * @param contentLocation Absolute or relative URL to ContentServlet.
    */
-  public PointerServlet(@NotNull ContentManager<T> manager, @NotNull String contentLocation) {
-    this(new LocalPointerManager<>(manager, contentLocation));
+  public static PointerServlet<HeaderProvider> create(@NotNull ContentManager<?> manager, @NotNull String contentLocation) {
+    return new PointerServlet<>(new LocalPointerManager<>(manager, contentLocation));
   }
 
   @Override

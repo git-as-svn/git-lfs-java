@@ -10,8 +10,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
-import static ru.bozaro.gitlfs.client.Constants.HEADER_ACCEPT;
-import static ru.bozaro.gitlfs.client.Constants.MIME_LFS_JSON;
+import static ru.bozaro.gitlfs.common.Constants.HEADER_ACCEPT;
+import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 
 /**
  * POST simple JSON request.
