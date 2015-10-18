@@ -38,6 +38,7 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 
 Version 0.5.0
 
+ * Require JDK 8
  * Server implemetation stabilization
 
 Version 0.4.0

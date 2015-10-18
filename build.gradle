@@ -2,7 +2,7 @@ task wrapper(type: Wrapper) {
   gradleVersion = "2.7"
 }
 
-def javaVersion = JavaVersion.VERSION_1_7
+def javaVersion = JavaVersion.VERSION_1_8
 
 allprojects {
   repositories {
@@ -37,7 +37,7 @@ subprojects {
 
   idea {
     module {
-      jdkName = sourceCompatibility
+      jdkName = javaVersion
       downloadJavadoc = true
       downloadSources = true
     }

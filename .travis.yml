@@ -1,11 +1,11 @@
 language: java
 sudo: false
 jdk:
-- oraclejdk7
+- oraclejdk8
 script:
-- gradle check
+- ./gradlew check
 install:
-- gradle assemble
+- ./gradlew assemble
 env:
   global:
   - secure: JFM0oS3ME5ScymrVmnxWr+ubTp1lev9jYo0bDM5XDY4lBp5/OJtkuJEsE2aZn8MH2IF4umV4u3mwSZibewjXgb9MsIHyVcQp4v5uYmelt0UO4drj5rx0FcZkPBXOZ8/61/R+/oSdPWTiqoV429aLq2YoYDoVgh4hBKRgjBy9dNfftAS0Ykqpy4au1/4GUzFo6ryJYI95HgcXwOMDzw2pOstHRl1UcWVE/xgaV2Z2br/qjLSjrU0Zc+A8H3CFNDYMocoraViPQhfyPv05QyuDWLJmUGjfGvC8EzJgCibSf94MxNBMR9GQrBqa0oi7h7kB0oD0vIx1R/13vKD6Ors9DKVvdZiEWGrupolI7J8ulbg+yZoeg6sryuu9fRqj5v+nY6wOFMYiT6/DufzFX4PgrzBOk8YeUUqW6doMVmyMDGOY88ZmCusEtvP1MRtPMA4G0ELtgWKOdvcD36jVWD47weM2pC3wfic45/QKuu9wz7iKDMTK/Z3KCM6OyyEjLoLy7ztOZsX+v6qVwjaEy8cgjZh76/MmXbB+EGdReRetfFy+N3Vxls+IsDBo8iAtX4jnaSow/04v2lv5r/+0zSS6aaJJMnaBmESj2UrE97JEcBZ2sDoShhLKxECiDdY/KBulisjUNQHcSW1W5y4rv17B3RVB8PIFbNwoVD6SCLlTPGY=
