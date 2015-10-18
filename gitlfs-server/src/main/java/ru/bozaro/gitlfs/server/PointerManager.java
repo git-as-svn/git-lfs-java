@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.server;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.BatchItem;
 import ru.bozaro.gitlfs.common.data.Meta;
-import ru.bozaro.gitlfs.common.data.Operation;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -26,13 +25,22 @@ public interface PointerManager {
   }
 
   /**
-   * Check access for requested operation and return some user information.
+   * Check access for upload objects.
    *
-   * @param request   HTTP request.
-   * @param selfUrl   Http URL for this request.
-   * @param operation Requested operation.
+   * @param request HTTP request.
+   * @param selfUrl Http URL for this request.
    * @return Location provider.
    */
   @NotNull
-  Locator checkAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl, @NotNull Operation operation) throws IOException, ForbiddenError, UnauthorizedError;
+  Locator checkUploadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+
+  /**
+   * Check access for download objects.
+   *
+   * @param request HTTP request.
+   * @param selfUrl Http URL for this request.
+   * @return Location provider.
+   */
+  @NotNull
+  Locator checkDownloadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
 }

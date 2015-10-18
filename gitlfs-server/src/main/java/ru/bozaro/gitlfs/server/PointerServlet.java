@@ -44,10 +44,18 @@ public class PointerServlet extends HttpServlet {
   private final ObjectMapper mapper;
   @NotNull
   private final PointerManager manager;
+  @NotNull
+  private final AccessCheckerVisitor accessChecker;
+
+  protected interface AccessChecker {
+    @NotNull
+    PointerManager.Locator checkAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+  }
 
   public PointerServlet(@NotNull PointerManager manager) {
     this.manager = manager;
     this.mapper = JsonHelper.createMapper();
+    this.accessChecker = new AccessCheckerVisitor(manager);
   }
 
   /**
@@ -98,7 +106,7 @@ public class PointerServlet extends HttpServlet {
 
   @NotNull
   private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
-    final PointerManager.Locator locator = manager.checkAccess(req, getSelfUrl(req), Operation.Download);
+    final PointerManager.Locator locator = manager.checkDownloadAccess(req, getSelfUrl(req));
     final BatchItem[] locations = locator.getLocations(new Meta[]{new Meta(oid, -1)});
     // Invalid locations list.
     if (locations.length != 1) {
@@ -128,7 +136,7 @@ public class PointerServlet extends HttpServlet {
   @NotNull
   private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final URI selfUrl = getSelfUrl(req);
-    final PointerManager.Locator locator = manager.checkAccess(req, selfUrl, Operation.Upload);
+    final PointerManager.Locator locator = manager.checkUploadAccess(req, selfUrl);
     final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
     final BatchItem[] locations = locator.getLocations(new Meta[]{meta});
     // Invalid locations list.
@@ -155,7 +163,7 @@ public class PointerServlet extends HttpServlet {
   @NotNull
   private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final BatchReq batchReq = mapper.readValue(req.getInputStream(), BatchReq.class);
-    final PointerManager.Locator locator = manager.checkAccess(req, getSelfUrl(req), batchReq.getOperation());
+    final PointerManager.Locator locator = batchReq.getOperation().visit(accessChecker).checkAccess(req, getSelfUrl(req));
     final BatchItem[] locations = locator.getLocations(batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
     // Invalid locations list.
     if (locations.length != batchReq.getObjects().size()) {
@@ -187,6 +195,37 @@ public class PointerServlet extends HttpServlet {
     }
     if (!mimeType.equals(actualType)) {
       throw new ServerError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not Acceptable", null);
+    }
+  }
+
+  private static class AccessCheckerVisitor implements Operation.Visitor<AccessChecker> {
+    @NotNull
+    private final PointerManager manager;
+
+    public AccessCheckerVisitor(@NotNull PointerManager manager) {
+      this.manager = manager;
+    }
+
+    @Override
+    public AccessChecker visitDownload() {
+      return new AccessChecker() {
+        @NotNull
+        @Override
+        public PointerManager.Locator checkAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+          return manager.checkDownloadAccess(request, selfUrl);
+        }
+      };
+    }
+
+    @Override
+    public AccessChecker visitUpload() {
+      return new AccessChecker() {
+        @NotNull
+        @Override
+        public PointerManager.Locator checkAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+          return manager.checkUploadAccess(request, selfUrl);
+        }
+      };
     }
   }
 }

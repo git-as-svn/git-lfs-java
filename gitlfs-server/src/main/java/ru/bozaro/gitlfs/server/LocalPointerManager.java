@@ -23,11 +23,6 @@ public class LocalPointerManager implements PointerManager {
   @NotNull
   private final String contentLocation;
 
-  private interface AccessChecker {
-    @NotNull
-    Object checkAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError;
-  }
-
   /**
    * Create pointer manager for local ContentManager.
    *
@@ -41,9 +36,19 @@ public class LocalPointerManager implements PointerManager {
 
   @NotNull
   @Override
-  public Locator checkAccess(@NotNull HttpServletRequest request, @NotNull final URI selfUrl, @NotNull final Operation operation) throws IOException, ForbiddenError, UnauthorizedError {
-    operation.visit(new CheckAccessVisitor()).checkAccess(request);
+  public Locator checkUploadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+    manager.checkUploadAccess(request);
+    return createLocator(request, selfUrl);
+  }
 
+  @NotNull
+  @Override
+  public Locator checkDownloadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+    manager.checkDownloadAccess(request);
+    return createLocator(request, selfUrl);
+  }
+
+  protected Locator createLocator(@NotNull HttpServletRequest request, @NotNull final URI selfUrl) {
     final String auth = request.getHeader(Constants.HEADER_AUTHORIZATION);
     return new Locator() {
       @NotNull
@@ -69,29 +74,5 @@ public class LocalPointerManager implements PointerManager {
         }
       }
     };
-  }
-
-  private class CheckAccessVisitor implements Operation.Visitor<AccessChecker> {
-    @Override
-    public AccessChecker visitDownload() {
-      return new AccessChecker() {
-        @NotNull
-        @Override
-        public Object checkAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
-          return manager.checkDownloadAccess(request);
-        }
-      };
-    }
-
-    @Override
-    public AccessChecker visitUpload() {
-      return new AccessChecker() {
-        @NotNull
-        @Override
-        public Object checkAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
-          return manager.checkUploadAccess(request);
-        }
-      };
-    }
   }
 }
