@@ -20,7 +20,8 @@ public enum Operation {
     public <R> R visit(@NotNull Visitor<R> visitor) {
       return visitor.visitDownload();
     }
-  }, Upload {
+  },
+  Upload {
     @Override
     public String toValue() {
       return "upload";

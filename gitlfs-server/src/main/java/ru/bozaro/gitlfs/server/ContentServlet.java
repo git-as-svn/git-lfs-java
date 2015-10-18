@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.server;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Meta;
-import ru.bozaro.gitlfs.common.data.Operation;
 import ru.bozaro.gitlfs.server.internal.InputStreamValidator;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
@@ -21,13 +20,13 @@ import java.util.regex.Pattern;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class ContentServlet<T> extends HttpServlet {
+public class ContentServlet extends HttpServlet {
   @NotNull
-  private final Pattern PATTERN_OID = Pattern.compile("^\\/[0-9a-f]{64}$");
+  private final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
   @NotNull
-  private final ContentManager<T> manager;
+  private final ContentManager manager;
 
-  public ContentServlet(@NotNull ContentManager<T> manager) {
+  public ContentServlet(@NotNull ContentManager manager) {
     this.manager = manager;
   }
 
@@ -63,16 +62,16 @@ public class ContentServlet<T> extends HttpServlet {
 
   @NotNull
   private ResponseWriter processPut(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
-    final T access = manager.checkAccess(req, Operation.Upload);
+    final ContentManager.Uploader uploader = manager.checkUploadAccess(req);
     final Meta meta = new Meta(oid, -1);
-    manager.saveObject(access, meta, new InputStreamValidator(req.getInputStream(), meta));
+    uploader.saveObject(meta, new InputStreamValidator(req.getInputStream(), meta));
     return new ObjectResponse(HttpServletResponse.SC_OK, meta);
   }
 
   @NotNull
   private ResponseWriter processGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
-    final T access = manager.checkAccess(req, Operation.Upload);
-    final InputStream stream = manager.openObject(access, oid);
+    final ContentManager.Downloader downloader = manager.checkDownloadAccess(req);
+    final InputStream stream = downloader.openObject(oid);
     return new ResponseWriter() {
       @Override
       public void write(@NotNull HttpServletResponse response) throws IOException {

@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
 import ru.bozaro.gitlfs.common.data.Meta;
-import ru.bozaro.gitlfs.common.data.Operation;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
@@ -21,14 +20,9 @@ import java.util.Map;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class MemoryStorage implements ContentManager<AuthContext> {
+public class MemoryStorage implements ContentManager {
   @NotNull
   private final Map<String, byte[]> storage = new HashMap<>();
-
-  @Override
-  public AuthContext checkAccess(@NotNull HttpServletRequest request, @NotNull Operation operation) throws IOException {
-    return new AuthContext(operation);
-  }
 
   @Nullable
   @Override
@@ -39,27 +33,35 @@ public class MemoryStorage implements ContentManager<AuthContext> {
 
   @NotNull
   @Override
-  public InputStream openObject(AuthContext context, @NotNull String hash) throws IOException {
-    final byte[] data = storage.get(hash);
-    if (data == null) throw new FileNotFoundException();
-    return new ByteArrayInputStream(data);
+  public Downloader checkDownloadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
+    return new Downloader() {
+      @NotNull
+      public InputStream openObject(@NotNull String hash) throws IOException {
+        final byte[] data = storage.get(hash);
+        if (data == null) throw new FileNotFoundException();
+        return new ByteArrayInputStream(data);
+      }
+
+      @Nullable
+      public InputStream openObjectGzipped(@NotNull String hash) throws IOException {
+        return null;
+      }
+    };
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public InputStream openObjectGzipped(AuthContext context, @NotNull String hash) throws IOException {
-    return null;
-  }
-
-  @Override
-  public void saveObject(AuthContext context, @NotNull Meta meta, @NotNull InputStream content) throws IOException {
-    Assert.assertNotNull(context);
-    Assert.assertEquals(Operation.Upload, context.getOperation());
-    final byte[] data = ByteStreams.toByteArray(content);
-    if (meta.getSize() >= 0) {
-      Assert.assertEquals(meta.getSize(), data.length);
-    }
-    Assert.assertEquals(meta.getOid(), Hashing.sha256().hashBytes(data).toString());
-    storage.put(meta.getOid(), data);
+  public Uploader checkUploadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
+    return new Uploader() {
+      @Override
+      public void saveObject(@NotNull Meta meta, @NotNull InputStream content) throws IOException {
+        final byte[] data = ByteStreams.toByteArray(content);
+        if (meta.getSize() >= 0) {
+          Assert.assertEquals(meta.getSize(), data.length);
+        }
+        Assert.assertEquals(meta.getOid(), Hashing.sha256().hashBytes(data).toString());
+        storage.put(meta.getOid(), data);
+      }
+    };
   }
 }

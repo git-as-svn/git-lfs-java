@@ -37,15 +37,15 @@ import java.util.regex.Pattern;
  *
  * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
  */
-public class PointerServlet<T> extends HttpServlet {
+public class PointerServlet extends HttpServlet {
   @NotNull
   private final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
   @NotNull
   private final ObjectMapper mapper;
   @NotNull
-  private final PointerManager<T> manager;
+  private final PointerManager manager;
 
-  public PointerServlet(@NotNull PointerManager<T> manager) {
+  public PointerServlet(@NotNull PointerManager manager) {
     this.manager = manager;
     this.mapper = JsonHelper.createMapper();
   }
@@ -56,8 +56,8 @@ public class PointerServlet<T> extends HttpServlet {
    * @param manager         Content manager.
    * @param contentLocation Absolute or relative URL to ContentServlet.
    */
-  public static PointerServlet<HeaderProvider> create(@NotNull ContentManager<?> manager, @NotNull String contentLocation) {
-    return new PointerServlet<>(new LocalPointerManager<>(manager, contentLocation));
+  public PointerServlet(@NotNull ContentManager manager, @NotNull String contentLocation) {
+    this(new LocalPointerManager(manager, contentLocation));
   }
 
   @Override
@@ -98,8 +98,8 @@ public class PointerServlet<T> extends HttpServlet {
 
   @NotNull
   private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
-    final T access = manager.checkAccess(req, Operation.Download);
-    final BatchItem[] locations = manager.getLocations(access, getSelfUrl(req), Operation.Download, new Meta[]{new Meta(oid, -1)});
+    final PointerManager.Locator locator = manager.checkAccess(req, getSelfUrl(req), Operation.Download);
+    final BatchItem[] locations = locator.getLocations(new Meta[]{new Meta(oid, -1)});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -127,10 +127,10 @@ public class PointerServlet<T> extends HttpServlet {
 
   @NotNull
   private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
-    final T access = manager.checkAccess(req, Operation.Upload);
-    final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
     final URI selfUrl = getSelfUrl(req);
-    final BatchItem[] locations = manager.getLocations(access, selfUrl, Operation.Upload, new Meta[]{meta});
+    final PointerManager.Locator locator = manager.checkAccess(req, selfUrl, Operation.Upload);
+    final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
+    final BatchItem[] locations = locator.getLocations(new Meta[]{meta});
     // Invalid locations list.
     if (locations.length != 1) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
@@ -155,8 +155,8 @@ public class PointerServlet<T> extends HttpServlet {
   @NotNull
   private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final BatchReq batchReq = mapper.readValue(req.getInputStream(), BatchReq.class);
-    final T access = manager.checkAccess(req, batchReq.getOperation());
-    final BatchItem[] locations = manager.getLocations(access, getSelfUrl(req), batchReq.getOperation(), batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
+    final PointerManager.Locator locator = manager.checkAccess(req, getSelfUrl(req), batchReq.getOperation());
+    final BatchItem[] locations = locator.getLocations(batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
     // Invalid locations list.
     if (locations.length != batchReq.getObjects().size()) {
       throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected locations array size", null);
