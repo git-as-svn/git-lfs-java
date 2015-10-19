@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Create stream from string.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class StringStreamProvider extends ByteArrayStreamProvider {
   public StringStreamProvider(@NotNull String data) {

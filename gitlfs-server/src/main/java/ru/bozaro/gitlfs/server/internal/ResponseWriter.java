@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * HTTP response writer.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public interface ResponseWriter {
   void write(@NotNull HttpServletResponse response) throws IOException;

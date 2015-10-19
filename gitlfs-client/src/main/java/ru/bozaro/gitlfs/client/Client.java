@@ -29,7 +29,7 @@ import static ru.bozaro.gitlfs.common.Constants.*;
 /**
  * Git LFS client.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Client {
   private static final int MAX_AUTH_COUNT = 1;

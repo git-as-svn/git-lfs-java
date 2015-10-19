@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Json utility class.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public final class JsonHelper {
   private JsonHelper() {

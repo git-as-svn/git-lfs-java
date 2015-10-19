@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Replay tests for https://github.com/github/git-lfs/blob/master/docs/api/http-v1-original.md
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ClientLegacyTest {
   /**

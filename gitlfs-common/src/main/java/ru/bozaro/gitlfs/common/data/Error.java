@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * LFS error description.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Error {

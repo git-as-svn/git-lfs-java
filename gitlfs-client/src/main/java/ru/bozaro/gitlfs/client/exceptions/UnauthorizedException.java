@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Unauthorized HTTP exception.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class UnauthorizedException extends RequestException {
   public UnauthorizedException(@NotNull HttpMethod request) {

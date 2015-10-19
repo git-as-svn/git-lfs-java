@@ -11,7 +11,7 @@ import java.net.URI;
 /**
  * Interface for lookup pointer information.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public interface PointerManager {
   interface Locator {

@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * * POST: /batch
  * * GET:  /:oid
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class PointerServlet extends HttpServlet {
   @NotNull

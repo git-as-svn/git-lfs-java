@@ -12,7 +12,7 @@ import java.io.InputStream;
 /**
  * Class for searialization tester.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class SerializeTester {
   public static <T> T deserialize(@NotNull String path, @NotNull Class<T> type) throws IOException {

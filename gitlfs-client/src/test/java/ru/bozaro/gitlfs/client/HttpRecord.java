@@ -20,7 +20,7 @@ import java.util.TreeMap;
 /**
  * HTTP request-response pair for testing.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class HttpRecord {
   @NotNull

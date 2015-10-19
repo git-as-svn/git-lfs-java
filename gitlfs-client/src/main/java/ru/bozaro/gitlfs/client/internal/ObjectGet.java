@@ -12,7 +12,7 @@ import java.io.InputStream;
 /**
  * GET object request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ObjectGet implements Request<InputStream> {
   @NotNull

@@ -19,7 +19,7 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 /**
  * POST object metadata request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class MetaPost implements Request<ObjectRes> {
   @NotNull

@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Simple in-memory storage.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class MemoryStorage implements ContentManager {
   @NotNull

@@ -19,7 +19,7 @@ import static ru.bozaro.gitlfs.pointer.Constants.*;
  * Class for read/writer pointer blobs.
  * https://github.com/github/git-lfs/blob/master/docs/spec.md
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Pointer {
   @NotNull

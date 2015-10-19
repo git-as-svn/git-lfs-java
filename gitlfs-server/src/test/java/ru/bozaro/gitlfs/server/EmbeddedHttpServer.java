@@ -14,7 +14,7 @@ import java.net.URISyntaxException;
 /**
  * Embedded HTTP server for servlet testing.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class EmbeddedHttpServer implements AutoCloseable {
   @NotNull

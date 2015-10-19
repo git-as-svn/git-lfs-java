@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Constructor for more user-friendly serializing request body.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class YamlConstructor extends Constructor {
   public YamlConstructor() {

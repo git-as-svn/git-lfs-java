@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Single HTTP request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public interface Request<R> {
   @NotNull

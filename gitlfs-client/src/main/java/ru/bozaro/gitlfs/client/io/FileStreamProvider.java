@@ -10,7 +10,7 @@ import java.io.InputStream;
 /**
  * Create stream from file.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class FileStreamProvider implements StreamProvider {
   @NotNull

@@ -11,7 +11,7 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 /**
  * Response with simple JSON output.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ObjectResponse implements ResponseWriter {
   private int status;

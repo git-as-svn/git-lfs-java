@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Helper for YAML.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class YamlHelper {
   @NotNull

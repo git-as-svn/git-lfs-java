@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Representer for more user-friendly serializing request body.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class YamlRepresenter extends Representer {
   public YamlRepresenter() {

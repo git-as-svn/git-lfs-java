@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * Abstract class for HTTP connection execution.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public interface HttpExecutor {
   void executeMethod(@NotNull HttpMethod request) throws IOException;

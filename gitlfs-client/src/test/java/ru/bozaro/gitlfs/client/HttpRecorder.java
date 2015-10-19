@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Client with recording all request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class HttpRecorder implements HttpExecutor {
   @NotNull
