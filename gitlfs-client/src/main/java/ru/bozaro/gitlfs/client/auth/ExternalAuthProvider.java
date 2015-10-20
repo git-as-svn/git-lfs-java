@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Get authentication data from external application.
@@ -18,11 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Artem V. Navrotskiy
  */
-public class ExternalAuthProvider implements AuthProvider {
-  @NotNull
-  private final AtomicReference<Link> authData = new AtomicReference<>(null);
-  @NotNull
-  private final Object lock = new Object();
+public class ExternalAuthProvider extends CachedAuthProvider {
   @NotNull
   private final String authority;
   @NotNull
@@ -54,26 +49,6 @@ public class ExternalAuthProvider implements AuthProvider {
   }
 
   @NotNull
-  @Override
-  public Link getAuth(@NotNull Operation operation) throws IOException {
-    Link auth = authData.get();
-    if (auth == null) {
-      synchronized (lock) {
-        auth = authData.get();
-        if (auth == null) {
-          try {
-            auth = getAuthUncached(operation);
-            authData.set(auth);
-          } catch (InterruptedException e) {
-            throw new IOException(e);
-          }
-        }
-      }
-    }
-    return auth;
-  }
-
-  @NotNull
   protected String[] getCommand(@NotNull Operation operation) {
     return new String[]{
         "ssh",
@@ -86,7 +61,7 @@ public class ExternalAuthProvider implements AuthProvider {
   }
 
   @NotNull
-  private Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException {
+  protected Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException {
     final ProcessBuilder builder = new ProcessBuilder()
         .command(getCommand(operation))
         .redirectOutput(ProcessBuilder.Redirect.PIPE);
@@ -104,11 +79,6 @@ public class ExternalAuthProvider implements AuthProvider {
       throw new IOException("Command returned with non-zero exit code " + exitValue + ": " + Arrays.toString(builder.command().toArray()));
     }
     return JsonHelper.createMapper().readValue(stdoutData.toByteArray(), Link.class);
-  }
-
-  @Override
-  public void invalidateAuth(@NotNull Operation operation, @NotNull Link auth) {
-    authData.compareAndSet(auth, null);
   }
 
   @NotNull

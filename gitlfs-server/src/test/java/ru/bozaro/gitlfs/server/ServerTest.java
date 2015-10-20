@@ -4,7 +4,7 @@ import com.google.common.io.ByteStreams;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.client.Client;
-import ru.bozaro.gitlfs.client.auth.BasicAuthProvider;
+import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.io.StringStreamProvider;
 import ru.bozaro.gitlfs.common.data.BatchReq;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -23,11 +23,11 @@ public class ServerTest {
   @Test
   public void simpleTest() throws Exception {
     try (final EmbeddedHttpServer server = new EmbeddedHttpServer()) {
-      final MemoryStorage storage = new MemoryStorage();
+      final MemoryStorage storage = new MemoryStorage(-1);
       server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet(storage, "/foo/bar.git/info/lfs/storage/"));
       server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet(storage));
 
-      final BasicAuthProvider auth = new BasicAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
+      final AuthProvider auth = storage.getAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
       final Client client = new Client(auth);
       final StringStreamProvider streamProvider = new StringStreamProvider("Hello, world");
       final Meta meta = client.generateMeta(streamProvider);
