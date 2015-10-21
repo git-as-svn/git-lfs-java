@@ -39,7 +39,7 @@ public class BatchUploader {
    * @return Return future with upload result.
    */
   @NotNull
-  public CompletionStage<Meta> upload(@NotNull final StreamProvider streamProvider) {
+  public CompletableFuture<Meta> upload(@NotNull final StreamProvider streamProvider) {
     final CompletableFuture<Meta> future = new CompletableFuture<>();
     pool.submit(() -> {
       try {

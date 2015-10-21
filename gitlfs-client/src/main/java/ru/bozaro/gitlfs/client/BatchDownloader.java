@@ -6,6 +6,7 @@ import ru.bozaro.gitlfs.common.data.Meta;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Batching downloader client.
@@ -14,19 +15,19 @@ import java.util.concurrent.CompletableFuture;
  */
 public class BatchDownloader {
   @FunctionalInterface
-  public interface StreamConsumer {
-    void accept(@NotNull InputStream inputStream) throws IOException;
+  public interface StreamConsumer<T> {
+    T accept(@NotNull InputStream inputStream) throws IOException;
   }
 
   @NotNull
   private final Client client;
 
-  public BatchDownloader(@NotNull Client client) {
+  public BatchDownloader(@NotNull Client client, @NotNull ExecutorService pool) {
     this.client = client;
   }
 
   @NotNull
-  public CompletableFuture<?> download(@NotNull final Meta meta, @NotNull StreamConsumer callback) {
+  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull StreamConsumer<T> callback) {
     return null;
   }
 
