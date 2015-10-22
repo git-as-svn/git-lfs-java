@@ -27,13 +27,10 @@ public class BatchTest {
   private static final int TIMEOUT = 30000;
 
   @Test
-  public void batch() throws Exception {
-    try (final EmbeddedHttpServer server = new EmbeddedHttpServer()) {
-      final MemoryStorage storage = new MemoryStorage(42);
-      server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet(storage, "/foo/bar.git/info/lfs/storage/"));
-      server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet(storage));
-      final AuthProvider auth = storage.getAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
-
+  public void simple() throws Exception {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(/*42*/ -1))) {
+      final AuthProvider auth = server.getAuthProvider();
+      upload(auth);
       upload(auth);
       download(auth);
     }

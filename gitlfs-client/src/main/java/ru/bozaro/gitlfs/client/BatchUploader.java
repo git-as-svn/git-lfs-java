@@ -1,14 +1,23 @@
 package ru.bozaro.gitlfs.client;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
-import ru.bozaro.gitlfs.common.data.Meta;
+import ru.bozaro.gitlfs.common.data.*;
+import ru.bozaro.gitlfs.common.data.Error;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import static ru.bozaro.gitlfs.common.Constants.BATCH_SIZE;
 
 /**
  * Batching uploader client.
@@ -78,6 +87,72 @@ public class BatchUploader {
   }
 
   private void tryBatchRequest() {
+    if (batchInProgress.compareAndSet(false, true)) {
+      try {
+        pool.execute(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              final Map<String, UploadState> batch = new HashMap<>();
+              uploadQueue.values().stream().filter(state -> state.location == null).limit(BATCH_SIZE).forEach(state -> {
+                // todo: check for cancelled future
+                batch.put(state.meta.getOid(), state);
+              });
+              if (!batch.isEmpty()) {
+                final List<Meta> metas = batch.values().stream().map(s -> s.meta).collect(Collectors.toList());
+                BatchRes result = client.postBatch(new BatchReq(Operation.Upload, metas));
+                for (BatchItem item : result.getObjects()) {
+                  UploadState state = batch.remove(item.getOid());
+                  if (state != null) {
+                    final Error error = item.getError();
+                    if (error != null) {
+                      state.future.completeExceptionally(new IOException("Can't get upload location (code " + error.getCode() + "): " + error.getMessage()));
+                    }
+                    if (item.getLinks().containsKey(LinkType.Download)) {
+                      state.future.complete(state.meta);
+                      continue;
+                    }
+                    if (!item.getLinks().containsKey(LinkType.Upload)) {
+                      state.future.completeExceptionally(new IOException("Upload link not found"));
+                      continue;
+                    }
+                    final UploadLocation location = new UploadLocation(item);
+                    state.location = location;
+                    try {
+                      pool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                          try {
+                            client.putObject(state.provider, state.meta, location.links);
+                            state.future.complete(state.meta);
+                          } catch (Throwable e) {
+                            // todo: Auth error
+                            state.future.completeExceptionally(e);
+                          }
+                        }
+                      });
+                    } catch (Throwable e) {
+                      state.location = null;
+                      throw e;
+                    }
+                  }
+                }
+                for (UploadState value : batch.values()) {
+                  value.future.completeExceptionally(new IOException("Requested object not found in server responce: " + value.meta.getOid()));
+                }
+              }
+            } catch (IOException e) {
+              // todo: e.printStackTrace();
+            } finally {
+              batchInProgress.compareAndSet(true, false);
+            }
+          }
+        });
+      } catch (Throwable e) {
+        batchInProgress.set(false);
+        throw e;
+      }
+    }
     // todo: Send batch request.
   }
 
@@ -91,10 +166,22 @@ public class BatchUploader {
     private final Meta meta;
     @NotNull
     private final CompletableFuture<Meta> future = new CompletableFuture<>();
+    @Nullable
+    private volatile UploadLocation location;
 
     public UploadState(@NotNull StreamProvider provider, @NotNull Meta meta) {
       this.provider = provider;
       this.meta = meta;
+      this.location = null;
+    }
+  }
+
+  private final static class UploadLocation {
+    @NotNull
+    private final Links links;
+
+    public UploadLocation(@NotNull Links links) {
+      this.links = links;
     }
   }
 }

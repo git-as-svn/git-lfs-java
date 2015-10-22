@@ -22,12 +22,8 @@ import java.util.Collections;
 public class ServerTest {
   @Test
   public void simpleTest() throws Exception {
-    try (final EmbeddedHttpServer server = new EmbeddedHttpServer()) {
-      final MemoryStorage storage = new MemoryStorage(-1);
-      server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet(storage, "/foo/bar.git/info/lfs/storage/"));
-      server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet(storage));
-
-      final AuthProvider auth = storage.getAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1))) {
+      final AuthProvider auth = server.getAuthProvider();
       final Client client = new Client(auth);
       final StringStreamProvider streamProvider = new StringStreamProvider("Hello, world");
       final Meta meta = client.generateMeta(streamProvider);

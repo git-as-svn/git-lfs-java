@@ -26,4 +26,9 @@ public class Constants {
   public static final String PATH_OBJECTS = "objects";
   @NotNull
   public static final String PATH_BATCH = "objects/batch";
+
+  /**
+   * Minimal supported batch size.
+   */
+  public static final int BATCH_SIZE = 100;
 }
