@@ -40,6 +40,7 @@ Version 0.5.0
 
  * Require JDK 8
  * Server implemetation stabilization
+ * Create multitheaded HttpClient by default
 
 Version 0.4.0
 
