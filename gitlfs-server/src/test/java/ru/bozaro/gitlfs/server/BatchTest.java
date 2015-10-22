@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Simple upload/download test.
@@ -25,6 +27,49 @@ import java.util.concurrent.*;
 public class BatchTest {
   private static final int REQUEST_COUNT = 1000;
   private static final int TIMEOUT = 30000;
+
+  @Test
+  public void uploadTest() throws Exception {
+    final ExecutorService pool = Executors.newFixedThreadPool(4);
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(/*42*/ -1))) {
+      final AuthProvider auth = server.getAuthProvider();
+      final BatchUploader uploader = new BatchUploader(new Client(auth), pool);
+      // Upload half data
+      upload(server.getStorage(), uploader, IntStream
+          .range(0, REQUEST_COUNT)
+          .filter(i -> i % 2 == 0)
+          .mapToObj(BatchTest::content)
+          .collect(Collectors.toList()));
+      // Upload full data
+      upload(server.getStorage(), uploader, IntStream
+          .range(0, REQUEST_COUNT)
+          .mapToObj(BatchTest::content)
+          .collect(Collectors.toList()));
+      // Upload none data
+      upload(server.getStorage(), uploader, IntStream
+          .range(0, REQUEST_COUNT)
+          .mapToObj(BatchTest::content)
+          .collect(Collectors.toList()));
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  private void upload(@NotNull MemoryStorage storage, @NotNull BatchUploader uploader, @NotNull List<byte[]> contents) throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    // Upload data
+    @SuppressWarnings("unchecked")
+    final CompletableFuture<Meta>[] futures = contents
+        .stream()
+        .map(content -> uploader.upload(new ByteArrayStreamProvider(content)))
+        .toArray(CompletableFuture[]::new);
+    // Wait uploading finished
+    CompletableFuture.allOf(futures).get(TIMEOUT, TimeUnit.MILLISECONDS);
+    // Check result
+    for (byte[] content : contents) {
+      final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content));
+      Assert.assertNotNull(storage.getMetadata(meta.getOid()), new String(content, StandardCharsets.UTF_8));
+    }
+  }
 
   @Test
   public void simple() throws Exception {

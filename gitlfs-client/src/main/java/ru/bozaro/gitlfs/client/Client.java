@@ -182,7 +182,7 @@ public class Client {
    * @return Return object metadata.
    * @throws IOException On some errors.
    */
-  public Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
+  public static Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
     final MessageDigest digest = sha256();
     final byte[] buffer = new byte[0x10000];
     long size = 0;

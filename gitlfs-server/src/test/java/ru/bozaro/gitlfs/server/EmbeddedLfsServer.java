@@ -25,6 +25,11 @@ public class EmbeddedLfsServer implements AutoCloseable {
     return storage.getAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
   }
 
+  @NotNull
+  public MemoryStorage getStorage() {
+    return storage;
+  }
+
   @Override
   public void close() throws Exception {
     server.close();
