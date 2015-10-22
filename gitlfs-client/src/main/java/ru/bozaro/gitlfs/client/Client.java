@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -47,7 +48,7 @@ public class Client {
   private final HttpExecutor http;
 
   public Client(@NotNull AuthProvider authProvider) {
-    this(authProvider, new HttpClient());
+    this(authProvider, new HttpClient(new MultiThreadedHttpConnectionManager()));
   }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {

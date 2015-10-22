@@ -39,6 +39,7 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 Version 0.5.0
 
  * Server implemetation stabilization
+ * Create multitheaded HttpClient by default
 
 Version 0.4.0
 
