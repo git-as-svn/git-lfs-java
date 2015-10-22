@@ -283,45 +283,49 @@ public class Client {
       final HttpMethod request = task.createRequest(mapper, url.toString());
       addHeaders(request, link);
       http.executeMethod(request);
-      switch (request.getStatusCode()) {
-        case HttpStatus.SC_UNAUTHORIZED:
-          throw new UnauthorizedException(request);
-        case HttpStatus.SC_FORBIDDEN:
-          throw new ForbiddenException(request);
-        case HttpStatus.SC_MOVED_PERMANENTLY:
-        case HttpStatus.SC_MOVED_TEMPORARILY:
-        case HttpStatus.SC_SEE_OTHER:
-        case HttpStatus.SC_TEMPORARY_REDIRECT:
-          // Follow by redirect.
-          final String location = request.getRequestHeader(HEADER_LOCATION).getValue();
-          if (location == null || redirectCount >= MAX_REDIRECT_COUNT) {
-            throw new RequestException(request);
-          }
-          ++redirectCount;
-          url = url.resolve(location);
-          continue;
-        case HttpStatus.SC_BAD_GATEWAY:
-        case HttpStatus.SC_GATEWAY_TIMEOUT:
-        case HttpStatus.SC_SERVICE_UNAVAILABLE:
-        case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-          // Temporary error. need to retry.
-          if (retryCount >= MAX_RETRY_COUNT) {
-            throw new RequestException(request);
-          }
-          ++retryCount;
-          continue;
-      }
-      int[] success = task.statusCodes();
-      if (success == null) {
-        success = DEFAULT_HTTP_SUCCESS;
-      }
-      for (int item : success) {
-        if (request.getStatusCode() == item) {
-          return task.processResponse(mapper, request);
+      try {
+        switch (request.getStatusCode()) {
+          case HttpStatus.SC_UNAUTHORIZED:
+            throw new UnauthorizedException(request);
+          case HttpStatus.SC_FORBIDDEN:
+            throw new ForbiddenException(request);
+          case HttpStatus.SC_MOVED_PERMANENTLY:
+          case HttpStatus.SC_MOVED_TEMPORARILY:
+          case HttpStatus.SC_SEE_OTHER:
+          case HttpStatus.SC_TEMPORARY_REDIRECT:
+            // Follow by redirect.
+            final String location = request.getRequestHeader(HEADER_LOCATION).getValue();
+            if (location == null || redirectCount >= MAX_REDIRECT_COUNT) {
+              throw new RequestException(request);
+            }
+            ++redirectCount;
+            url = url.resolve(location);
+            continue;
+          case HttpStatus.SC_BAD_GATEWAY:
+          case HttpStatus.SC_GATEWAY_TIMEOUT:
+          case HttpStatus.SC_SERVICE_UNAVAILABLE:
+          case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+            // Temporary error. need to retry.
+            if (retryCount >= MAX_RETRY_COUNT) {
+              throw new RequestException(request);
+            }
+            ++retryCount;
+            continue;
         }
+        int[] success = task.statusCodes();
+        if (success == null) {
+          success = DEFAULT_HTTP_SUCCESS;
+        }
+        for (int item : success) {
+          if (request.getStatusCode() == item) {
+            return task.processResponse(mapper, request);
+          }
+        }
+        // Unexpected status code.
+        throw new RequestException(request);
+      } finally {
+        request.releaseConnection();
       }
-      // Unexpected status code.
-      throw new RequestException(request);
     }
   }
 
