@@ -3,6 +3,7 @@ package ru.bozaro.gitlfs.server;
 import com.google.common.io.ByteStreams;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.client.BatchDownloader;
 import ru.bozaro.gitlfs.client.BatchUploader;
@@ -28,12 +29,21 @@ public class BatchTest {
   private static final int REQUEST_COUNT = 1000;
   private static final int TIMEOUT = 30000;
 
-  @Test
-  public void uploadTest() throws Exception {
+  @DataProvider(name = "uploadProvider")
+  public static Object[][] uploadProvider() {
+    return new Object[][]{
+        new Object[]{-1, 100, 10},
+        new Object[]{42, 100, 10},
+        new Object[]{7, 5, 3},
+    };
+  }
+
+  @Test(dataProvider = "uploadProvider")
+  public void uploadTest(int tokenMaxUsage, int batchLimit, int batchTreshold) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(/*42*/ -1))) {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage))) {
       final AuthProvider auth = server.getAuthProvider();
-      final BatchUploader uploader = new BatchUploader(new Client(auth), pool);
+      final BatchUploader uploader = new BatchUploader(new Client(auth), pool, batchLimit, batchTreshold);
       // Upload half data
       upload(server.getStorage(), uploader, IntStream
           .range(0, REQUEST_COUNT)
@@ -104,7 +114,7 @@ public class BatchTest {
       final List<CompletableFuture<?>> futures = new ArrayList<>();
       for (int i = 0; i < REQUEST_COUNT; ++i) {
         final int id = i;
-        final Meta meta = client.generateMeta(new ByteArrayStreamProvider(content(i)));
+        final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content(i)));
         futures.add(downloader.download(meta, inputStream -> {
           Assert.assertNull(result.put(id, ByteStreams.toByteArray(inputStream)));
           return id;

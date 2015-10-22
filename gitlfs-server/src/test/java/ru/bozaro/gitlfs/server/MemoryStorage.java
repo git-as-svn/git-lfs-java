@@ -19,8 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MemoryStorage implements ContentManager {
   @NotNull
-  private final Map<String, byte[]> storage = new HashMap<>();
+  private final Map<String, byte[]> storage = new ConcurrentHashMap<>();
   @NotNull
   private final AtomicInteger tokenId = new AtomicInteger(0);
   private final int tokenMaxUsage;

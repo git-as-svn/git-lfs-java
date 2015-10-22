@@ -61,6 +61,11 @@ public class Client {
     this.http = http;
   }
 
+  @NotNull
+  public AuthProvider getAuthProvider() {
+    return authProvider;
+  }
+
   /**
    * Get metadata for object by hash.
    *
