@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class BatchDownloader {
   @FunctionalInterface
-  public interface StreamConsumer<T> {
+  public interface DownloadCallback<T> {
     T accept(@NotNull InputStream inputStream) throws IOException;
   }
 
@@ -27,7 +27,7 @@ public class BatchDownloader {
   }
 
   @NotNull
-  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull StreamConsumer<T> callback) {
+  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull DownloadCallback<T> callback) {
     return null;
   }
 

@@ -4,11 +4,11 @@ import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.data.Meta;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Batching uploader client.
@@ -16,16 +16,15 @@ import java.util.concurrent.ExecutorService;
  * @author Artem V. Navrotskiy
  */
 public class BatchUploader {
-  @FunctionalInterface
-  public interface StreamConsumer {
-
-    void accept(@NotNull InputStream inputStream) throws IOException;
-  }
-
   @NotNull
   private final Client client;
   @NotNull
   private final ExecutorService pool;
+
+  @NotNull
+  private final ConcurrentMap<String, UploadState> uploadQueue = new ConcurrentHashMap<>();
+  @NotNull
+  private final AtomicBoolean batchInProgress = new AtomicBoolean();
 
   public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool) {
     this.client = client;
@@ -51,11 +50,51 @@ public class BatchUploader {
     return future.thenCompose(meta -> upload(streamProvider, meta));
   }
 
+  /**
+   * This method start uploading object to server.
+   *
+   * @param streamProvider Stream provider.
+   * @param meta           Object metadata.
+   * @return Return future with upload result. For same objects can return same future.
+   */
   @NotNull
-  public CompletionStage<Meta> upload(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) {
-    return null;
+  public CompletableFuture<Meta> upload(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) {
+    UploadState state = uploadQueue.get(meta.getOid());
+    if (state != null) {
+      if (state.future.isCancelled()) {
+        uploadQueue.remove(meta.getOid(), state);
+        state = null;
+      }
+    }
+    if (state == null) {
+      final UploadState newState = new UploadState(streamProvider, meta);
+      state = uploadQueue.putIfAbsent(meta.getOid(), newState);
+      if (state == null) {
+        tryBatchRequest();
+        state = newState;
+      }
+    }
+    return state.future;
+  }
+
+  private void tryBatchRequest() {
+    // todo: Send batch request.
   }
 
   public void flush() {
+  }
+
+  private final static class UploadState {
+    @NotNull
+    private final StreamProvider provider;
+    @NotNull
+    private final Meta meta;
+    @NotNull
+    private final CompletableFuture<Meta> future = new CompletableFuture<>();
+
+    public UploadState(@NotNull StreamProvider provider, @NotNull Meta meta) {
+      this.provider = provider;
+      this.meta = meta;
+    }
   }
 }
