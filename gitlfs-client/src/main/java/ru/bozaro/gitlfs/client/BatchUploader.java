@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static ru.bozaro.gitlfs.common.Constants.BATCH_SIZE;
@@ -25,6 +26,7 @@ import static ru.bozaro.gitlfs.common.Constants.BATCH_SIZE;
  * @author Artem V. Navrotskiy
  */
 public class BatchUploader {
+  private static final int BATCH_TRASHOLD = 10;
   @NotNull
   private final Client client;
   @NotNull
@@ -33,7 +35,9 @@ public class BatchUploader {
   @NotNull
   private final ConcurrentMap<String, UploadState> uploadQueue = new ConcurrentHashMap<>();
   @NotNull
-  private final AtomicBoolean batchInProgress = new AtomicBoolean();
+  private final AtomicBoolean batchInProgress = new AtomicBoolean(false);
+  @NotNull
+  private final AtomicInteger uploadInProgress = new AtomicInteger(0);
 
   public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool) {
     this.client = client;
@@ -87,6 +91,9 @@ public class BatchUploader {
   }
 
   private void tryBatchRequest() {
+    if (uploadInProgress.get() > BATCH_TRASHOLD) {
+      return;
+    }
     if (batchInProgress.compareAndSet(false, true)) {
       try {
         pool.execute(new Runnable() {
@@ -109,6 +116,7 @@ public class BatchUploader {
                       state.future.completeExceptionally(new IOException("Can't get upload location (code " + error.getCode() + "): " + error.getMessage()));
                     }
                     if (item.getLinks().containsKey(LinkType.Download)) {
+                      uploadQueue.remove(state.meta.getOid(), state);
                       state.future.complete(state.meta);
                       continue;
                     }
@@ -119,15 +127,15 @@ public class BatchUploader {
                     final UploadLocation location = new UploadLocation(item);
                     state.location = location;
                     try {
+                      uploadInProgress.incrementAndGet();
                       pool.execute(new Runnable() {
                         @Override
                         public void run() {
                           try {
-                            client.putObject(state.provider, state.meta, location.links);
-                            state.future.complete(state.meta);
-                          } catch (Throwable e) {
-                            // todo: Auth error
-                            state.future.completeExceptionally(e);
+                            uploadFile(state, location);
+                          } finally {
+                            uploadInProgress.decrementAndGet();
+                            tryBatchRequest();
                           }
                         }
                       });
@@ -146,6 +154,7 @@ public class BatchUploader {
             } finally {
               batchInProgress.compareAndSet(true, false);
             }
+            tryBatchRequest();
           }
         });
       } catch (Throwable e) {
@@ -153,7 +162,20 @@ public class BatchUploader {
         throw e;
       }
     }
-    // todo: Send batch request.
+  }
+
+  private void uploadFile(@NotNull UploadState state, @NotNull UploadLocation location) {
+    try {
+      state.location = location;
+      client.putObject(state.provider, state.meta, location.links);
+      uploadQueue.remove(state.meta.getOid(), state);
+      state.future.complete(state.meta);
+    } catch (Throwable e) {
+      // todo: Auth error
+      state.future.completeExceptionally(e);
+    } finally {
+      state.location = null;
+    }
   }
 
   public void flush() {
