@@ -284,7 +284,7 @@ public class Client {
     }
   }
 
-  protected <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
+  public <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
