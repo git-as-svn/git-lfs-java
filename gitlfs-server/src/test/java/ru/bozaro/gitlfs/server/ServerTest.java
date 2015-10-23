@@ -11,7 +11,6 @@ import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Collections;
 
 /**
@@ -33,7 +32,7 @@ public class ServerTest {
       final Meta meta = client.generateMeta(streamProvider);
       // Not uploaded yet.
       try {
-        client.getObject(meta.getOid());
+        client.getObject(meta.getOid(), new ByteStreamHandler());
         Assert.fail();
       } catch (FileNotFoundException ignored) {
       }
@@ -41,9 +40,8 @@ public class ServerTest {
       // Can upload.
       Assert.assertTrue(client.putObject(streamProvider, meta));
       // Can download uploaded.
-      try (final InputStream stream = client.getObject(meta.getOid())) {
-        Assert.assertEquals(ByteStreams.toByteArray(stream), ByteStreams.toByteArray(streamProvider.getStream()));
-      }
+      final byte[] content = client.getObject(meta.getOid(), new ByteStreamHandler());
+      Assert.assertEquals(content, ByteStreams.toByteArray(streamProvider.getStream()));
       // Already uploaded.
       Assert.assertFalse(client.putObject(streamProvider, meta));
     }

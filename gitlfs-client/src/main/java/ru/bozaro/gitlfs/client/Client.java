@@ -13,6 +13,7 @@ import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.RequestException;
 import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.client.internal.*;
+import ru.bozaro.gitlfs.client.io.StreamHandler;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.*;
@@ -128,21 +129,22 @@ public class Client {
   /**
    * Download object by hash.
    *
-   * @param hash Object hash.
-   * @return Object stream.
+   * @param hash    Object hash.
+   * @param handler Stream handler.
+   * @return Stream handler result.
    * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
    * @throws IOException           On some errors.
    */
   @NotNull
-  public InputStream getObject(@NotNull final String hash) throws IOException {
-    return doWork(new Work<InputStream>() {
+  public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
+    return doWork(new Work<T>() {
       @Override
-      public InputStream exec(@NotNull Link auth) throws IOException {
+      public T exec(@NotNull Link auth) throws IOException {
         final ObjectRes links = doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
         if (links == null) {
           throw new FileNotFoundException();
         }
-        return getObject(links);
+        return getObject(links, handler);
       }
     }, Operation.Download);
   }
@@ -150,18 +152,19 @@ public class Client {
   /**
    * Download object by metadata.
    *
-   * @param links Object links.
-   * @return Object stream.
+   * @param links   Object links.
+   * @param handler Stream handler.
+   * @return Stream handler result.
    * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
    * @throws IOException           On some errors.
    */
   @NotNull
-  public InputStream getObject(@NotNull final Links links) throws IOException {
+  public <T> T getObject(@NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
     final Link link = links.getLinks().get(LinkType.Download);
     if (link == null) {
       throw new FileNotFoundException();
     }
-    return doRequest(link, new ObjectGet(), link.getHref());
+    return doRequest(link, new ObjectGet<>(handler), link.getHref());
   }
 
   /**

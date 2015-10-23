@@ -40,6 +40,7 @@ Version 0.5.0
 
  * Server implemetation stabilization
  * Create multitheaded HttpClient by default
+ * Fix single object downloading API
 
 Version 0.4.0
 
