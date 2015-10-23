@@ -2,6 +2,7 @@ package ru.bozaro.gitlfs.client;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.client.internal.JsonPost;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
@@ -22,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static ru.bozaro.gitlfs.common.Constants.BATCH_SIZE;
 import static ru.bozaro.gitlfs.common.Constants.PATH_BATCH;
 
 /**
@@ -31,7 +31,6 @@ import static ru.bozaro.gitlfs.common.Constants.PATH_BATCH;
  * @author Artem V. Navrotskiy
  */
 public class BatchUploader {
-  private static final int BATCH_THRESHOLD = 10;
   @NotNull
   private final Client client;
   @NotNull
@@ -45,16 +44,15 @@ public class BatchUploader {
   private final AtomicInteger uploadInProgress = new AtomicInteger(0);
   @NotNull
   private final AtomicReference<Link> currentAuth = new AtomicReference<>(null);
-  private final int batchLimit;
-  private final int batchThreshold;
+  @NotNull
+  private final BatchSettings settings;
 
   public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool) {
-    this(client, pool, BATCH_SIZE, BATCH_THRESHOLD);
+    this(client, pool, new BatchSettings());
   }
 
-  public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool, int batchLimit, int batchThreshold) {
-    this.batchLimit = Math.min(batchLimit, 1);
-    this.batchThreshold = Math.max(batchThreshold, 0);
+  public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool, @NotNull BatchSettings settings) {
+    this.settings = settings;
     this.client = client;
     this.pool = pool;
   }
@@ -70,7 +68,7 @@ public class BatchUploader {
     final CompletableFuture<Meta> future = new CompletableFuture<>();
     pool.submit(() -> {
       try {
-        future.complete(client.generateMeta(streamProvider));
+        future.complete(Client.generateMeta(streamProvider));
       } catch (Throwable e) {
         future.completeExceptionally(e);
       }
@@ -106,47 +104,18 @@ public class BatchUploader {
   }
 
   private void tryBatchRequest() {
-    if (uploadInProgress.get() > batchThreshold) {
+    if (uploadInProgress.get() > settings.getThreshold()) {
       return;
     }
     if (batchInProgress.compareAndSet(false, true)) {
       try {
-        pool.execute(new Runnable() {
-          @Override
-          public void run() {
-            Link auth = currentAuth.get();
-            try {
-              final Map<String, UploadState> batch = takeBatch();
-              if (!batch.isEmpty()) {
-                if (auth == null) {
-                  auth = client.getAuthProvider().getAuth(Operation.Upload);
-                  currentAuth.set(auth);
-                }
-                final List<Meta> metas = batch.values().stream().map(s -> s.meta).collect(Collectors.toList());
-                final BatchRes result = client.doRequest(auth, new JsonPost<>(new BatchReq(Operation.Upload, metas), BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
-                for (BatchItem item : result.getObjects()) {
-                  UploadState state = batch.remove(item.getOid());
-                  if (state != null) {
-                    final Error error = item.getError();
-                    if (error != null) {
-                      state.future.completeExceptionally(new IOException("Can't get upload location (code " + error.getCode() + "): " + error.getMessage()));
-                    }
-                    submitUploadTask(state, item, auth);
-                  }
-                }
-                for (UploadState value : batch.values()) {
-                  value.future.completeExceptionally(new IOException("Requested object not found in server responce: " + value.meta.getOid()));
-                }
-              }
-            } catch (UnauthorizedException e) {
-              invalidateAuth(auth);
-            } catch (IOException e) {
-              // todo: e.printStackTrace();
-            } finally {
-              batchInProgress.compareAndSet(true, false);
-            }
-            tryBatchRequest();
+        pool.execute(() -> {
+          try {
+            submitBatchTask();
+          } finally {
+            batchInProgress.compareAndSet(true, false);
           }
+          tryBatchRequest();
         });
       } catch (Throwable e) {
         batchInProgress.set(false);
@@ -159,6 +128,43 @@ public class BatchUploader {
     if (currentAuth.compareAndSet(auth, null)) {
       client.getAuthProvider().invalidateAuth(Operation.Upload, auth);
     }
+  }
+
+  private void submitBatchTask() {
+    final Map<String, UploadState> batch = takeBatch();
+    Link auth = currentAuth.get();
+    try {
+      if (!batch.isEmpty()) {
+        if (auth == null) {
+          auth = client.getAuthProvider().getAuth(Operation.Upload);
+          currentAuth.set(auth);
+        }
+        final List<Meta> metas = batch.values().stream().map(s -> s.meta).collect(Collectors.toList());
+        final BatchRes result = client.doRequest(auth, new JsonPost<>(new BatchReq(Operation.Upload, metas), BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
+        for (BatchItem item : result.getObjects()) {
+          UploadState state = batch.remove(item.getOid());
+          if (state != null) {
+            final Error error = item.getError();
+            if (error != null) {
+              state.future.completeExceptionally(new IOException("Can't get upload location (code " + error.getCode() + "): " + error.getMessage()));
+            }
+            submitUploadTask(state, item, auth);
+          }
+        }
+        for (UploadState value : batch.values()) {
+          value.future.completeExceptionally(new IOException("Requested object not found in server responce: " + value.meta.getOid()));
+        }
+      }
+    } catch (UnauthorizedException e) {
+      if (auth != null) {
+        invalidateAuth(auth);
+      }
+    } catch (IOException e) {
+      for (UploadState state : batch.values()) {
+        state.onException(e, state.retry);
+      }
+    }
+    tryBatchRequest();
   }
 
   private void submitUploadTask(@NotNull UploadState state, @NotNull BatchItem item, @NotNull Link auth) {
@@ -204,6 +210,9 @@ public class BatchUploader {
       }
       if (state.auth == null) {
         batch.put(state.meta.getOid(), state);
+        if (batch.size() >= settings.getLimit()) {
+          break;
+        }
       }
     }
     return batch;
@@ -221,14 +230,13 @@ public class BatchUploader {
       state.future.complete(state.meta);
     } catch (UnauthorizedException e) {
       invalidateAuth(auth);
+    } catch (ForbiddenException e) {
+      state.onException(e, 0);
     } catch (Throwable e) {
-      state.future.completeExceptionally(e);
+      state.onException(e, settings.getRetryCount());
     } finally {
       state.auth = null;
     }
-  }
-
-  public void flush() {
   }
 
   private final static class UploadState {
@@ -240,11 +248,20 @@ public class BatchUploader {
     private final CompletableFuture<Meta> future = new CompletableFuture<>();
     @Nullable
     private volatile Link auth;
+    private int retry;
 
     public UploadState(@NotNull StreamProvider provider, @NotNull Meta meta) {
       this.provider = provider;
       this.meta = meta;
       this.auth = null;
+    }
+
+    public void onException(@NotNull Throwable e, int maxRetryCount) {
+      retry++;
+      if (retry >= maxRetryCount) {
+        future.completeExceptionally(e);
+      }
+      auth = null;
     }
   }
 }

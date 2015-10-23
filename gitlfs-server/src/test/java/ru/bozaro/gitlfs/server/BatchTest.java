@@ -6,6 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.client.BatchDownloader;
+import ru.bozaro.gitlfs.client.BatchSettings;
 import ru.bozaro.gitlfs.client.BatchUploader;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -32,18 +33,18 @@ public class BatchTest {
   @DataProvider(name = "uploadProvider")
   public static Object[][] uploadProvider() {
     return new Object[][]{
-        new Object[]{-1, 100, 10},
-        new Object[]{42, 100, 10},
-        new Object[]{7, 5, 3},
+        new Object[]{-1, new BatchSettings(100, 10, 3)},
+        new Object[]{42, new BatchSettings(100, 10, 3)},
+        new Object[]{7, new BatchSettings(5, 3, 3)},
     };
   }
 
   @Test(dataProvider = "uploadProvider")
-  public void uploadTest(int tokenMaxUsage, int batchLimit, int batchTreshold) throws Exception {
+  public void uploadTest(int tokenMaxUsage, @NotNull BatchSettings settings) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
     try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage))) {
       final AuthProvider auth = server.getAuthProvider();
-      final BatchUploader uploader = new BatchUploader(new Client(auth), pool, batchLimit, batchTreshold);
+      final BatchUploader uploader = new BatchUploader(new Client(auth), pool, settings);
       // Upload half data
       upload(server.getStorage(), uploader, IntStream
           .range(0, REQUEST_COUNT)
