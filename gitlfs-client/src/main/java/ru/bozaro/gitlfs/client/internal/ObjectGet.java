@@ -5,16 +5,23 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.bozaro.gitlfs.client.io.StreamHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * GET object request.
  *
  * @author Artem V. Navrotskiy
  */
-public class ObjectGet implements Request<InputStream> {
+public class ObjectGet<T> implements Request<T> {
+  @NotNull
+  final StreamHandler<T> handler;
+
+  public ObjectGet(@NotNull StreamHandler<T> handler) {
+    this.handler = handler;
+  }
+
   @NotNull
   @Override
   public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
@@ -28,7 +35,7 @@ public class ObjectGet implements Request<InputStream> {
   }
 
   @Override
-  public InputStream processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    return request.getResponseBodyAsStream();
+  public T processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
+    return handler.accept(request.getResponseBodyAsStream());
   }
 }

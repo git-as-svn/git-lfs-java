@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Stream provider.
+ * Interface for handle stream of downloading data.
  *
  * @author Artem V. Navrotskiy
  */
 @FunctionalInterface
-public interface StreamProvider {
+public interface StreamHandler<T> {
   @NotNull
-  InputStream getStream() throws IOException;
+  T accept(@NotNull InputStream inputStream) throws IOException;
 }

@@ -23,7 +23,7 @@ import java.util.stream.IntStream;
 /**
  * Simple upload/download test.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class BatchTest {
   private static final int REQUEST_COUNT = 1000;

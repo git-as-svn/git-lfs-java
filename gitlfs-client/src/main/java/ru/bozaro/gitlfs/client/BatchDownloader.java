@@ -1,10 +1,9 @@
 package ru.bozaro.gitlfs.client;
 
 import org.jetbrains.annotations.NotNull;
+import ru.bozaro.gitlfs.client.io.StreamHandler;
 import ru.bozaro.gitlfs.common.data.Meta;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -14,11 +13,6 @@ import java.util.concurrent.ExecutorService;
  * @author Artem V. Navrotskiy
  */
 public class BatchDownloader {
-  @FunctionalInterface
-  public interface DownloadCallback<T> {
-    T accept(@NotNull InputStream inputStream) throws IOException;
-  }
-
   @NotNull
   private final Client client;
 
@@ -27,7 +21,7 @@ public class BatchDownloader {
   }
 
   @NotNull
-  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull DownloadCallback<T> callback) {
+  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull StreamHandler<T> callback) {
     return null;
   }
 
