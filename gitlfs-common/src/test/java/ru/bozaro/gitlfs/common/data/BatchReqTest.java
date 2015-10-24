@@ -10,7 +10,7 @@ import java.text.ParseException;
 /**
  * Test Meta deserialization.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class BatchReqTest {
   @Test

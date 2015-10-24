@@ -18,7 +18,7 @@ import static ru.bozaro.gitlfs.common.Constants.HEADER_AUTHORIZATION;
 /**
  * Auth provider for basic authentication.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class BasicAuthProvider implements AuthProvider {
   @NotNull

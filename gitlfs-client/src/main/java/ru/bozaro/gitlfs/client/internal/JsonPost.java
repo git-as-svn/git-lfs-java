@@ -16,7 +16,7 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 /**
  * POST simple JSON request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class JsonPost<Req, Res> implements Request<Res> {
   @NotNull

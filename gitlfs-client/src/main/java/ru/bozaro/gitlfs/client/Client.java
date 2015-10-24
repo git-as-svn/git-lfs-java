@@ -31,7 +31,7 @@ import static ru.bozaro.gitlfs.common.Constants.*;
 /**
  * Git LFS client.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Client {
   private static final int MAX_AUTH_COUNT = 1;
@@ -60,6 +60,11 @@ public class Client {
     this.authProvider = authProvider;
     this.mapper = JsonHelper.createMapper();
     this.http = http;
+  }
+
+  @NotNull
+  public AuthProvider getAuthProvider() {
+    return authProvider;
   }
 
   /**
@@ -185,7 +190,7 @@ public class Client {
    * @return Return object metadata.
    * @throws IOException On some errors.
    */
-  public Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
+  public static Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
     final MessageDigest digest = sha256();
     final byte[] buffer = new byte[0x10000];
     long size = 0;
@@ -279,7 +284,7 @@ public class Client {
     }
   }
 
-  protected <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
+  public <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {

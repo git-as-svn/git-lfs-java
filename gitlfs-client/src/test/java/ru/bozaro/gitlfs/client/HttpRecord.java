@@ -10,17 +10,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
  * HTTP request-response pair for testing.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class HttpRecord {
   @NotNull
@@ -83,14 +86,17 @@ public class HttpRecord {
       this.body = method.getResponseBody();
     }
 
-    public void apply(@NotNull HttpMethod method) throws IOException {
+    @Nullable
+    public InputStream apply(@NotNull HttpMethod method) throws IOException {
       setField(method, "statusLine", new StatusLine("HTTP/1.0 " + statusCode + " " + statusText));
-      setField(method, "responseBody", body);
+      final InputStream stream = body != null ? new StreamWrapper(new ByteArrayInputStream(body)) : null;
+      setField(method, "responseStream", stream);
       final HeaderGroup headerGroup = new HeaderGroup();
       for (Map.Entry<String, String> header : headers.entrySet()) {
         headerGroup.addHeader(new Header(header.getKey(), header.getValue()));
       }
       setField(method, "responseHeaders", headerGroup);
+      return stream;
     }
 
     private void setField(@NotNull HttpMethod method, @NotNull String name, Object value) {
@@ -114,6 +120,35 @@ public class HttpRecord {
         sb.append("\n").append(asString(body));
       }
       return sb.toString();
+    }
+  }
+
+  private static class StreamWrapper extends InputStream {
+    @Nullable
+    private InputStream stream;
+
+    public StreamWrapper(@NotNull InputStream stream) {
+      this.stream = Objects.requireNonNull(stream);
+    }
+
+    @Override
+    public int read() throws IOException {
+      Assert.assertNotNull(stream);
+      return stream.read();
+    }
+
+    @Override
+    public int read(@NotNull byte[] buffer, int off, int len) throws IOException {
+      Assert.assertNotNull(stream);
+      return stream.read(buffer, off, len);
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (stream != null) {
+        stream.close();
+        stream = null;
+      }
     }
   }
 

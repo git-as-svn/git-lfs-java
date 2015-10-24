@@ -8,8 +8,9 @@ import java.io.InputStream;
 /**
  * Interface for handle stream of downloading data.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
+@FunctionalInterface
 public interface StreamHandler<T> {
   @NotNull
   T accept(@NotNull InputStream inputStream) throws IOException;

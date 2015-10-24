@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Replay recorded HTTP requests.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class HttpReplay implements HttpExecutor {
   @NotNull

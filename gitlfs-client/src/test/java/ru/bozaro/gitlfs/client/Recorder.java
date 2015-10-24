@@ -16,7 +16,7 @@ import java.util.Arrays;
 /**
  * Simple code for recording replay.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Recorder {
   public static void main(@NotNull String[] args) throws IOException {

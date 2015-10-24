@@ -11,7 +11,7 @@ import java.io.InputStream;
 /**
  * Wrapper for validating hash and size of uploading object.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class InputStreamValidator extends InputStream {
   @NotNull

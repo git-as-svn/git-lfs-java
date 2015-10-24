@@ -16,7 +16,7 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 /**
  * Object verification after upload request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ObjectVerify implements Request<Void> {
   @NotNull

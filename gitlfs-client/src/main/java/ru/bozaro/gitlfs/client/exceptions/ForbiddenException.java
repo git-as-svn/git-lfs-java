@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Forbidden HTTP exception.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ForbiddenException extends RequestException {
   public ForbiddenException(@NotNull HttpMethod request) {

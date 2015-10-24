@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Pointer manager for local ContentManager.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class LocalPointerManager implements PointerManager {
   @NotNull

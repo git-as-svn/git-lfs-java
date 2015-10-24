@@ -4,7 +4,7 @@ import com.google.common.io.ByteStreams;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.client.Client;
-import ru.bozaro.gitlfs.client.auth.BasicAuthProvider;
+import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.io.StringStreamProvider;
 import ru.bozaro.gitlfs.common.data.BatchReq;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -16,23 +16,19 @@ import java.util.Collections;
 /**
  * Git LFS server implementation test.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ServerTest {
   @Test
   public void simpleTest() throws Exception {
-    try (final EmbeddedHttpServer server = new EmbeddedHttpServer()) {
-      final MemoryStorage storage = new MemoryStorage();
-      server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet(storage, "/foo/bar.git/info/lfs/storage/"));
-      server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet(storage));
-
-      final BasicAuthProvider auth = new BasicAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1))) {
+      final AuthProvider auth = server.getAuthProvider();
       final Client client = new Client(auth);
       final StringStreamProvider streamProvider = new StringStreamProvider("Hello, world");
-      final Meta meta = client.generateMeta(streamProvider);
+      final Meta meta = Client.generateMeta(streamProvider);
       // Not uploaded yet.
       try {
-        client.getObject(meta.getOid(), new ByteStreamHandler());
+        client.getObject(meta.getOid(), ByteStreams::toByteArray);
         Assert.fail();
       } catch (FileNotFoundException ignored) {
       }
@@ -40,7 +36,7 @@ public class ServerTest {
       // Can upload.
       Assert.assertTrue(client.putObject(streamProvider, meta));
       // Can download uploaded.
-      final byte[] content = client.getObject(meta.getOid(), new ByteStreamHandler());
+      final byte[] content = client.getObject(meta.getOid(), ByteStreams::toByteArray);
       Assert.assertEquals(content, ByteStreams.toByteArray(streamProvider.getStream()));
       // Already uploaded.
       Assert.assertFalse(client.putObject(streamProvider, meta));

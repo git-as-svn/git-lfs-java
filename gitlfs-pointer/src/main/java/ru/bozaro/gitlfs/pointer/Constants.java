@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Git-lfs constants.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Constants {
   public static final int POINTER_MAX_SIZE = 1024;

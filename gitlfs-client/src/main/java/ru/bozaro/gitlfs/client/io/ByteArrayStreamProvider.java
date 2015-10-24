@@ -9,7 +9,7 @@ import java.io.InputStream;
 /**
  * Create stream by bytes.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ByteArrayStreamProvider implements StreamProvider {
   @NotNull

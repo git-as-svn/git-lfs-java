@@ -6,7 +6,7 @@ import ru.bozaro.gitlfs.common.data.Operation;
 /**
  * Test authenticatio context.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class AuthContext {
   @NotNull

@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Server side error exception.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ServerError extends Exception {
   private final int statusCode;

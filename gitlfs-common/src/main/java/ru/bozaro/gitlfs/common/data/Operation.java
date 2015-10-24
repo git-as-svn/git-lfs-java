@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * LFSP operation type.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public enum Operation {
   Download {

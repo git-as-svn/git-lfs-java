@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Pointer parser test.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class PointerTest {
   @DataProvider(name = "parseValidProvider")

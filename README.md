@@ -31,12 +31,15 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 ```java
   final AuthProvider auth = AuthHelper.create("git@github.com:foo/bar.git");
   final Client client = new Client(auth);
-  final InputStream stream = client.getObject("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393");
+  final byte[] content = client.getObject("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", ByteStreams::toByteArray);
 ```
 
 ## Changes
 
 Version 0.6.0
+
+ * Require JDK 8
+ * High level batch API implementation
 
 Version 0.5.0
 

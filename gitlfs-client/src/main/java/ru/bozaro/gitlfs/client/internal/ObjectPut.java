@@ -17,7 +17,7 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_BINARY;
 /**
  * PUT object request.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class ObjectPut implements Request<Void> {
   private final StreamProvider streamProvider;

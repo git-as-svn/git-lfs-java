@@ -15,7 +15,7 @@ import java.util.Locale;
 /**
  * Test Link deserialization.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class LinkTest {
   @NotNull

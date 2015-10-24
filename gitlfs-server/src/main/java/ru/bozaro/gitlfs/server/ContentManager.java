@@ -11,7 +11,7 @@ import java.io.InputStream;
 /**
  * Interface for store object content.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public interface ContentManager {
   interface Downloader {

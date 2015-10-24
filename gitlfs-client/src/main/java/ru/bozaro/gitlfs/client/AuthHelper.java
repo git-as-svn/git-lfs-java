@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 /**
  * Utility class.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public final class AuthHelper {
   private AuthHelper() {

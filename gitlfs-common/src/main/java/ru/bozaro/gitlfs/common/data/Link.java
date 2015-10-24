@@ -15,7 +15,7 @@ import java.util.TreeMap;
 /**
  * LFS reference.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Link {

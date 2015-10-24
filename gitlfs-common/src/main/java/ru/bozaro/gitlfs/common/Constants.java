@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Git-lfs constants.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 public class Constants {
   /**
@@ -26,4 +26,9 @@ public class Constants {
   public static final String PATH_OBJECTS = "objects";
   @NotNull
   public static final String PATH_BATCH = "objects/batch";
+
+  /**
+   * Minimal supported batch size.
+   */
+  public static final int BATCH_SIZE = 100;
 }

@@ -12,7 +12,7 @@ import java.util.TreeMap;
 /**
  * LFS batch object.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class BatchItem extends Meta implements Links {

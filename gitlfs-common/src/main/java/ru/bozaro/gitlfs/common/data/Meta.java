@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * LFS object location.
  *
- * @author Artem V. Navrotskiy <bozaro@users.noreply.github.com>
+ * @author Artem V. Navrotskiy
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Meta {
