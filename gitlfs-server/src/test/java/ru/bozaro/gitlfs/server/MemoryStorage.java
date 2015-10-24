@@ -6,8 +6,10 @@ import com.google.common.io.ByteStreams;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
+import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.auth.CachedAuthProvider;
+import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -77,23 +79,34 @@ public class MemoryStorage implements ContentManager {
     }
   }
 
+  public void saveObject(@NotNull StreamProvider provider) throws IOException {
+    final Meta meta = Client.generateMeta(provider);
+    try (InputStream stream = provider.getStream()) {
+      saveObject(meta, stream);
+    }
+  }
+
+  public void saveObject(@NotNull Meta meta, @NotNull InputStream content) throws IOException {
+    final byte[] data = ByteStreams.toByteArray(content);
+    if (meta.getSize() >= 0) {
+      Assert.assertEquals(meta.getSize(), data.length);
+    }
+    Assert.assertEquals(meta.getOid(), Hashing.sha256().hashBytes(data).toString());
+    storage.put(meta.getOid(), data);
+  }
+
+  @Nullable
+  public byte[] getObject(@NotNull String oid) {
+    return storage.get(oid);
+  }
+
   @NotNull
   @Override
   public Uploader checkUploadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
     if (!getToken().equals(request.getHeader(Constants.HEADER_AUTHORIZATION))) {
       throw new UnauthorizedError("Basic realm=\"Test\"");
     }
-    return new Uploader() {
-      @Override
-      public void saveObject(@NotNull Meta meta, @NotNull InputStream content) throws IOException {
-        final byte[] data = ByteStreams.toByteArray(content);
-        if (meta.getSize() >= 0) {
-          Assert.assertEquals(meta.getSize(), data.length);
-        }
-        Assert.assertEquals(meta.getOid(), Hashing.sha256().hashBytes(data).toString());
-        storage.put(meta.getOid(), data);
-      }
-    };
+    return this::saveObject;
   }
 
   @NotNull

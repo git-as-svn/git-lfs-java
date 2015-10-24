@@ -39,6 +39,7 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 Version 0.6.0
 
  * Require JDK 8
+ * High level batch API implementation
 
 Version 0.5.0
 

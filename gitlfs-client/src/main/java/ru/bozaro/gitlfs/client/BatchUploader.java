@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Artem V. Navrotskiy
  */
-public class BatchUploader extends BatchWorker {
+public class BatchUploader extends BatchWorker<StreamProvider, Meta> {
   public BatchUploader(@NotNull Client client, @NotNull ExecutorService pool) {
     this(client, pool, new BatchSettings());
   }
@@ -44,23 +44,23 @@ public class BatchUploader extends BatchWorker {
         future.completeExceptionally(e);
       }
     });
-    return future.thenCompose(meta -> upload(streamProvider, meta));
+    return future.thenCompose(meta -> upload(meta, streamProvider));
   }
 
   /**
    * This method start uploading object to server.
    *
-   * @param streamProvider Stream provider.
    * @param meta           Object metadata.
+   * @param streamProvider Stream provider.
    * @return Return future with upload result. For same objects can return same future.
    */
   @NotNull
-  public CompletableFuture<Meta> upload(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) {
-    return enqueue(streamProvider, meta);
+  public CompletableFuture<Meta> upload(@NotNull final Meta meta, @NotNull final StreamProvider streamProvider) {
+    return enqueue(meta, streamProvider);
   }
 
   @Nullable
-  protected Work<Void> objectTask(@NotNull State state, @NotNull BatchItem item) {
+  protected Work<Meta> objectTask(@NotNull State<StreamProvider, Meta> state, @NotNull BatchItem item) {
     // Already processed
     if (item.getLinks().containsKey(LinkType.Download)) {
       state.getFuture().complete(state.getMeta());
@@ -72,7 +72,7 @@ public class BatchUploader extends BatchWorker {
       return null;
     }
     return auth -> {
-      getClient().putObject(state.getProvider(), state.getMeta(), item);
+      getClient().putObject(state.getContext(), state.getMeta(), item);
       return null;
     };
   }

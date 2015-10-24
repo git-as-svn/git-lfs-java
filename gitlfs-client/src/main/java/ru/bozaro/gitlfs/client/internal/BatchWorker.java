@@ -1,5 +1,6 @@
 package ru.bozaro.gitlfs.client.internal;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.AuthHelper;
@@ -7,10 +8,10 @@ import ru.bozaro.gitlfs.client.BatchSettings;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
-import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,14 +33,14 @@ import static ru.bozaro.gitlfs.common.Constants.PATH_BATCH;
  *
  * @author Artem V. Navrotskiy
  */
-public abstract class BatchWorker {
+public abstract class BatchWorker<T, R> {
   @NotNull
   private final Client client;
   @NotNull
   private final ExecutorService pool;
 
   @NotNull
-  private final ConcurrentMap<String, State> objectQueue = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, State<T, R>> objectQueue = new ConcurrentHashMap<>();
   @NotNull
   private final AtomicBoolean batchInProgress = new AtomicBoolean(false);
   @NotNull
@@ -61,13 +62,13 @@ public abstract class BatchWorker {
   /**
    * This method start send object metadata to server.
    *
-   * @param streamProvider Stream provider.
-   * @param meta           Object metadata.
-   * @return Return future with upload result. For same objects can return same future.
+   * @param context Object worker context.
+   * @param meta    Object metadata.
+   * @return Return future with result. For same objects can return same future.
    */
   @NotNull
-  protected CompletableFuture<Meta> enqueue(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) {
-    State state = objectQueue.get(meta.getOid());
+  protected CompletableFuture<R> enqueue(@NotNull final Meta meta, @NotNull final T context) {
+    State<T, R> state = objectQueue.get(meta.getOid());
     if (state != null) {
       if (state.future.isCancelled()) {
         objectQueue.remove(meta.getOid(), state);
@@ -75,7 +76,7 @@ public abstract class BatchWorker {
       }
     }
     if (state == null) {
-      final State newState = new State(streamProvider, meta);
+      final State<T, R> newState = new State<>(meta, context);
       state = objectQueue.putIfAbsent(meta.getOid(), newState);
       if (state == null) {
         tryBatchRequest();
@@ -123,7 +124,7 @@ public abstract class BatchWorker {
   }
 
   private void submitBatchTask() {
-    final Map<String, State> batch = takeBatch();
+    final Map<String, State<T, R>> batch = takeBatch();
     Link auth = currentAuth.get();
     try {
       if (!batch.isEmpty()) {
@@ -134,13 +135,15 @@ public abstract class BatchWorker {
         final List<Meta> metas = batch.values().stream().map(s -> s.meta).collect(Collectors.toList());
         final BatchRes result = client.doRequest(auth, new JsonPost<>(new BatchReq(operation, metas), BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
         for (BatchItem item : result.getObjects()) {
-          State state = batch.remove(item.getOid());
+          final State<T, R> state = batch.remove(item.getOid());
           if (state != null) {
             final Error error = item.getError();
             if (error != null) {
-              state.future.completeExceptionally(new IOException("Can't process object (code " + error.getCode() + "): " + error.getMessage()));
+              objectQueue.remove(item.getOid(), state);
+              state.future.completeExceptionally(createError(error));
+            } else {
+              submitTask(state, item, auth);
             }
-            submitTask(state, item, auth);
           }
         }
         for (State value : batch.values()) {
@@ -159,15 +162,23 @@ public abstract class BatchWorker {
     tryBatchRequest();
   }
 
-  @Nullable
-  protected abstract Work<Void> objectTask(@NotNull State state, @NotNull BatchItem item);
+  @NotNull
+  protected Throwable createError(@NotNull Error error) {
+    if (error.getCode() == HttpStatus.SC_NOT_FOUND) {
+      return new FileNotFoundException(error.getMessage());
+    }
+    return new IOException("Can't process object (code " + error.getCode() + "): " + error.getMessage());
+  }
 
-  private void submitTask(@NotNull State state, @NotNull BatchItem item, @NotNull Link auth) {
+  @Nullable
+  protected abstract Work<R> objectTask(@NotNull State<T, R> state, @NotNull BatchItem item);
+
+  private void submitTask(@NotNull State<T, R> state, @NotNull BatchItem item, @NotNull Link auth) {
     // Submit task
     state.auth = auth;
     try {
       objectInProgress.incrementAndGet();
-      final Work<Void> worker = objectTask(state, item);
+      final Work<R> worker = objectTask(state, item);
       if (state.future.isDone()) {
         objectQueue.remove(state.meta.getOid(), state);
         objectInProgress.decrementAndGet();
@@ -191,11 +202,11 @@ public abstract class BatchWorker {
   }
 
   @NotNull
-  private Map<String, State> takeBatch() {
-    final Map<String, State> batch = new HashMap<>();
-    final Iterator<State> iter = objectQueue.values().iterator();
+  private Map<String, State<T, R>> takeBatch() {
+    final Map<String, State<T, R>> batch = new HashMap<>();
+    final Iterator<State<T, R>> iter = objectQueue.values().iterator();
     while (iter.hasNext()) {
-      final State state = iter.next();
+      final State<T, R> state = iter.next();
       if (state.future.isDone()) {
         iter.remove();
         continue;
@@ -210,16 +221,16 @@ public abstract class BatchWorker {
     return batch;
   }
 
-  private void processObject(@NotNull State state, @NotNull Link auth, @NotNull Work<Void> worker) {
+  private void processObject(@NotNull State<T, R> state, @NotNull Link auth, @NotNull Work<R> worker) {
     if (currentAuth.get() != auth) {
       state.auth = null;
       return;
     }
     try {
       state.auth = auth;
-      worker.exec(auth);
+      final R result = worker.exec(auth);
       objectQueue.remove(state.meta.getOid(), state);
-      state.future.complete(state.meta);
+      state.future.complete(result);
     } catch (UnauthorizedException e) {
       invalidateAuth(auth);
     } catch (ForbiddenException e) {
@@ -231,19 +242,19 @@ public abstract class BatchWorker {
     }
   }
 
-  public final static class State {
-    @NotNull
-    private final StreamProvider provider;
+  public final static class State<T, R> {
     @NotNull
     private final Meta meta;
     @NotNull
-    private final CompletableFuture<Meta> future = new CompletableFuture<>();
+    private final T context;
+    @NotNull
+    private final CompletableFuture<R> future = new CompletableFuture<>();
     @Nullable
     private volatile Link auth;
     private int retry;
 
-    public State(@NotNull StreamProvider provider, @NotNull Meta meta) {
-      this.provider = provider;
+    public State(@NotNull Meta meta, @NotNull T context) {
+      this.context = context;
       this.meta = meta;
       this.auth = null;
     }
@@ -257,17 +268,17 @@ public abstract class BatchWorker {
     }
 
     @NotNull
-    public StreamProvider getProvider() {
-      return provider;
-    }
-
-    @NotNull
     public Meta getMeta() {
       return meta;
     }
 
     @NotNull
-    public CompletableFuture<Meta> getFuture() {
+    public T getContext() {
+      return context;
+    }
+
+    @NotNull
+    public CompletableFuture<R> getFuture() {
       return future;
     }
   }
