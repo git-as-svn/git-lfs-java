@@ -40,6 +40,7 @@ Version 0.6.0
 
  * Require JDK 8
  * High level batch API implementation
+ * Add steam hash validation on download
 
 Version 0.5.0
 

@@ -28,7 +28,7 @@ public interface AuthProvider {
    * Set auth as expired.
    *
    * @param operation Operation type.
-   * @param auth Expired auth data.
+   * @param auth      Expired auth data.
    */
   void invalidateAuth(@NotNull Operation operation, @NotNull Link auth);
 }

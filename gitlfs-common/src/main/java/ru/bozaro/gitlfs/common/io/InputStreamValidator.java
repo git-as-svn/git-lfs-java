@@ -1,4 +1,4 @@
-package ru.bozaro.gitlfs.server.internal;
+package ru.bozaro.gitlfs.common.io;
 
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;

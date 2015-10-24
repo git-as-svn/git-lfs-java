@@ -32,7 +32,7 @@ import java.util.stream.IntStream;
  */
 public class BatchTest {
   private static final int REQUEST_COUNT = 1000;
-  private static final int TIMEOUT = 30000;
+  private static final int TIMEOUT = 180000;
 
   @DataProvider(name = "batchProvider")
   public static Object[][] batchProvider() {

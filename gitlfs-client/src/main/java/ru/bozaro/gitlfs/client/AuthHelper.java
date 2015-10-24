@@ -20,15 +20,15 @@ public final class AuthHelper {
 
   /**
    * Create AuthProvider by gitURL.
-   * <p/>
+   * <p>
    * Supported URL formats:
-   * <p/>
+   * <p>
    * * https://user:passw0rd@github.com/foo/bar.git
    * * http://user:passw0rd@github.com/foo/bar.git
    * * git://user:passw0rd@github.com/foo/bar.git
    * * ssh://git@github.com/foo/bar.git
    * * git@github.com:foo/bar.git
-   * <p/>
+   * <p>
    * Detail Git URL format: https://git-scm.com/book/ch4-1.html
    *
    * @param gitURL URL to repository.

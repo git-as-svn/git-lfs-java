@@ -42,6 +42,6 @@ public class BatchDownloader extends BatchWorker<StreamHandler<?>, Object> {
       return null;
     }
     // Already processed
-    return auth -> getClient().getObject(item, state.getContext());
+    return auth -> getClient().getObject(item, item, state.getContext());
   }
 }

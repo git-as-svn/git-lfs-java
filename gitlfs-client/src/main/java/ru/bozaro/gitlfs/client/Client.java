@@ -17,6 +17,7 @@ import ru.bozaro.gitlfs.client.io.StreamHandler;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.*;
+import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -76,12 +77,7 @@ public class Client {
    */
   @Nullable
   public ObjectRes getMeta(@NotNull final String hash) throws IOException {
-    return doWork(new Work<ObjectRes>() {
-      @Override
-      public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
-      }
-    }, Operation.Download);
+    return doWork(auth -> doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash)), Operation.Download);
   }
 
   /**
@@ -106,12 +102,7 @@ public class Client {
    */
   @Nullable
   public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
-    return doWork(new Work<ObjectRes>() {
-      @Override
-      public ObjectRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
-      }
-    }, Operation.Upload);
+    return doWork(auth -> doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS)), Operation.Upload);
   }
 
   /**
@@ -123,12 +114,7 @@ public class Client {
    */
   @NotNull
   public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
-    return doWork(new Work<BatchRes>() {
-      @Override
-      public BatchRes exec(@NotNull Link auth) throws IOException {
-        return doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
-      }
-    }, batchReq.getOperation());
+    return doWork(auth -> doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH)), batchReq.getOperation());
   }
 
   /**
@@ -142,21 +128,19 @@ public class Client {
    */
   @NotNull
   public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
-    return doWork(new Work<T>() {
-      @Override
-      public T exec(@NotNull Link auth) throws IOException {
-        final ObjectRes links = doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
-        if (links == null) {
-          throw new FileNotFoundException();
-        }
-        return getObject(links, handler);
+    return doWork(auth -> {
+      final ObjectRes links = doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
+      if (links == null) {
+        throw new FileNotFoundException();
       }
+      return getObject(new Meta(hash, -1), links, handler);
     }, Operation.Download);
   }
 
   /**
    * Download object by metadata.
    *
+   * @param meta    Object metadata for stream validation.
    * @param links   Object links.
    * @param handler Stream handler.
    * @return Stream handler result.
@@ -164,12 +148,12 @@ public class Client {
    * @throws IOException           On some errors.
    */
   @NotNull
-  public <T> T getObject(@NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
+  public <T> T getObject(@Nullable final Meta meta, @NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
     final Link link = links.getLinks().get(LinkType.Download);
     if (link == null) {
       throw new FileNotFoundException();
     }
-    return doRequest(link, new ObjectGet<>(handler), link.getHref());
+    return doRequest(link, new ObjectGet<>(inputStream -> handler.accept(meta != null ? new InputStreamValidator(inputStream, meta) : inputStream)), link.getHref());
   }
 
   /**
@@ -227,12 +211,9 @@ public class Client {
    * @throws IOException On some errors.
    */
   public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
-    return doWork(new Work<Boolean>() {
-      @Override
-      public Boolean exec(@NotNull Link auth) throws IOException {
-        final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
-        return links != null && putObject(streamProvider, meta, links);
-      }
+    return doWork(auth -> {
+      final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
+      return links != null && putObject(streamProvider, meta, links);
     }, Operation.Upload);
   }
 
@@ -284,7 +265,7 @@ public class Client {
     }
   }
 
-  public <T extends HttpMethod, R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
+  public <R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {

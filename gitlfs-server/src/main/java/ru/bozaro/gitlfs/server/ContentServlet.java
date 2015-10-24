@@ -3,7 +3,7 @@ package ru.bozaro.gitlfs.server;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Meta;
-import ru.bozaro.gitlfs.server.internal.InputStreamValidator;
+import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
