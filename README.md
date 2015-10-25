@@ -36,6 +36,8 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 
 ## Changes
 
+Version 0.7.0 (unreleased)
+
 Version 0.6.0
 
  * Require JDK 8
