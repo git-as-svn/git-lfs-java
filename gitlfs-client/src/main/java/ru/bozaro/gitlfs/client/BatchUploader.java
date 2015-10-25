@@ -10,7 +10,6 @@ import ru.bozaro.gitlfs.common.data.LinkType;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -61,19 +60,16 @@ public class BatchUploader extends BatchWorker<StreamProvider, Meta> {
 
   @Nullable
   protected Work<Meta> objectTask(@NotNull State<StreamProvider, Meta> state, @NotNull BatchItem item) {
-    // Already processed
-    if (item.getLinks().containsKey(LinkType.Download)) {
+    if (item.getLinks().containsKey(LinkType.Upload)) {
+      // Wait for upload.
+      return auth -> {
+        getClient().putObject(state.getContext(), state.getMeta(), item);
+        return null;
+      };
+    } else {
+      // Already uploaded.
       state.getFuture().complete(state.getMeta());
       return null;
     }
-    // Invalid links data
-    if (!item.getLinks().containsKey(LinkType.Upload)) {
-      state.getFuture().completeExceptionally(new IOException("Upload link not found"));
-      return null;
-    }
-    return auth -> {
-      getClient().putObject(state.getContext(), state.getMeta(), item);
-      return null;
-    };
   }
 }

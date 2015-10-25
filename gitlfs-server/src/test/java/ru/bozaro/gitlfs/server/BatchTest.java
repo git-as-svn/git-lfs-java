@@ -5,23 +5,21 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.testng.internal.junit.ArrayAsserts;
 import ru.bozaro.gitlfs.client.BatchDownloader;
 import ru.bozaro.gitlfs.client.BatchSettings;
 import ru.bozaro.gitlfs.client.BatchUploader;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
+import ru.bozaro.gitlfs.client.auth.ExternalAuthProvider;
 import ru.bozaro.gitlfs.client.io.ByteArrayStreamProvider;
 import ru.bozaro.gitlfs.common.data.Meta;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,21 +48,33 @@ public class BatchTest {
       final AuthProvider auth = server.getAuthProvider();
       final BatchUploader uploader = new BatchUploader(new Client(auth), pool, settings);
       // Upload half data
-      upload(server.getStorage(), uploader, IntStream
-          .range(0, REQUEST_COUNT)
-          .filter(i -> i % 2 == 0)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      upload(
+          uploader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .filter(i -> i % 2 == 0)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
       // Upload full data
-      upload(server.getStorage(), uploader, IntStream
-          .range(0, REQUEST_COUNT)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      upload(
+          uploader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
       // Upload none data
-      upload(server.getStorage(), uploader, IntStream
-          .range(0, REQUEST_COUNT)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      upload(
+          uploader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
     } finally {
       pool.shutdownNow();
     }
@@ -76,10 +86,14 @@ public class BatchTest {
     try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage))) {
       final AuthProvider auth = server.getAuthProvider();
       final BatchDownloader downloader = new BatchDownloader(new Client(auth), pool, settings);
-      download(server.getStorage(), downloader, IntStream
-          .range(0, REQUEST_COUNT)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      download(
+          downloader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
       // Add data to storage
       populate(server.getStorage(), IntStream
           .range(0, REQUEST_COUNT)
@@ -87,22 +101,42 @@ public class BatchTest {
           .mapToObj(BatchTest::content)
           .collect(Collectors.toList()));
       // Download full data
-      download(server.getStorage(), downloader, IntStream
-          .range(0, REQUEST_COUNT)
-          .filter(i -> i % 2 == 0)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      download(
+          downloader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .filter(i -> i % 2 == 0)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
       // Download half data
-      download(server.getStorage(), downloader, IntStream
-          .range(0, REQUEST_COUNT)
-          .mapToObj(BatchTest::content)
-          .collect(Collectors.toList()));
+      download(
+          downloader,
+          IntStream
+              .range(0, REQUEST_COUNT)
+              .mapToObj(BatchTest::content)
+              .collect(Collectors.toList()),
+          server.getStorage()
+      );
     } finally {
       pool.shutdownNow();
     }
   }
 
-  private void download(@NotNull MemoryStorage storage, @NotNull BatchDownloader downloader, @NotNull List<byte[]> contents) throws InterruptedException, ExecutionException, TimeoutException, IOException {
+  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull MemoryStorage storage) throws Exception {
+    download(downloader, contents, meta -> storage.getObject(meta.getOid()) != null);
+  }
+
+  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull List<byte[]> expected) throws Exception {
+    final Set<String> oids = new HashSet<>();
+    for (byte[] content : expected) {
+      oids.add(Client.generateMeta(new ByteArrayStreamProvider(content)).getOid());
+    }
+    download(downloader, contents, meta -> oids.contains(meta.getOid()));
+  }
+
+  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull Function<Meta, Boolean> checker) throws Exception {
     // Download data
     final Map<Meta, CompletableFuture<byte[]>> map = new HashMap<>();
     for (byte[] content : contents) {
@@ -113,10 +147,11 @@ public class BatchTest {
     for (Map.Entry<Meta, CompletableFuture<byte[]>> entry : map.entrySet()) {
       try {
         final byte[] content = entry.getValue().get(TIMEOUT, TimeUnit.MILLISECONDS);
-        ArrayAsserts.assertArrayEquals(content, storage.getObject(entry.getKey().getOid()));
+        Assert.assertNotNull(content);
+        Assert.assertTrue(checker.apply(entry.getKey()));
       } catch (ExecutionException e) {
         if (e.getCause() instanceof FileNotFoundException) {
-          Assert.assertNull(storage.getMetadata(entry.getKey().getOid()));
+          Assert.assertFalse(checker.apply(entry.getKey()));
         } else {
           Assert.fail("Unexpected exception", e.getCause());
         }
@@ -124,7 +159,7 @@ public class BatchTest {
     }
   }
 
-  private void upload(@NotNull MemoryStorage storage, @NotNull BatchUploader uploader, @NotNull List<byte[]> contents) throws InterruptedException, ExecutionException, TimeoutException, IOException {
+  private void upload(@NotNull BatchUploader uploader, @NotNull List<byte[]> contents) throws Exception {
     // Upload data
     @SuppressWarnings("unchecked")
     final CompletableFuture<Meta>[] futures = contents
@@ -133,6 +168,15 @@ public class BatchTest {
         .toArray(CompletableFuture[]::new);
     // Wait uploading finished
     CompletableFuture.allOf(futures).get(TIMEOUT, TimeUnit.MILLISECONDS);
+    // Check future status
+    for (CompletableFuture<Meta> future : futures) {
+      future.get();
+    }
+  }
+
+  private void upload(@NotNull BatchUploader uploader, @NotNull List<byte[]> contents, @NotNull MemoryStorage storage) throws Exception {
+    // Upload data
+    upload(uploader, contents);
     // Check result
     for (byte[] content : contents) {
       final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content));
@@ -148,49 +192,55 @@ public class BatchTest {
 
   @Test
   public void simple() throws Exception {
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(/*42*/ -1))) {
-      final AuthProvider auth = server.getAuthProvider();
-      upload(auth);
-      upload(auth);
-      download(auth);
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1))) {
+      fullCircle(server.getAuthProvider());
     }
   }
 
-  private void upload(@NotNull AuthProvider auth) throws InterruptedException, ExecutionException, TimeoutException {
-    final ExecutorService pool = Executors.newFixedThreadPool(4);
-    try {
-      final BatchUploader uploader = new BatchUploader(new Client(auth), pool);
-      final List<CompletableFuture<Meta>> futures = new ArrayList<>();
-      for (int i = 0; i < REQUEST_COUNT; ++i) {
-        futures.add(uploader.upload(new ByteArrayStreamProvider(content(i))));
-      }
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get(TIMEOUT, TimeUnit.MILLISECONDS);
-    } finally {
-      pool.shutdownNow();
-    }
+  @Test(enabled = false)
+  public void github() throws Exception {
+    fullCircle(new ExternalAuthProvider("git@github.com:bozaro/test.git"));
   }
 
-  private void download(@NotNull AuthProvider auth) throws InterruptedException, ExecutionException, TimeoutException, IOException {
+  private void fullCircle(@NotNull AuthProvider auth) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
     try {
-      final Client client = new Client(auth);
-      final BatchDownloader downloader = new BatchDownloader(client, pool);
-      final ConcurrentMap<Integer, byte[]> result = new ConcurrentHashMap<>();
-      final List<CompletableFuture<?>> futures = new ArrayList<>();
-      for (int i = 0; i < REQUEST_COUNT; ++i) {
-        final int id = i;
-        final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content(i)));
-        futures.add(downloader.download(meta, inputStream -> {
-          Assert.assertNull(result.put(id, ByteStreams.toByteArray(inputStream)));
-          return id;
-        }));
-      }
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get(TIMEOUT, TimeUnit.MILLISECONDS);
-
-      Assert.assertEquals(result.size(), REQUEST_COUNT);
-      for (int i = 0; i < REQUEST_COUNT; ++i) {
-        Assert.assertEquals(result.get(i), content(i));
-      }
+      BatchSettings settings = new BatchSettings()
+          .setLimit(10);
+      final BatchDownloader downloader = new BatchDownloader(new Client(auth), pool, settings);
+      final BatchUploader uploader = new BatchUploader(new Client(auth), pool, settings);
+      final String prefix = UUID.randomUUID().toString();
+      // Initial upload
+      int requestCount = 50;
+      upload(
+          uploader,
+          IntStream
+              .range(0, requestCount)
+              .filter(i -> i % 2 == 0)
+              .mapToObj((id) -> BatchTest.content(prefix, id))
+              .collect(Collectors.toList())
+      );
+      // Download
+      download(
+          downloader,
+          IntStream
+              .range(0, requestCount)
+              .mapToObj((id) -> BatchTest.content(prefix, id))
+              .collect(Collectors.toList()),
+          IntStream
+              .range(0, requestCount)
+              .filter(i -> i % 2 == 0)
+              .mapToObj((id) -> BatchTest.content(prefix, id))
+              .collect(Collectors.toList())
+      );
+      // Already upload
+      upload(
+          uploader,
+          IntStream
+              .range(0, requestCount)
+              .mapToObj((id) -> BatchTest.content(prefix, id))
+              .collect(Collectors.toList())
+      );
     } finally {
       pool.shutdownNow();
     }
@@ -198,7 +248,12 @@ public class BatchTest {
 
   @NotNull
   private static byte[] content(int id) {
-    final String result = "Stream " + id;
+    return content("TEST", id);
+  }
+
+  @NotNull
+  private static byte[] content(@NotNull String prefix, int id) {
+    final String result = prefix + " " + id;
     return result.getBytes(StandardCharsets.UTF_8);
   }
 }
