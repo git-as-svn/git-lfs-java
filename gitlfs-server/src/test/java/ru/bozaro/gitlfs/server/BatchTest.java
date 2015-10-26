@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
  */
 public class BatchTest {
   private static final int REQUEST_COUNT = 1000;
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
 
   @DataProvider(name = "batchProvider")
   public static Object[][] batchProvider() {
@@ -75,6 +75,7 @@ public class BatchTest {
               .collect(Collectors.toList()),
           server.getStorage()
       );
+      Assert.assertTrue(pool.shutdownNow().isEmpty());
     } finally {
       pool.shutdownNow();
     }
@@ -119,6 +120,7 @@ public class BatchTest {
               .collect(Collectors.toList()),
           server.getStorage()
       );
+      Assert.assertTrue(pool.shutdownNow().isEmpty());
     } finally {
       pool.shutdownNow();
     }
@@ -241,6 +243,7 @@ public class BatchTest {
               .mapToObj((id) -> BatchTest.content(prefix, id))
               .collect(Collectors.toList())
       );
+      Assert.assertTrue(pool.shutdownNow().isEmpty());
     } finally {
       pool.shutdownNow();
     }
