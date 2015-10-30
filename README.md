@@ -23,7 +23,14 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 ```java
   final AuthProvider auth = AuthHelper.create("git@github.com:foo/bar.git");
   final Client client = new Client(auth);
+
+  // Single object
   client.putObject(new FileStreamProvider(new File("foo.bin")));
+
+  // Batch mode
+  final ExecutorService pool = Executors.newFixedThreadPool(4);
+  final BatchUploader uploader = new BatchUploader(client, pool);
+  CompletableFuture<Meta> future = uploader.upload(new FileStreamProvider(new File("bar.bin")));
 ```
 
 ### Downloading object from Git LFS server
@@ -31,8 +38,19 @@ You can download latest stable version from [Maven Central](http://mvnrepository
 ```java
   final AuthProvider auth = AuthHelper.create("git@github.com:foo/bar.git");
   final Client client = new Client(auth);
+
+  // Single object
   final byte[] content = client.getObject("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", ByteStreams::toByteArray);
+
+  // Batch mode
+  final ExecutorService pool = Executors.newFixedThreadPool(4);
+  final BatchDownloader downloader = new BatchDownloader(client, pool);
+  CompletableFuture<byte[]> future = uploader.download(new Meta("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", 10), ByteStreams::toByteArray);
 ```
+
+### Embedded LFS server
+
+See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/java/ru/bozaro/gitlfs/server/ServerTest.java for example.
 
 ## Changes
 
