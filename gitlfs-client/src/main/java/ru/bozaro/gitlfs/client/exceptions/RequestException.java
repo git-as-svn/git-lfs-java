@@ -24,6 +24,11 @@ public class RequestException extends IOException {
     return request.getStatusCode();
   }
 
+  @Override
+  public String getMessage() {
+    return getUrl(request) + " - " + request.getStatusCode() + " (" + request.getStatusText() + ")";
+  }
+
   @NotNull
   public String getRequestInfo() {
     final StringBuilder sb = new StringBuilder();
