@@ -53,6 +53,7 @@ public class ExternalAuthProvider extends CachedAuthProvider {
     return new String[]{
         "ssh",
         getAuthority(),
+        "-oBatchMode=yes",
         "-C",
         "git-lfs-authenticate",
         getPath(),
@@ -64,8 +65,10 @@ public class ExternalAuthProvider extends CachedAuthProvider {
   protected Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException {
     final ProcessBuilder builder = new ProcessBuilder()
         .command(getCommand(operation))
+        .redirectError(ProcessBuilder.Redirect.PIPE)
         .redirectOutput(ProcessBuilder.Redirect.PIPE);
     final Process process = builder.start();
+    process.getOutputStream().close();
     final InputStream stdoutStream = process.getInputStream();
     final ByteArrayOutputStream stdoutData = new ByteArrayOutputStream();
     final byte[] buffer = new byte[0x10000];
