@@ -56,6 +56,10 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 Version 0.7.0 (unreleased)
 
+ * Add header modification for replacing Basic authentication by Token
+ * Don't ask password for SSH authentication
+ * Add more informative HTTP error message
+
 Version 0.6.0
 
  * Require JDK 8
