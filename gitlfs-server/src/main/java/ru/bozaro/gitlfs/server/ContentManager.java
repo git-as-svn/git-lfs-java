@@ -7,6 +7,7 @@ import ru.bozaro.gitlfs.common.data.Meta;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Interface for store object content.
@@ -14,7 +15,20 @@ import java.io.InputStream;
  * @author Artem V. Navrotskiy
  */
 public interface ContentManager {
-  interface Downloader {
+  interface HeaderProvider {
+    /**
+     * Generate pointer header information (for example: replace transit Basic auth by Toker auth).
+     *
+     * @param header Default header. Can be modified.
+     * @return Pointer header information.
+     */
+    @NotNull
+    default Map<String, String> createHeader(@NotNull Map<String, String> header) {
+      return header;
+    }
+  }
+
+  interface Downloader extends HeaderProvider {
     /**
      * Get object from storage.
      *
@@ -34,7 +48,7 @@ public interface ContentManager {
     InputStream openObjectGzipped(@NotNull String hash) throws IOException;
   }
 
-  interface Uploader {
+  interface Uploader extends HeaderProvider {
 
     /**
      * Save object to storage.

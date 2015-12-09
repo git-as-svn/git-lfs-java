@@ -10,6 +10,7 @@ import ru.bozaro.gitlfs.common.data.Error;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,25 +38,33 @@ public class LocalPointerManager implements PointerManager {
   @NotNull
   @Override
   public Locator checkUploadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
-    manager.checkUploadAccess(request);
-    return createLocator(request, selfUrl);
+    final ContentManager.HeaderProvider headerProvider = manager.checkUploadAccess(request);
+    return createLocator(request, headerProvider, selfUrl);
   }
 
   @NotNull
   @Override
   public Locator checkDownloadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
-    manager.checkDownloadAccess(request);
-    return createLocator(request, selfUrl);
+    final ContentManager.HeaderProvider headerProvider = manager.checkDownloadAccess(request);
+    return createLocator(request, headerProvider, selfUrl);
   }
 
-  protected Locator createLocator(@NotNull HttpServletRequest request, @NotNull final URI selfUrl) {
+  protected Map<String, String> createDefaultHeader(@NotNull HttpServletRequest request) {
     final String auth = request.getHeader(Constants.HEADER_AUTHORIZATION);
+    final Map<String, String> header = new HashMap<>();
+    if (auth != null) {
+      header.put(Constants.HEADER_AUTHORIZATION, auth);
+    }
+    return header;
+  }
+
+  protected Locator createLocator(@NotNull HttpServletRequest request, @NotNull ContentManager.HeaderProvider headerProvider, @NotNull final URI selfUrl) {
+    final Map<String, String> header = headerProvider.createHeader(createDefaultHeader(request));
     return new Locator() {
       @NotNull
       @Override
       public BatchItem[] getLocations(@NotNull Meta[] metas) throws IOException {
         final BatchItem[] result = new BatchItem[metas.length];
-        final Map<String, String> header = auth != null ? ImmutableMap.of(Constants.HEADER_AUTHORIZATION, auth) : null;
         for (int i = 0; i < metas.length; ++i) {
           result[i] = getLocation(header, selfUrl, metas[i]);
         }
