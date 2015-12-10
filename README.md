@@ -54,6 +54,8 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
+Version 0.8.0 (unreleased)
+
 Version 0.7.0
 
  * Add header modification for replacing Basic authentication by Token
