@@ -2,10 +2,12 @@ package ru.bozaro.gitlfs.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -50,7 +52,7 @@ public class Client {
   private final HttpExecutor http;
 
   public Client(@NotNull AuthProvider authProvider) {
-    this(authProvider, new HttpClient(new MultiThreadedHttpConnectionManager()));
+    this(authProvider, new DefaultHttpClient(new ThreadSafeClientConnManager()));
   }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {
@@ -269,23 +271,23 @@ public class Client {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
-      final HttpMethod request = task.createRequest(mapper, url.toString());
+      final HttpUriRequest request = task.createRequest(mapper, url.toString());
       addHeaders(request, link);
-      http.executeMethod(request);
+      final HttpResponse response = http.executeMethod(request);
       try {
-        switch (request.getStatusCode()) {
+        switch (response.getStatusLine().getStatusCode()) {
           case HttpStatus.SC_UNAUTHORIZED:
-            throw new UnauthorizedException(request);
+            throw new UnauthorizedException(request, response);
           case HttpStatus.SC_FORBIDDEN:
-            throw new ForbiddenException(request);
+            throw new ForbiddenException(request, response);
           case HttpStatus.SC_MOVED_PERMANENTLY:
           case HttpStatus.SC_MOVED_TEMPORARILY:
           case HttpStatus.SC_SEE_OTHER:
           case HttpStatus.SC_TEMPORARY_REDIRECT:
             // Follow by redirect.
-            final String location = request.getRequestHeader(HEADER_LOCATION).getValue();
+            final String location = response.getFirstHeader(HEADER_LOCATION).getValue();
             if (location == null || redirectCount >= MAX_REDIRECT_COUNT) {
-              throw new RequestException(request);
+              throw new RequestException(request, response);
             }
             ++redirectCount;
             url = url.resolve(location);
@@ -296,7 +298,7 @@ public class Client {
           case HttpStatus.SC_INTERNAL_SERVER_ERROR:
             // Temporary error. need to retry.
             if (retryCount >= MAX_RETRY_COUNT) {
-              throw new RequestException(request);
+              throw new RequestException(request, response);
             }
             ++retryCount;
             continue;
@@ -306,22 +308,22 @@ public class Client {
           success = DEFAULT_HTTP_SUCCESS;
         }
         for (int item : success) {
-          if (request.getStatusCode() == item) {
-            return task.processResponse(mapper, request);
+          if (response.getStatusLine().getStatusCode() == item) {
+            return task.processResponse(mapper, response);
           }
         }
         // Unexpected status code.
-        throw new RequestException(request);
+        throw new RequestException(request, response);
       } finally {
-        request.releaseConnection();
+        request.abort();
       }
     }
   }
 
-  protected void addHeaders(@NotNull HttpMethod req, @Nullable Link link) {
+  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
     if (link != null) {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
-        req.addRequestHeader(entry.getKey(), entry.getValue());
+        req.addHeader(entry.getKey(), entry.getValue());
       }
     }
   }

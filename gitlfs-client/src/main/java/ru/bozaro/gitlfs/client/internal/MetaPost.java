@@ -2,10 +2,12 @@ package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -31,11 +33,12 @@ public class MetaPost implements Request<ObjectRes> {
 
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
-    final PostMethod req = new PostMethod(url);
-    req.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
-    final byte[] content = mapper.writeValueAsBytes(meta);
-    req.setRequestEntity(new ByteArrayRequestEntity(content, MIME_LFS_JSON));
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+    final HttpPost req = new HttpPost(url);
+    req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
+    final AbstractHttpEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(meta));
+    entity.setContentType(MIME_LFS_JSON);
+    req.setEntity(entity);
     return req;
   }
 
@@ -49,12 +52,12 @@ public class MetaPost implements Request<ObjectRes> {
   }
 
   @Override
-  public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    switch (request.getStatusCode()) {
+  public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+    switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_OK:
         return null;
       case HttpStatus.SC_ACCEPTED:
-        return mapper.readValue(request.getResponseBodyAsStream(), ObjectRes.class);
+        return mapper.readValue(response.getEntity().getContent(), ObjectRes.class);
       default:
         throw new IllegalStateException();
     }

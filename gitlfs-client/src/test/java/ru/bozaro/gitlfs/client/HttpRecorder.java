@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -22,10 +23,12 @@ public class HttpRecorder implements HttpExecutor {
     this.executor = executor;
   }
 
+  @NotNull
   @Override
-  public void executeMethod(@NotNull HttpMethod request) throws IOException {
-    executor.executeMethod(request);
-    records.add(new HttpRecord(request));
+  public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+    HttpResponse response = executor.executeMethod(request);
+    records.add(new HttpRecord(request, response));
+    return response;
   }
 
   @NotNull

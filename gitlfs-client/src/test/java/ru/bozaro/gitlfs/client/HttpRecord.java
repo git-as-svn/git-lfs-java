@@ -3,21 +3,17 @@ package ru.bozaro.gitlfs.client;
 import com.google.common.base.Utf8;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HttpHeaders;
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.http.*;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.message.BasicHttpResponse;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.testng.Assert;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -31,9 +27,9 @@ public class HttpRecord {
   @NotNull
   private final Response response;
 
-  public HttpRecord(@NotNull HttpMethod method) throws IOException {
-    this.request = new Request(method);
-    this.response = new Response(method);
+  public HttpRecord(@NotNull HttpUriRequest request, @NotNull HttpResponse response) throws IOException {
+    this.request = new Request(request);
+    this.response = new Response(response);
   }
 
   protected HttpRecord() {
@@ -76,37 +72,34 @@ public class HttpRecord {
       this.body = null;
     }
 
-    public Response(@NotNull HttpMethod method) throws IOException {
-      this.statusCode = method.getStatusCode();
-      this.statusText = method.getStatusText();
+    public Response(@NotNull HttpResponse response) throws IOException {
+      this.statusCode = response.getStatusLine().getStatusCode();
+      this.statusText = response.getStatusLine().getReasonPhrase();
       this.headers = new TreeMap<>();
-      for (Header header : method.getResponseHeaders()) {
+      for (Header header : response.getAllHeaders()) {
         headers.put(header.getName(), header.getValue());
       }
-      this.body = method.getResponseBody();
+      try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+        response.getEntity().writeTo(stream);
+        this.body = stream.toByteArray();
+        response.setEntity(new ByteArrayEntity(this.body));
+      }
     }
 
-    @Nullable
-    public InputStream apply(@NotNull HttpMethod method) throws IOException {
-      setField(method, "statusLine", new StatusLine("HTTP/1.0 " + statusCode + " " + statusText));
-      final InputStream stream = body != null ? new StreamWrapper(new ByteArrayInputStream(body)) : null;
-      setField(method, "responseStream", stream);
-      final HeaderGroup headerGroup = new HeaderGroup();
+    @NotNull
+    public HttpResponse toHttpResponse() {
+      final BasicHttpResponse response = new BasicHttpResponse(
+          new ProtocolVersion("HTTP", 1, 0),
+          statusCode,
+          statusText
+      );
       for (Map.Entry<String, String> header : headers.entrySet()) {
-        headerGroup.addHeader(new Header(header.getKey(), header.getValue()));
+        response.addHeader(header.getKey(), header.getValue());
       }
-      setField(method, "responseHeaders", headerGroup);
-      return stream;
-    }
-
-    private void setField(@NotNull HttpMethod method, @NotNull String name, Object value) {
-      try {
-        final Field field = HttpMethodBase.class.getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(method, value);
-      } catch (ReflectiveOperationException e) {
-        throw new AssertionError(e);
+      if (body != null) {
+        response.setEntity(new ByteArrayEntity(body));
       }
+      return response;
     }
 
     @Override
@@ -120,35 +113,6 @@ public class HttpRecord {
         sb.append("\n").append(asString(body));
       }
       return sb.toString();
-    }
-  }
-
-  private static class StreamWrapper extends InputStream {
-    @Nullable
-    private InputStream stream;
-
-    public StreamWrapper(@NotNull InputStream stream) {
-      this.stream = Objects.requireNonNull(stream);
-    }
-
-    @Override
-    public int read() throws IOException {
-      Assert.assertNotNull(stream);
-      return stream.read();
-    }
-
-    @Override
-    public int read(@NotNull byte[] buffer, int off, int len) throws IOException {
-      Assert.assertNotNull(stream);
-      return stream.read(buffer, off, len);
-    }
-
-    @Override
-    public void close() throws IOException {
-      if (stream != null) {
-        stream.close();
-        stream = null;
-      }
     }
   }
 
@@ -169,25 +133,29 @@ public class HttpRecord {
       body = null;
     }
 
-    public Request(@NotNull HttpMethod method) throws IOException {
-      this.href = method.getURI().getURI();
-      this.method = method.getName();
+    public Request(@NotNull HttpUriRequest request) throws IOException {
+      this.href = request.getURI().toString();
+      this.method = request.getMethod();
       this.headers = new TreeMap<>();
-      final RequestEntity entity = method instanceof EntityEnclosingMethod ? ((EntityEnclosingMethod) method).getRequestEntity() : null;
+      final HttpEntityEnclosingRequest entityRequest = request instanceof HttpEntityEnclosingRequest ? (HttpEntityEnclosingRequest) request : null;
+      final HttpEntity entity = entityRequest != null ? entityRequest.getEntity() : null;
       if (entity != null) {
         if (entity.getContentLength() >= 0) {
           headers.put(HttpHeaders.CONTENT_LENGTH, String.valueOf(entity.getContentLength()));
         }
-        headers.put(HttpHeaders.CONTENT_TYPE, entity.getContentType());
-        Assert.assertTrue(entity.isRepeatable());
+        final Header contentType = entity.getContentType();
+        if (contentType != null) {
+          headers.put(contentType.getName(), contentType.getValue());
+        }
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-          entity.writeRequest(buffer);
+          entity.writeTo(buffer);
           body = buffer.toByteArray();
         }
+        entityRequest.setEntity(new ByteArrayEntity(body));
       } else {
         body = null;
       }
-      for (Header header : method.getRequestHeaders()) {
+      for (Header header : request.getAllHeaders()) {
         headers.put(header.getName(), header.getValue());
       }
       headers.remove(HttpHeaders.HOST);

@@ -2,9 +2,10 @@ package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,11 +32,12 @@ public class JsonPost<Req, Res> implements Request<Res> {
 
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
-    final PostMethod method = new PostMethod(url);
-    method.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
-    final byte[] content = mapper.writeValueAsBytes(req);
-    method.setRequestEntity(new ByteArrayRequestEntity(content, MIME_LFS_JSON));
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+    final HttpPost method = new HttpPost(url);
+    method.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
+    final ByteArrayEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(req));
+    entity.setContentType(MIME_LFS_JSON);
+    method.setEntity(entity);
     return method;
   }
 
@@ -45,9 +47,8 @@ public class JsonPost<Req, Res> implements Request<Res> {
     return null;
   }
 
-  @NotNull
   @Override
-  public Res processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    return mapper.readValue(request.getResponseBodyAsStream(), type);
+  public Res processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+    return mapper.readValue(response.getEntity().getContent(), type);
   }
 }

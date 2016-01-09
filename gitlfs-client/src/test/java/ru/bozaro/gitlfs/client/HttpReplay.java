@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 
@@ -22,12 +23,13 @@ public class HttpReplay implements HttpExecutor {
     this.records = new ArrayDeque<>(records);
   }
 
+  @NotNull
   @Override
-  public void executeMethod(@NotNull HttpMethod request) throws IOException {
+  public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
     final HttpRecord record = records.pollFirst();
     Assert.assertNotNull(record);
     Assert.assertEquals(record.getRequest().toString(), new HttpRecord.Request(request).toString());
-    record.getResponse().apply(request);
+    return record.getResponse().toHttpResponse();
   }
 
   public void close() {

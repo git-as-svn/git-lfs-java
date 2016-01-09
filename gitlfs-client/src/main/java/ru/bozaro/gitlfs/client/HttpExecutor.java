@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -11,5 +12,6 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public interface HttpExecutor {
-  void executeMethod(@NotNull HttpMethod request) throws IOException;
+  @NotNull
+  HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException;
 }

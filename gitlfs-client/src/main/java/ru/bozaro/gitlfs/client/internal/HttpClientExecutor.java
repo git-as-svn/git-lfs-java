@@ -1,7 +1,8 @@
 package ru.bozaro.gitlfs.client.internal;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.HttpExecutor;
 
@@ -19,8 +20,9 @@ public class HttpClientExecutor implements HttpExecutor {
     this.http = http;
   }
 
+  @NotNull
   @Override
-  public void executeMethod(@NotNull HttpMethod request) throws IOException {
-    http.executeMethod(request);
+  public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+    return http.execute(request);
   }
 }

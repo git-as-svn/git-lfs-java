@@ -1,16 +1,16 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import static ru.bozaro.gitlfs.common.Constants.MIME_BINARY;
 
@@ -30,36 +30,11 @@ public class ObjectPut implements Request<Void> {
 
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {
-    final PutMethod req = new PutMethod(url);
-    req.setRequestEntity(new RequestEntity() {
-      @Override
-      public boolean isRepeatable() {
-        return true;
-      }
-
-      @Override
-      public void writeRequest(OutputStream out) throws IOException {
-        try (InputStream stream = streamProvider.getStream()) {
-          byte[] buffer = new byte[4096];
-          while (true) {
-            int read = stream.read(buffer);
-            if (read < 0) break;
-            out.write(buffer, 0, read);
-          }
-        }
-      }
-
-      @Override
-      public long getContentLength() {
-        return size;
-      }
-
-      @Override
-      public String getContentType() {
-        return MIME_BINARY;
-      }
-    });
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {
+    final HttpPut req = new HttpPut(url);
+    final AbstractHttpEntity entity = new InputStreamEntity(streamProvider.getStream(), size);
+    entity.setContentType(MIME_BINARY);
+    req.setEntity(entity);
     return req;
   }
 
@@ -70,7 +45,7 @@ public class ObjectPut implements Request<Void> {
   }
 
   @Override
-  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
+  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
     return null;
   }
 }

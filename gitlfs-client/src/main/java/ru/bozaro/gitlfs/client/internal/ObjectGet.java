@@ -1,8 +1,9 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
@@ -24,8 +25,8 @@ public class ObjectGet<T> implements Request<T> {
 
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
-    return new GetMethod(url);
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
+    return new HttpGet(url);
   }
 
   @Nullable
@@ -35,7 +36,7 @@ public class ObjectGet<T> implements Request<T> {
   }
 
   @Override
-  public T processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    return handler.accept(request.getResponseBodyAsStream());
+  public T processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+    return handler.accept(response.getEntity().getContent());
   }
 }

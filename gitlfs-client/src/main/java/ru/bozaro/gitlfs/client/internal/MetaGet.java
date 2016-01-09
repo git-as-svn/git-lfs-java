@@ -1,9 +1,10 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
@@ -21,9 +22,9 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 public class MetaGet implements Request<ObjectRes> {
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
-    final GetMethod req = new GetMethod(url);
-    req.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
+    final HttpGet req = new HttpGet(url);
+    req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     return req;
   }
 
@@ -37,10 +38,10 @@ public class MetaGet implements Request<ObjectRes> {
   }
 
   @Override
-  public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
-    switch (request.getStatusCode()) {
+  public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+    switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_OK:
-        return mapper.readValue(request.getResponseBodyAsStream(), ObjectRes.class);
+        return mapper.readValue(response.getEntity().getContent(), ObjectRes.class);
       case HttpStatus.SC_NOT_FOUND:
         return null;
       default:

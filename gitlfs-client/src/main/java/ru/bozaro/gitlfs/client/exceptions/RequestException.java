@@ -1,8 +1,9 @@
 package ru.bozaro.gitlfs.client.exceptions;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.URIException;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -14,27 +15,31 @@ import java.io.IOException;
  */
 public class RequestException extends IOException {
   @NotNull
-  private final HttpMethod request;
+  private final HttpUriRequest request;
+  @NotNull
+  private final HttpResponse response;
 
-  public RequestException(@NotNull HttpMethod request) {
+  public RequestException(@NotNull HttpUriRequest request, @NotNull HttpResponse response) {
     this.request = request;
+    this.response = response;
   }
 
   public int getStatusCode() {
-    return request.getStatusCode();
+    return response.getStatusLine().getStatusCode();
   }
 
   @Override
   public String getMessage() {
-    return getUrl(request) + " - " + request.getStatusCode() + " (" + request.getStatusText() + ")";
+    final StatusLine statusLine = response.getStatusLine();
+    return request.getURI().toString() + " - " + statusLine.getStatusCode() + " (" + statusLine.getReasonPhrase() + ")";
   }
 
   @NotNull
   public String getRequestInfo() {
     final StringBuilder sb = new StringBuilder();
     sb.append("Request:\n");
-    sb.append("  ").append(request.getName()).append(" ").append(getUrl(request)).append("\n");
-    for (Header header : request.getRequestHeaders()) {
+    sb.append("  ").append(request.getMethod()).append(" ").append(request.getURI().toString()).append("\n");
+    for (Header header : request.getAllHeaders()) {
       sb.append("  ").append(header.getName()).append(": ");
       if (!header.getName().equals("Authorization")) {
         sb.append(header.getValue());
@@ -48,8 +53,9 @@ public class RequestException extends IOException {
       sb.append("\n");
     }
 
-    sb.append("Response: ").append(request.getStatusCode()).append(" ").append(request.getStatusText()).append("\n");
-    for (Header header : request.getResponseHeaders()) {
+    final StatusLine statusLine = response.getStatusLine();
+    sb.append("Response: ").append(statusLine.getStatusCode()).append(" ").append(statusLine.getReasonPhrase()).append("\n");
+    for (Header header : response.getAllHeaders()) {
       sb.append("  ").append(header.getName()).append(": ");
       if (!header.getName().equals("Authorization")) {
         sb.append(header.getValue());
@@ -63,13 +69,5 @@ public class RequestException extends IOException {
       sb.append("\n");
     }
     return sb.toString();
-  }
-
-  private static String getUrl(@NotNull HttpMethod request) {
-    try {
-      return request.getURI().toString();
-    } catch (URIException e) {
-      return "<unknown url>";
-    }
   }
 }

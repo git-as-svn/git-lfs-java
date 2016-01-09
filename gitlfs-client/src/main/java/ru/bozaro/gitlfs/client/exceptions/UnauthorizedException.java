@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.client.exceptions;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Artem V. Navrotskiy
  */
 public class UnauthorizedException extends RequestException {
-  public UnauthorizedException(@NotNull HttpMethod request) {
-    super(request);
+  public UnauthorizedException(@NotNull HttpUriRequest request, @NotNull HttpResponse response) {
+    super(request, response);
   }
 }

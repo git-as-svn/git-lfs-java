@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class Recorder {
   public static void main(@NotNull String[] args) throws IOException {
     final AuthProvider auth = AuthHelper.create("git@github.com:bozaro/test.git");
-    final HttpRecorder recorder = new HttpRecorder(new HttpClientExecutor(new HttpClient()));
+    final HttpRecorder recorder = new HttpRecorder(new HttpClientExecutor(new DefaultHttpClient()));
 
     doWork(new Client(auth, recorder));
 

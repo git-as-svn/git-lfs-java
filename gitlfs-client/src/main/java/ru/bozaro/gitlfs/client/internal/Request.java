@@ -1,7 +1,8 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,9 +15,9 @@ import java.io.IOException;
  */
 public interface Request<R> {
   @NotNull
-  HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException;
+  HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException;
 
-  R processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException;
+  R processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException;
 
   /**
    * Success status codes.

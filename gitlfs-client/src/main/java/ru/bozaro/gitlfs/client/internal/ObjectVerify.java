@@ -1,9 +1,11 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -28,11 +30,13 @@ public class ObjectVerify implements Request<Void> {
 
   @NotNull
   @Override
-  public HttpMethod createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {
-    final PostMethod req = new PostMethod(url);
-    req.addRequestHeader(HEADER_ACCEPT, MIME_LFS_JSON);
+  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {
+    final HttpPost req = new HttpPost(url);
+    req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     final byte[] content = mapper.writeValueAsBytes(meta);
-    req.setRequestEntity(new ByteArrayRequestEntity(content, MIME_LFS_JSON));
+    final AbstractHttpEntity entity = new ByteArrayEntity(content);
+    entity.setContentType(MIME_LFS_JSON);
+    req.setEntity(entity);
     return req;
   }
 
@@ -43,7 +47,7 @@ public class ObjectVerify implements Request<Void> {
   }
 
   @Override
-  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpMethod request) throws IOException {
+  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
     return null;
   }
 }

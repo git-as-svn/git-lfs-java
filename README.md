@@ -56,6 +56,8 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 Version 0.8.0 (unreleased)
 
+ * Replace commons-httpclient:commons-httpclient:3.1 by org.apache.httpcomponents:httpclient:4.1.3
+
 Version 0.7.0
 
  * Add header modification for replacing Basic authentication by Token
