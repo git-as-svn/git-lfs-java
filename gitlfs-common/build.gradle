@@ -1,6 +1,6 @@
 description = "Java Git-LFS common structures"
 
 dependencies {
-  compile "com.fasterxml.jackson.core:jackson-databind:2.6.2"
-  compile "com.google.guava:guava:18.0"
+  compile "com.fasterxml.jackson.core:jackson-databind:2.7.0"
+  compile "com.google.guava:guava:19.0"
 }

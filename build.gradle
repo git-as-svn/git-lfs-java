@@ -10,7 +10,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.github.ben-manes:gradle-versions-plugin:0.11.3"
+    classpath "com.github.ben-manes:gradle-versions-plugin:0.12.0"
   }
 }
 
@@ -40,10 +40,10 @@ subprojects {
   ext.ossrhPassword = System.getenv("OSSRH_PASSWORD") ?: ""
 
   dependencies {
-    compile "org.jetbrains:annotations:13.0"
+    compile "org.jetbrains:annotations:15.0"
 
-    testCompile "com.google.guava:guava:18.0"
-    testCompile "org.testng:testng:6.8.8"
+    testCompile "com.google.guava:guava:19.0"
+    testCompile "org.testng:testng:6.9.10"
   }
 
   idea {
