@@ -4,12 +4,23 @@ task wrapper(type: Wrapper) {
 
 def javaVersion = JavaVersion.VERSION_1_8
 
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath "com.github.ben-manes:gradle-versions-plugin:0.11.3"
+  }
+}
+
 allprojects {
   repositories {
     mavenCentral()
   }
 
   apply plugin: "idea"
+  apply plugin: "com.github.ben-manes.versions"
 }
 
 subprojects {
