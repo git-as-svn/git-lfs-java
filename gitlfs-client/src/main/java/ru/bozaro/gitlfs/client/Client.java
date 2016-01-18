@@ -7,7 +7,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -52,9 +51,7 @@ public class Client {
   private final HttpExecutor http;
 
   public Client(@NotNull AuthProvider authProvider) {
-    this(authProvider, HttpClients.custom()
-        .setConnectionManager(new PoolingHttpClientConnectionManager())
-        .build());
+    this(authProvider, HttpClients.createDefault());
   }
 
   public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {
