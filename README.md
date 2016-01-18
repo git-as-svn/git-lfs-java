@@ -54,7 +54,9 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Version 0.9.0 (unreleased)
+Version 0.9.0
+
+ * Update all dependencies
 
 Version 0.8.0
 

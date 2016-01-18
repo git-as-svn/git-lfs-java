@@ -29,7 +29,7 @@ subprojects {
   apply plugin: "signing"
 
   group = "ru.bozaro.gitlfs"
-  version = "0.9.0-SNAPSHOT"
+  version = "0.9.0"
 
   sourceCompatibility = javaVersion
 
