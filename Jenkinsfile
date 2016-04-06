@@ -2,7 +2,7 @@ node {
   stage 'Checkout'
   checkout ([
     $class: 'GitSCM',
-    userRemoteConfigs: [[url: 'https://github.com/bozaro/git-lfs-migrate.git']],
+    userRemoteConfigs: [[url: 'https://github.com/bozaro/git-lfs-java.git']],
     extensions: [[$class: 'CleanCheckout']]
   ])
 
