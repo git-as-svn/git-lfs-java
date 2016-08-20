@@ -54,6 +54,8 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
+Version 0.11.0 (unreleased)
+
 Version 0.10.0
 
  * Add request/response content information to RequestException
