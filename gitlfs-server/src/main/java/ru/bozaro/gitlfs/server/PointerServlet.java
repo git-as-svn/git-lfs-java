@@ -80,9 +80,9 @@ public class PointerServlet extends HttpServlet {
   @NotNull
   private static BatchItem filterDownload(@NotNull BatchItem item) {
     if (item.getLinks().containsKey(LinkType.Download)) {
-      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null);
+      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null, null);
     }
-    return new BatchItem(item.getOid(), item.getSize(), null, new Error(HttpServletResponse.SC_NOT_FOUND, "Object not found"));
+    return new BatchItem(item.getOid(), item.getSize(), null, null, new Error(HttpServletResponse.SC_NOT_FOUND, "Object not found"));
   }
 
   private static Map<LinkType, Link> filterLocation(@NotNull Map<LinkType, Link> links, @NotNull LinkType... linkTypes) {
@@ -97,10 +97,10 @@ public class PointerServlet extends HttpServlet {
   @NotNull
   private static BatchItem filterUpload(@NotNull BatchItem item) throws IOException {
     if (item.getLinks().containsKey(LinkType.Download)) {
-      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null);
+      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null, null);
     }
     if (item.getLinks().containsKey(LinkType.Upload)) {
-      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Upload, LinkType.Verify), null);
+      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Upload, LinkType.Verify), null, null);
     }
     throw new IOException("Upload link not found");
   }

@@ -24,11 +24,11 @@ public final class BatchItem extends Meta implements Links {
   private final Error error;
 
   public BatchItem(@NotNull Meta meta, @NotNull Map<LinkType, Link> links) {
-    this(meta.getOid(), meta.getSize(), links, null);
+    this(meta.getOid(), meta.getSize(), links, null, null);
   }
 
   public BatchItem(@NotNull Meta meta, @NotNull Error error) {
-    this(meta.getOid(), meta.getSize(), null, error);
+    this(meta.getOid(), meta.getSize(), null, null, error);
   }
 
   public BatchItem(
@@ -39,13 +39,16 @@ public final class BatchItem extends Meta implements Links {
       long size,
       @JsonProperty(value = "actions")
       @Nullable
-      Map<LinkType, Link> links,
+      Map<LinkType, Link> links1,
+      @JsonProperty(value = "_links")
+      @Nullable
+      Map<LinkType, Link> links2,
       @JsonProperty(value = "error")
       @Nullable
       Error error
   ) {
     super(oid, size);
-    this.links = links == null ? Collections.<LinkType, Link>emptyMap() : Collections.unmodifiableMap(new TreeMap<>(links));
+    this.links = combine(links1, links2);
     this.error = error;
   }
 
@@ -58,5 +61,22 @@ public final class BatchItem extends Meta implements Links {
   @Nullable
   public Error getError() {
     return error;
+  }
+
+  @NotNull
+  private static <K, V> Map<K, V> combine(@Nullable Map<K, V> a, @Nullable Map<K, V> b) {
+    Map<K, V> r = null;
+    if (a != null && !a.isEmpty()) {
+      r = a;
+    }
+    if (b != null && !b.isEmpty()) {
+      if (r == null) {
+        r = b;
+      } else {
+        r = new TreeMap<>(r);
+        r.putAll(b);
+      }
+    }
+    return r == null ? Collections.emptyMap() : Collections.unmodifiableMap(r);
   }
 }

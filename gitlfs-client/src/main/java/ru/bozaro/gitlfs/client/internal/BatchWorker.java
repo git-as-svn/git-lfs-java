@@ -173,7 +173,7 @@ public abstract class BatchWorker<T, R> {
           }
         }
         for (State value : batch.values()) {
-          value.future.completeExceptionally(new IOException("Requested object not found in server responce: " + value.meta.getOid()));
+          value.future.completeExceptionally(new IOException("Requested object not found in server response: " + value.meta.getOid()));
         }
       }
     } catch (UnauthorizedException e) {

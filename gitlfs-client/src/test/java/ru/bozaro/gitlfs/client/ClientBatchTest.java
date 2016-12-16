@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.client;
 
 import com.google.common.collect.ImmutableMap;
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.common.JsonHelper;
@@ -22,7 +23,19 @@ public class ClientBatchTest {
    */
   @Test
   public void batchUpload01() throws IOException {
-    final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/batch-upload-01.yml");
+    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-01.yml");
+  }
+
+  /**
+   * Simple upload (JFrog Artifactory).
+   */
+  @Test
+  public void batchUpload02() throws IOException {
+    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-02.yml");
+  }
+
+  private void batchUpload(@NotNull String path) throws IOException {
+    final HttpReplay replay = YamlHelper.createReplay(path);
     final Client client = new Client(new FakeAuthProvider(), replay);
     final BatchRes result = client.postBatch(new BatchReq(
         Operation.Upload,
@@ -70,7 +83,19 @@ public class ClientBatchTest {
    */
   @Test
   public void batchDownload01() throws IOException {
-    final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/batch-download-01.yml");
+    batchDownload("/ru/bozaro/gitlfs/client/batch-download-01.yml");
+  }
+
+  /**
+   * Simple download (JFrog Artifactory).
+   */
+  @Test
+  public void batchDownload02() throws IOException {
+    batchDownload("/ru/bozaro/gitlfs/client/batch-download-02.yml");
+  }
+
+  private void batchDownload(@NotNull String path) throws IOException {
+    final HttpReplay replay = YamlHelper.createReplay(path);
     final Client client = new Client(new FakeAuthProvider(), replay);
     final BatchRes result = client.postBatch(new BatchReq(
         Operation.Download,

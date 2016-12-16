@@ -34,7 +34,7 @@ public class ClientLegacyTest {
   public void legacyUpload02() throws IOException {
     final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/legacy-upload-02.yml");
     final Client client = new Client(new FakeAuthProvider(), replay);
-    client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015"));
+    Assert.assertFalse(client.putObject(new StringStreamProvider("Fri Oct 02 21:07:33 MSK 2015")));
     replay.close();
   }
 

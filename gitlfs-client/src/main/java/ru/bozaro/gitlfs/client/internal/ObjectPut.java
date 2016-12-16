@@ -2,6 +2,7 @@ package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
@@ -41,7 +42,10 @@ public class ObjectPut implements Request<Void> {
   @Nullable
   @Override
   public int[] statusCodes() {
-    return null;
+    return new int[]{
+        HttpStatus.SC_OK,
+        HttpStatus.SC_CREATED,
+    };
   }
 
   @Override

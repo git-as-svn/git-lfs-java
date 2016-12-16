@@ -1,0 +1,48 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "operation" : "download",
+      "objects" : [ {
+        "oid" : "b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e",
+        "size" : 28
+      }, {
+        "oid" : "1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa",
+        "size" : 3
+      } ]
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '253'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/objects/batch
+  method: POST
+response:
+  body: !text |-
+    {"objects":[{"oid":"b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e","size":28,"_links":{"download":{"href":"https://github-cloud.s3.amazonaws.com/alambic/media/111975537/b8/10/b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e?actor_id=2458138","header":{"Authorization":"Token-2","x-amz-content-sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","x-amz-date":"20151007T190640Z"}}}},{"oid":"1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa","size":3,"error":{"code":404,"message":"Object does not exist on the server"}}]}
+  headers:
+    Access-Control-Allow-Credentials: 'true'
+    Access-Control-Allow-Origin: '*'
+    Access-Control-Expose-Headers: ETag, Link, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval
+    Cache-Control: private, max-age=60, s-maxage=60
+    Content-Length: '796'
+    Content-Security-Policy: default-src 'none'
+    Content-Type: application/json; charset=utf-8
+    Date: Wed, 07 Oct 2015 19:06:40 GMT
+    ETag: '"004aac442b3b84c52ed623c5c9e9f90a"'
+    Server: GitHub.com
+    Status: 200 OK
+    Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+    Vary: Accept-Encoding
+    X-Content-Type-Options: nosniff
+    X-Frame-Options: deny
+    X-GitHub-Media-Type: unknown
+    X-GitHub-Request-Id: 4FA5AFEC:10755:147CE471:56156D40
+    X-RateLimit-Limit: '3000'
+    X-RateLimit-Remaining: '2999'
+    X-RateLimit-Reset: '1444244860'
+    X-Served-By: 8a5c38021a5cd7cef7b8f49a296fee40
+    X-XSS-Protection: 1; mode=block
+  statusCode: 200
+  statusText: OK
