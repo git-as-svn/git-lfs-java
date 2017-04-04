@@ -54,7 +54,9 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Version 0.12.0 (unreleased)
+Version 0.11.1
+
+ * Fix ISO 8601 date formatting
 
 Version 0.11.0
 

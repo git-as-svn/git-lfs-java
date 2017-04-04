@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,8 +22,9 @@ public final class JsonHelper {
   @NotNull
   public static ObjectMapper createMapper() {
     final ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-    mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    mapper.setDateFormat(new ISO8601DateFormat());
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     return mapper;
   }
