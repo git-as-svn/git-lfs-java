@@ -24,10 +24,10 @@ public class YamlRepresenter extends Representer {
     public Node representData(Object data) {
       byte[] value = (byte[]) data;
       if (Utf8.isWellFormed(value)) {
-        return representScalar(new Tag("!text"), new String(value, StandardCharsets.UTF_8), DumperOptions.ScalarStyle.LITERAL.getChar());
+        return representScalar(new Tag("!text"), new String(value, StandardCharsets.UTF_8), DumperOptions.ScalarStyle.LITERAL);
       } else {
         String binary = Base64Coder.encodeLines((byte[]) data);
-        return representScalar(Tag.BINARY, binary, '|');
+        return representScalar(Tag.BINARY, binary, DumperOptions.ScalarStyle.LITERAL);
       }
     }
   }
