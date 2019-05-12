@@ -1,16 +1,17 @@
-task wrapper(type: Wrapper) {
-  gradleVersion = "2.11"
+wrapper {
+    gradleVersion = '5.3.1'
 }
 
 def javaVersion = JavaVersion.VERSION_1_8
 
 buildscript {
   repositories {
+    mavenCentral()
     jcenter()
   }
 
   dependencies {
-    classpath "com.github.ben-manes:gradle-versions-plugin:0.12.0"
+    classpath "com.github.ben-manes:gradle-versions-plugin:0.21.0"
   }
 }
 
@@ -40,10 +41,10 @@ subprojects {
   ext.ossrhPassword = System.getenv("OSSRH_PASSWORD") ?: ""
 
   dependencies {
-    compile "org.jetbrains:annotations:15.0"
+    compile "org.jetbrains:annotations:17.0.0"
 
-    testCompile "com.google.guava:guava:19.0"
-    testCompile "org.testng:testng:6.9.10"
+    testCompile "com.google.guava:guava:27.1-jre"
+    testCompile "org.testng:testng:6.14.3"
   }
 
   idea {
