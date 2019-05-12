@@ -62,7 +62,16 @@ subprojects {
   test {
     useTestNG()
     maxHeapSize = "256m"
-    ignoreFailures = "$testIgnoreFailures".toBoolean()
+
+    testLogging {
+      exceptionFormat = 'full'
+      showStandardStreams = true
+    }
+
+    // listen to events in the test execution lifecycle
+    beforeTest { descriptor ->
+      logger.lifecycle("Running test: " + descriptor)
+    }
   }
 
   task sourcesJar(type: Jar, dependsOn: classes) {
