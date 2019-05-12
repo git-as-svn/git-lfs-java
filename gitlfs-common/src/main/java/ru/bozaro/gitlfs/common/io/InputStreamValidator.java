@@ -1,12 +1,13 @@
 package ru.bozaro.gitlfs.common.io;
 
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Wrapper for validating hash and size of uploading object.
@@ -15,7 +16,7 @@ import java.io.InputStream;
  */
 public class InputStreamValidator extends InputStream {
   @NotNull
-  private final Hasher hasher;
+  private final MessageDigest digest;
   @NotNull
   private final InputStream stream;
   @NotNull
@@ -24,8 +25,12 @@ public class InputStreamValidator extends InputStream {
   private boolean eof;
   private long totalSize;
 
-  public InputStreamValidator(@NotNull InputStream stream, @NotNull Meta meta) {
-    this.hasher = Hashing.sha256().newHasher();
+  public InputStreamValidator(@NotNull InputStream stream, @NotNull Meta meta) throws IOException {
+    try {
+      this.digest = MessageDigest.getInstance("SHA-256");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IOException(e);
+    }
     this.stream = stream;
     this.meta = meta;
     this.eof = false;
@@ -39,7 +44,7 @@ public class InputStreamValidator extends InputStream {
     }
     final int data = stream.read();
     if (data >= 0) {
-      hasher.putByte((byte) data);
+      digest.update((byte) data);
       checkSize(1);
     } else {
       checkSize(-1);
@@ -59,7 +64,7 @@ public class InputStreamValidator extends InputStream {
       if ((meta.getSize() >= 0) && (totalSize != meta.getSize())) {
         throw new IOException("Unexpected end of stream");
       }
-      final String hash = hasher.hash().toString();
+      final String hash = DatatypeConverter.printHexBinary(digest.digest());
       if (!meta.getOid().equals(hash)) {
         throw new IOException("Invalid stream hash");
       }
@@ -73,7 +78,7 @@ public class InputStreamValidator extends InputStream {
     }
     final int size = stream.read(buffer, off, len);
     if (size > 0) {
-      hasher.putBytes(buffer, off, size);
+      digest.update(buffer, off, size);
     }
     checkSize(size);
     return size;
