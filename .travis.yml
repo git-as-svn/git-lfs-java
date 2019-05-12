@@ -9,7 +9,7 @@ env:
   - secure: m6aQ/DUdYqz26iV8+tya4q3jkXXHznsN8HRvnoVzBu85rDatKex5nyCW38mmkoSdyzk6CGK3cxk6le9mV4Y6CTTl0zJuf5BEXjeSzBpdBIpTKGLjVsNMi3UT3+DixZs7VMxQvByJoa63ZVCmzBkKenl+vkmRaI8lr1Q4pc1JK1wpkaH0gXRxonN1im3qH4rXFcG60btYZdZGIHczbU27h3TN8IfImkwnf1BRtuTVGth2fyAQgyzWQZcuOM5thwXAWDERtWHa9zTS5xbF0LAJO6U8UyTc7JDXyNxmot2aR2sN35J3UhCS8WU93eReowSlg1a8ZrVZ4fyDc2T/v4L8jPO1yKeCADj85DLPqnh+DXa6Mi5uGyCFtB7Kg84EoD96VWcxzDV4JGil9/h5OJkBe7zcdFpRAkdpih1BpOW62taVl9ZOKTgL8vpU8XXpFKdkXLI1XP30jVIRICdvl8wTfSp+tYEbAt0HlSeymmgw5ibvEcvHOayXSdEDSODKid/ov9gFvkaeKnGyuanJX4BnqgMKkFWA7rv9Ff7qku+woysDyZ+fPWKXiDoLS46WJELrGqlycEFBRivtz//4BjgYu48UhnM1w2XrzIaaC9WEtrHB/aKrjuvTMsYdcAFP3s52kdKF6VXjf0vDNx1YseAVgkMhfsw+jEz9h6NRYlrX88o=
 
 before_install:
-  - if [ "${TRAVIS_REPO_SLUG}" == "bozaro/git-lfs-java" ]; then if [ -z "${TRAVIS_PULL_REQUEST}" ]; then openssl aes-256-cbc -K $encrypted_8e5c960335c9_key -iv $encrypted_8e5c960335c9_iv -in secring.gpg.enc -out secring.gpg -d; fi fi
+  - if [ "${TRAVIS_REPO_SLUG}" == "bozaro/git-lfs-java" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then openssl aes-256-cbc -K $encrypted_8e5c960335c9_key -iv $encrypted_8e5c960335c9_iv -in secring.gpg.enc -out secring.gpg -d; fi
 
 after_success:
   - if [ "${TRAVIS_REPO_SLUG}" == "bozaro/git-lfs-java" ]; then if [ "${TRAVIS_BRANCH}" == "master" ] || [ -n "${TRAVIS_TAG}" ]; then ./gradlew uploadArchives; fi fi
