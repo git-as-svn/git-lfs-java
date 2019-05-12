@@ -93,7 +93,7 @@ subprojects {
     archives javadocJar
   }
 
-  if (System.getenv("SIGNING_PASSWORD") != null) {
+  if (System.getenv("SIGNING_PASSWORD") != null && file("${rootProject.projectDir}/secring.gpg").exists()) {
     signing {
       sign configurations.archives
     }
@@ -102,7 +102,7 @@ subprojects {
   uploadArchives {
     repositories {
       mavenDeployer {
-        if (System.getenv("SIGNING_PASSWORD") != null) {
+        if (System.getenv("SIGNING_PASSWORD") != null && file("${rootProject.projectDir}/secring.gpg").exists()) {
           beforeDeployment {
             MavenDeployment deployment -> signing.signPom(deployment)
           }
