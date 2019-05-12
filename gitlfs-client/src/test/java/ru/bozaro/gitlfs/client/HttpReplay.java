@@ -28,7 +28,11 @@ public class HttpReplay implements HttpExecutor {
   public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
     final HttpRecord record = records.pollFirst();
     Assert.assertNotNull(record);
-    Assert.assertEquals(record.getRequest().toString(), new HttpRecord.Request(request).toString());
+
+    final String expected = record.getRequest().toString();
+    final String actual = new HttpRecord.Request(request).toString();
+    Assert.assertEquals(actual, expected);
+
     return record.getResponse().toHttpResponse();
   }
 
