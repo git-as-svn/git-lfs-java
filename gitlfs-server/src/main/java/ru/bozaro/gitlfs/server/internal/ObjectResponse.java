@@ -27,6 +27,6 @@ public class ObjectResponse implements ResponseWriter {
   public void write(@NotNull HttpServletResponse response) throws IOException {
     response.setStatus(status);
     response.setContentType(MIME_LFS_JSON);
-    JsonHelper.createMapper().writeValue(response.getOutputStream(), value);
+    JsonHelper.mapper.writeValue(response.getOutputStream(), value);
   }
 }

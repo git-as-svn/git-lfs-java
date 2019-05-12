@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.common.JsonHelper;
-import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
+import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -44,7 +44,7 @@ public class ClientBatchTest {
             new Meta("1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa", 3)
         )
     ));
-    Assert.assertEquals(JsonHelper.toString(result), JsonHelper.toString(new BatchRes(
+    Assert.assertEquals(JsonHelper.mapper.writeValueAsString(result), JsonHelper.mapper.writeValueAsString(new BatchRes(
         Arrays.asList(
             new BatchItem(
                 new Meta("b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e", 28),
@@ -104,7 +104,7 @@ public class ClientBatchTest {
             new Meta("1cbec737f863e4922cee63cc2ebbfaafcd1cff8b790d8cfd2e6a5d550b648afa", 3)
         )
     ));
-    Assert.assertEquals(JsonHelper.toString(result), JsonHelper.toString(new BatchRes(
+    Assert.assertEquals(JsonHelper.mapper.writeValueAsString(result), JsonHelper.mapper.writeValueAsString(new BatchRes(
         Arrays.asList(
             new BatchItem(
                 new Meta("b810bbe954d51e380f395de0c301a0a42d16f115453f2feb4188ca9f7189074e", 28),
