@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.JsonHelper;
-import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
+import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
@@ -60,7 +60,7 @@ public class PointerServlet extends HttpServlet {
 
   public PointerServlet(@NotNull PointerManager manager) {
     this.manager = manager;
-    this.mapper = JsonHelper.createMapper();
+    this.mapper = JsonHelper.mapper;
     this.accessCheckerVisitor = new AccessCheckerVisitor(manager);
   }
 
@@ -135,7 +135,7 @@ public class PointerServlet extends HttpServlet {
     } catch (ServerError e) {
       resp.setStatus(e.getStatusCode());
       resp.setContentType(Constants.MIME_LFS_JSON);
-      JsonHelper.createMapper().writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
+      JsonHelper.mapper.writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
       return;
     }
     super.doPost(req, resp);

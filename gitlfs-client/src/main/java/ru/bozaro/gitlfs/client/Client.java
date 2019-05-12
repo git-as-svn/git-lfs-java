@@ -60,7 +60,7 @@ public class Client {
 
   public Client(@NotNull AuthProvider authProvider, @NotNull HttpExecutor http) {
     this.authProvider = authProvider;
-    this.mapper = JsonHelper.createMapper();
+    this.mapper = JsonHelper.mapper;
     this.http = http;
   }
 

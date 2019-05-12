@@ -81,7 +81,7 @@ public class ExternalAuthProvider extends CachedAuthProvider {
     if (exitValue != 0) {
       throw new IOException("Command returned with non-zero exit code " + exitValue + ": " + Arrays.toString(builder.command().toArray()));
     }
-    return JsonHelper.createMapper().readValue(stdoutData.toByteArray(), Link.class);
+    return JsonHelper.mapper.readValue(stdoutData.toByteArray(), Link.class);
   }
 
   @NotNull
