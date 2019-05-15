@@ -322,7 +322,7 @@ public class Client {
   protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
     if (link != null) {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
-        req.addHeader(entry.getKey(), entry.getValue());
+        req.setHeader(entry.getKey(), entry.getValue());
       }
     }
   }
