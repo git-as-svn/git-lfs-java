@@ -113,8 +113,7 @@ public class PointerServlet extends HttpServlet {
         return;
       }
     } catch (ServerError e) {
-      resp.setStatus(e.getStatusCode());
-      resp.getWriter().println(e.getMessage());
+      PointerServlet.sendError(resp, e);
       return;
     }
     super.doGet(req, resp);
@@ -123,7 +122,8 @@ public class PointerServlet extends HttpServlet {
   @Override
   protected void doPost(@NotNull HttpServletRequest req, @NotNull HttpServletResponse resp) throws ServletException, IOException {
     try {
-      checkMimeType(req.getContentType(), Constants.MIME_LFS_JSON);
+      checkMimeTypes(req);
+
       if (req.getPathInfo() == null) {
         processObjectPost(req).write(resp);
         return;
@@ -133,28 +133,15 @@ public class PointerServlet extends HttpServlet {
         return;
       }
     } catch (ServerError e) {
-      resp.setStatus(e.getStatusCode());
-      resp.setContentType(Constants.MIME_LFS_JSON);
-      JsonHelper.mapper.writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
+      sendError(resp, e);
       return;
     }
     super.doPost(req, resp);
   }
 
-  public static void checkMimeType(@Nullable String contentType, @NotNull String mimeType) throws ServerError {
-    String actualType = contentType;
-    if (actualType != null) {
-      int separator = actualType.indexOf(';');
-      if (separator >= 0) {
-        while (separator > 1 && actualType.charAt(separator - 1) == ' ') {
-          separator--;
-        }
-        actualType = actualType.substring(0, separator);
-      }
-    }
-    if (!mimeType.equals(actualType)) {
-      throw new ServerError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not Acceptable", null);
-    }
+  public static void checkMimeTypes(@NotNull HttpServletRequest request) throws ServerError {
+    checkMimeType(request.getContentType());
+    checkMimeType(request.getHeader(Constants.HEADER_ACCEPT));
   }
 
   @NotNull
@@ -186,6 +173,22 @@ public class PointerServlet extends HttpServlet {
     return new ObjectResponse(HttpServletResponse.SC_OK, new BatchRes(Arrays.asList(locations)));
   }
 
+  private static void checkMimeType(@Nullable String contentType) throws ServerError {
+    String actualType = contentType;
+    if (actualType != null) {
+      int separator = actualType.indexOf(';');
+      if (separator >= 0) {
+        while (separator > 1 && actualType.charAt(separator - 1) == ' ') {
+          separator--;
+        }
+        actualType = actualType.substring(0, separator);
+      }
+    }
+    if (!Constants.MIME_LFS_JSON.equals(actualType)) {
+      throw new ServerError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not Acceptable", null);
+    }
+  }
+
   @NotNull
   private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
     final PointerManager.Locator locator = manager.checkDownloadAccess(req, getSelfUrl(req));
@@ -199,6 +202,12 @@ public class PointerServlet extends HttpServlet {
       return new ObjectResponse(HttpServletResponse.SC_OK, new ObjectRes(location.getOid(), location.getSize(), addSelfLink(req, location.getLinks())));
     }
     throw new ServerError(HttpServletResponse.SC_NOT_FOUND, "Object not found", null);
+  }
+
+  public static void sendError(@NotNull HttpServletResponse resp, @NotNull ServerError e) throws IOException {
+    resp.setStatus(e.getStatusCode());
+    resp.setContentType(Constants.MIME_LFS_JSON);
+    JsonHelper.mapper.writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
   }
 
   @NotNull

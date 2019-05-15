@@ -1,6 +1,5 @@
 package ru.bozaro.gitlfs.common.data;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +13,6 @@ import java.util.TreeMap;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class BatchItem extends Meta implements Links {
   @JsonProperty(value = "actions")
   @NotNull
@@ -27,40 +25,16 @@ public final class BatchItem extends Meta implements Links {
     this(meta.getOid(), meta.getSize(), links, null, null);
   }
 
-  public BatchItem(@NotNull Meta meta, @NotNull Error error) {
-    this(meta.getOid(), meta.getSize(), null, null, error);
-  }
-
   public BatchItem(
-      @JsonProperty(value = "oid", required = true)
-      @NotNull
-      String oid,
-      @JsonProperty(value = "size", required = true)
-      long size,
-      @JsonProperty(value = "actions")
-      @Nullable
-      Map<LinkType, Link> links1,
-      @JsonProperty(value = "_links")
-      @Nullable
-      Map<LinkType, Link> links2,
-      @JsonProperty(value = "error")
-      @Nullable
-      Error error
+      @JsonProperty(value = "oid", required = true) @NotNull String oid,
+      @JsonProperty(value = "size", required = true) long size,
+      @JsonProperty(value = "actions") @Nullable Map<LinkType, Link> links1,
+      @JsonProperty(value = "_links") @Nullable Map<LinkType, Link> links2,
+      @JsonProperty(value = "error") @Nullable Error error
   ) {
     super(oid, size);
     this.links = combine(links1, links2);
     this.error = error;
-  }
-
-  @Override
-  @NotNull
-  public Map<LinkType, Link> getLinks() {
-    return links;
-  }
-
-  @Nullable
-  public Error getError() {
-    return error;
   }
 
   @NotNull
@@ -78,5 +52,20 @@ public final class BatchItem extends Meta implements Links {
       }
     }
     return r == null ? Collections.emptyMap() : Collections.unmodifiableMap(r);
+  }
+
+  public BatchItem(@NotNull Meta meta, @NotNull Error error) {
+    this(meta.getOid(), meta.getSize(), null, null, error);
+  }
+
+  @Override
+  @NotNull
+  public Map<LinkType, Link> getLinks() {
+    return links;
+  }
+
+  @Nullable
+  public Error getError() {
+    return error;
   }
 }

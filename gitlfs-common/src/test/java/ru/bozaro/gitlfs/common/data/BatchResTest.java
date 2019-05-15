@@ -1,7 +1,7 @@
 package ru.bozaro.gitlfs.common.data;
 
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 /**
  * Test Meta deserialization.
@@ -18,9 +16,6 @@ import java.util.Locale;
  * @author Artem V. Navrotskiy
  */
 public class BatchResTest {
-  @NotNull
-  private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-
   @Test
   public void parse01() throws IOException, ParseException, URISyntaxException {
     final BatchRes data = SerializeTester.deserialize("batch-res-01.json", BatchRes.class);
@@ -43,7 +38,7 @@ public class BatchResTest {
               .put("Authorization", "Basic ...")
               .build()
       );
-      Assert.assertEquals(link.getExpiresAt(), dateFormat.parse("2015-07-27T21:15:01.000+00:00"));
+      Assert.assertEquals(link.getExpiresAt(), StdDateFormat.instance.parse("2015-07-27T21:15:01.000+00:00"));
     }
     {
       final BatchItem item = data.getObjects().get(1);

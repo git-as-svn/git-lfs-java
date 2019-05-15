@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +16,6 @@ import java.util.TreeMap;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Link {
   @JsonProperty(value = "href", required = true)
   @NotNull
@@ -31,18 +29,12 @@ public class Link {
 
   @JsonCreator
   public Link(
-      @JsonProperty(value = "href", required = true)
-      @NotNull
-      URI href,
-      @JsonProperty("header")
-      @Nullable
-      Map<String, String> header,
-      @JsonProperty("expires_at")
-      @Nullable
-      Date expiresAt
+      @JsonProperty(value = "href", required = true) @NotNull URI href,
+      @JsonProperty("header") @Nullable Map<String, String> header,
+      @JsonProperty("expires_at") @Nullable Date expiresAt
   ) {
     this.href = href;
-    this.header = header == null ? Collections.<String, String>emptyMap() : new TreeMap<>(header);
+    this.header = header == null ? Collections.emptyMap() : new TreeMap<>(header);
     this.expiresAt = expiresAt != null ? new Date(expiresAt.getTime()) : null;
   }
 

@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +14,6 @@ import java.util.TreeMap;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class ObjectRes implements Links {
   @JsonProperty(value = "_links", required = true)
   @NotNull
@@ -25,14 +23,9 @@ public final class ObjectRes implements Links {
 
   @JsonCreator
   public ObjectRes(
-      @JsonProperty(value = "oid", required = false)
-      @Nullable
-      String oid,
-      @JsonProperty(value = "size", required = false)
-      long size,
-      @JsonProperty(value = "_links", required = true)
-      @NotNull
-      Map<LinkType, Link> links
+      @JsonProperty(value = "oid") @Nullable String oid,
+      @JsonProperty(value = "size") long size,
+      @JsonProperty(value = "_links", required = true) @NotNull Map<LinkType, Link> links
   ) {
     this.meta = oid == null ? null : new Meta(oid, size);
     this.links = Collections.unmodifiableMap(new TreeMap<>(links));

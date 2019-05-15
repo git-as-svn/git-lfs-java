@@ -1,0 +1,6 @@
+{
+  "path": "foo/bar.zip",
+  "ref": {
+    "name": "refs/heads/my-feature"
+  }
+}

@@ -21,7 +21,7 @@ import java.util.Collections;
 public class ServerTest {
   @Test
   public void simpleTest() throws Exception {
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1))) {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1), null)) {
       final AuthProvider auth = server.getAuthProvider();
       final Client client = new Client(auth);
       final StringStreamProvider streamProvider = new StringStreamProvider("Hello, world");
