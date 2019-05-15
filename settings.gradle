@@ -1,5 +1,0 @@
-file(".").eachDir {
-  if (new File(it, "build.gradle").exists()) {
-    include it.name
-  }
-}
