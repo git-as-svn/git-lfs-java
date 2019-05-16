@@ -56,6 +56,8 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 Version 0.13.0 (Unreleased)
 
+Version 0.12.1
+
  * Fix compatibility with Gitea LFS
 
 Version 0.12.0
