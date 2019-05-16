@@ -1,0 +1,13 @@
+{
+  "locks": [
+    {
+      "id": "some-uuid",
+      "path": "/path/to/file",
+      "locked_at": "2016-05-17T15:49:06+00:00",
+      "owner": {
+        "name": "Jane Doe"
+      }
+    }
+  ],
+  "next_cursor": "optional next ID"
+}

@@ -31,21 +31,6 @@ public class ContentServlet extends HttpServlet {
   }
 
   @Override
-  protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    try {
-      if ((req.getPathInfo() != null) && PATTERN_OID.matcher(req.getPathInfo()).matches()) {
-        processPut(req, req.getPathInfo().substring(1)).write(resp);
-        return;
-      }
-    } catch (ServerError e) {
-      resp.setStatus(e.getStatusCode());
-      resp.getWriter().println(e.getMessage());
-      return;
-    }
-    super.doPut(req, resp);
-  }
-
-  @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     try {
       if ((req.getPathInfo() != null) && PATTERN_OID.matcher(req.getPathInfo()).matches()) {
@@ -53,11 +38,24 @@ public class ContentServlet extends HttpServlet {
         return;
       }
     } catch (ServerError e) {
-      resp.setStatus(e.getStatusCode());
-      resp.getWriter().println(e.getMessage());
+      PointerServlet.sendError(resp, e);
       return;
     }
     super.doGet(req, resp);
+  }
+
+  @Override
+  protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    try {
+      if ((req.getPathInfo() != null) && PATTERN_OID.matcher(req.getPathInfo()).matches()) {
+        processPut(req, req.getPathInfo().substring(1)).write(resp);
+        return;
+      }
+    } catch (ServerError e) {
+      PointerServlet.sendError(resp, e);
+      return;
+    }
+    super.doPut(req, resp);
   }
 
   @NotNull

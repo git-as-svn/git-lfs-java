@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.server;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 
 /**
@@ -13,12 +14,17 @@ public class EmbeddedLfsServer implements AutoCloseable {
   private final EmbeddedHttpServer server;
   @NotNull
   private final MemoryStorage storage;
+  @Nullable
+  private final LockManager lockManager;
 
-  public EmbeddedLfsServer(@NotNull MemoryStorage storage) throws Exception {
+  public EmbeddedLfsServer(@NotNull MemoryStorage storage, @Nullable LockManager lockManager) throws Exception {
+    this.lockManager = lockManager;
     this.server = new EmbeddedHttpServer();
     this.storage = storage;
     server.addServlet("/foo/bar.git/info/lfs/objects/*", new PointerServlet(storage, "/foo/bar.git/info/lfs/storage/"));
     server.addServlet("/foo/bar.git/info/lfs/storage/*", new ContentServlet(storage));
+    if (lockManager != null)
+      server.addServlet("/foo/bar.git/info/lfs/locks/*", new LocksServlet(lockManager));
   }
 
   public AuthProvider getAuthProvider() {
@@ -28,6 +34,11 @@ public class EmbeddedLfsServer implements AutoCloseable {
   @NotNull
   public MemoryStorage getStorage() {
     return storage;
+  }
+
+  @Nullable
+  public LockManager getLockManager() {
+    return lockManager;
   }
 
   @Override

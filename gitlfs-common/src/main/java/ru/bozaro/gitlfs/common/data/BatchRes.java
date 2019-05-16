@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +13,6 @@ import java.util.List;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class BatchRes {
   @JsonProperty(value = "objects", required = true)
   @NotNull
@@ -22,9 +20,7 @@ public final class BatchRes {
 
   @JsonCreator
   public BatchRes(
-      @JsonProperty(value = "objects", required = true)
-      @NotNull
-      List<BatchItem> objects
+      @JsonProperty(value = "objects", required = true) @NotNull List<BatchItem> objects
   ) {
     this.objects = Collections.unmodifiableList(new ArrayList<>(objects));
   }

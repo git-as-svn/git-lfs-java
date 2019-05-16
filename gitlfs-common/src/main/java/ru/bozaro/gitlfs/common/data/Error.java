@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Error {
   @JsonProperty(value = "code", required = true)
   private final int code;
@@ -21,11 +19,8 @@ public final class Error {
 
   @JsonCreator
   public Error(
-      @JsonProperty(value = "code")
-      int code,
-      @JsonProperty(value = "message")
-      @Nullable
-      String message
+      @JsonProperty(value = "code") int code,
+      @JsonProperty(value = "message") @Nullable String message
   ) {
     this.code = code;
     this.message = message;

@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Artem V. Navrotskiy
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Meta {
   @JsonProperty(value = "oid", required = true)
   @NotNull
@@ -21,11 +19,8 @@ public class Meta {
 
   @JsonCreator
   public Meta(
-      @JsonProperty(value = "oid", required = true)
-      @NotNull
-      String oid,
-      @JsonProperty(value = "size", required = true)
-      long size
+      @JsonProperty(value = "oid", required = true) @NotNull String oid,
+      @JsonProperty(value = "size", required = true) long size
   ) {
     this.oid = oid;
     this.size = size;

@@ -44,7 +44,7 @@ public class BatchTest {
   @Test(dataProvider = "batchProvider")
   public void uploadTest(int tokenMaxUsage, @NotNull BatchSettings settings) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage))) {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage), null)) {
       final AuthProvider auth = server.getAuthProvider();
       final BatchUploader uploader = new BatchUploader(new Client(auth), pool, settings);
       // Upload half data
@@ -84,7 +84,7 @@ public class BatchTest {
   @Test(dataProvider = "batchProvider")
   public void downloadTest(int tokenMaxUsage, @NotNull BatchSettings settings) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage))) {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage), null)) {
       final AuthProvider auth = server.getAuthProvider();
       final BatchDownloader downloader = new BatchDownloader(new Client(auth), pool, settings);
       download(
@@ -194,7 +194,7 @@ public class BatchTest {
 
   @Test
   public void simple() throws Exception {
-    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1))) {
+    try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1), null)) {
       fullCircle(server.getAuthProvider());
     }
   }

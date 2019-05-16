@@ -1,6 +1,8 @@
 package ru.bozaro.gitlfs.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.google.common.net.UrlEscapers;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -17,6 +19,8 @@ import ru.bozaro.gitlfs.client.internal.*;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 import ru.bozaro.gitlfs.common.JsonHelper;
+import ru.bozaro.gitlfs.common.LockConflictException;
+import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 
@@ -26,6 +30,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static ru.bozaro.gitlfs.common.Constants.*;
@@ -78,7 +84,11 @@ public class Client {
    */
   @Nullable
   public ObjectRes getMeta(@NotNull final String hash) throws IOException {
-    return doWork(auth -> doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash)), Operation.Download);
+    return doWork(auth -> doRequest(
+        auth,
+        new MetaGet(),
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(hash))
+    ), Operation.Download);
   }
 
   /**
@@ -103,7 +113,12 @@ public class Client {
    */
   @Nullable
   public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
-    return doWork(auth -> doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS)), Operation.Upload);
+    return doWork(auth -> doRequest(
+        auth,
+        new MetaPost(meta),
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS)),
+        Operation.Upload
+    );
   }
 
   /**
@@ -115,7 +130,12 @@ public class Client {
    */
   @NotNull
   public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
-    return doWork(auth -> doRequest(auth, new JsonPost<>(batchReq, BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH)), batchReq.getOperation());
+    return doWork(auth -> doRequest(
+        auth,
+        new JsonPost<>(batchReq, BatchRes.class),
+        AuthHelper.join(auth.getHref(), PATH_BATCH)),
+        batchReq.getOperation()
+    );
   }
 
   /**
@@ -130,7 +150,11 @@ public class Client {
   @NotNull
   public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
     return doWork(auth -> {
-      final ObjectRes links = doRequest(auth, new MetaGet(), AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + hash));
+      final ObjectRes links = doRequest(
+          auth,
+          new MetaGet(),
+          AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(hash))
+      );
       if (links == null) {
         throw new FileNotFoundException();
       }
@@ -274,6 +298,15 @@ public class Client {
       addHeaders(request, link);
       final HttpResponse response = http.executeMethod(request);
       try {
+        int[] success = task.statusCodes();
+        if (success == null) {
+          success = DEFAULT_HTTP_SUCCESS;
+        }
+        for (int item : success) {
+          if (response.getStatusLine().getStatusCode() == item) {
+            return task.processResponse(mapper, response);
+          }
+        }
         switch (response.getStatusLine().getStatusCode()) {
           case HttpStatus.SC_UNAUTHORIZED:
             throw new UnauthorizedException(request, response);
@@ -302,15 +335,6 @@ public class Client {
             ++retryCount;
             continue;
         }
-        int[] success = task.statusCodes();
-        if (success == null) {
-          success = DEFAULT_HTTP_SUCCESS;
-        }
-        for (int item : success) {
-          if (response.getStatusLine().getStatusCode() == item) {
-            return task.processResponse(mapper, response);
-          }
-        }
         // Unexpected status code.
         throw new RequestException(request, response);
       } finally {
@@ -333,5 +357,88 @@ public class Client {
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @NotNull
+  public Lock lock(@NotNull String path, @Nullable Ref ref) throws IOException, LockConflictException {
+    final LockCreate.Res res = doWork(auth -> doRequest(
+        auth,
+        new LockCreate(path, ref),
+        AuthHelper.join(auth.getHref(), PATH_LOCKS)),
+        Operation.Upload
+    );
+
+    if (res.isSuccess())
+      return res.getLock();
+    else
+      throw new LockConflictException(res.getLock());
+  }
+
+  @Nullable
+  public Lock unlock(@NotNull Lock lock, boolean force, @Nullable Ref ref) throws IOException {
+    return unlock(lock.getId(), force, ref);
+  }
+
+  @Nullable
+  public Lock unlock(@NotNull String lockId, boolean force, @Nullable Ref ref) throws IOException {
+    return doWork(auth -> doRequest(
+        auth,
+        new LockDelete(force, ref),
+        AuthHelper.join(auth.getHref(), PATH_LOCKS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(lockId) + "/unlock")),
+        Operation.Upload
+    );
+  }
+
+  @NotNull
+  public List<Lock> listLocks(@Nullable String path, @Nullable String id, @Nullable Ref ref) throws IOException {
+    final List<Lock> result = new ArrayList<>();
+
+    if (path == null)
+      path = "";
+    if (id == null)
+      id = "";
+
+    final String params = "?path=" + UrlEscapers.urlFormParameterEscaper().escape(path)
+        + "&id=" + UrlEscapers.urlFormParameterEscaper().escape(id)
+        + "&refspec=" + UrlEscapers.urlFormParameterEscaper().escape(ref == null ? "" : ref.getName());
+
+    String cursor = "";
+    do {
+      final String cursorFinal = cursor;
+      final LocksRes res = doWork(auth -> doRequest(
+          auth,
+          new LocksList(),
+          AuthHelper.join(
+              auth.getHref(),
+              PATH_LOCKS + params + "&cursor=" + UrlEscapers.urlFormParameterEscaper().escape(cursorFinal))
+          ),
+          Operation.Download
+      );
+      result.addAll(res.getLocks());
+      cursor = res.getNextCursor();
+    } while (!Strings.isNullOrEmpty(cursor));
+
+    return result;
+  }
+
+  @NotNull
+  public VerifyLocksResult verifyLocks(@Nullable Ref ref) throws IOException {
+    final VerifyLocksResult result = new VerifyLocksResult(new ArrayList<>(), new ArrayList<>());
+
+    String cursor = null;
+    do {
+      final String cursorFinal = cursor;
+      final VerifyLocksRes res = doWork(auth -> doRequest(
+          auth,
+          new JsonPost<>(new VerifyLocksReq(cursorFinal, ref, null), VerifyLocksRes.class),
+          AuthHelper.join(auth.getHref(), PATH_LOCKS + "/verify")),
+          Operation.Upload
+      );
+      result.getOurLocks().addAll(res.getOurs());
+      result.getTheirLocks().addAll(res.getTheirs());
+      cursor = res.getNextCursor();
+    } while (!Strings.isNullOrEmpty(cursor));
+
+    return result;
   }
 }

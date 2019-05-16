@@ -1,0 +1,147 @@
+!!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "path" : "build.gradle",
+      "ref" : {
+        "name" : "refs/heads/master"
+      }
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '79'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/locks
+  method: POST
+response:
+  body: !text |
+    {"lock":{"id":"107214","path":"build.gradle","locked_at":"2019-05-15T09:56:27.933646398Z"}}
+  headers:
+    Content-Length: '92'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:27 GMT
+    X-GitHub-Request-Id: D6AC:50EC:37071C:6CF18D:5CDBE24B
+  statusCode: 201
+  statusText: Created
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "path" : "build.gradle",
+      "ref" : {
+        "name" : "refs/heads/master"
+      }
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '79'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/locks
+  method: POST
+response:
+  body: !text |
+    {"documentation_url":"https://github.com/contact","lock":{"id":"107214","path":"build.gradle","locked_at":"2019-05-15T09:56:28Z"},"message":"Lock exists","request_id":"D6AC:50EC:370726:6CF1AA:5CDBE24B"}
+  headers:
+    Content-Length: '203'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:28 GMT
+    X-GitHub-Request-Id: D6AC:50EC:370726:6CF1AA:5CDBE24B
+  statusCode: 409
+  statusText: Conflict
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: null
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+  href: http://gitlfs.local/test.git/info/lfs/locks?path=build.gradle&id=&refspec=refs%2Fheads%2Fmaster&cursor=
+  method: GET
+response:
+  body: !text |
+    {"locks":[{"id":"107214","path":"build.gradle","owner":{"name":"slonopotamus"},"locked_at":"2019-05-15T09:56:28Z"}],"next_cursor":""}
+  headers:
+    Content-Length: '134'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:28 GMT
+    X-GitHub-Request-Id: D6AC:50EC:370759:6CF1CF:5CDBE24C
+  statusCode: 200
+  statusText: OK
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "ref" : {
+        "name" : "refs/heads/master"
+      }
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '52'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/locks/verify
+  method: POST
+response:
+  body: !text |
+    {"ours":[{"id":"107193","path":"README.md","owner":{"name":"slonopotamus"},"locked_at":"2019-05-15T09:21:33Z"},{"id":"107214","path":"build.gradle","owner":{"name":"slonopotamus"},"locked_at":"2019-05-15T09:56:28Z"}],"theirs":[],"next_cursor":""}
+  headers:
+    Content-Length: '247'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:28 GMT
+    X-GitHub-Request-Id: D6AC:50EC:370768:6CF22D:5CDBE24C
+  statusCode: 200
+  statusText: OK
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "force" : true,
+      "ref" : {
+        "name" : "refs/heads/master"
+      }
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '70'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/locks/107214/unlock
+  method: POST
+response:
+  body: !text |
+    {"lock":{"id":"107214","path":"build.gradle","locked_at":"2019-05-15T09:56:28Z","unlocked_at":"2019-05-15T09:56:29.09800075Z"}}
+  headers:
+    Content-Length: '128'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:29 GMT
+    X-GitHub-Request-Id: D6AC:50EC:370779:6CF25A:5CDBE24C
+  statusCode: 200
+  statusText: OK
+--- !!ru.bozaro.gitlfs.client.HttpRecord
+request:
+  body: !text |-
+    {
+      "force" : false,
+      "ref" : {
+        "name" : "refs/heads/master"
+      }
+    }
+  headers:
+    Accept: application/vnd.git-lfs+json
+    Authorization: RemoteAuth Token-1
+    Content-Length: '71'
+    Content-Type: application/vnd.git-lfs+json
+  href: http://gitlfs.local/test.git/info/lfs/locks/107214/unlock
+  method: POST
+response:
+  body: !text |
+    {"documentation_url":"https://github.com/contact","message":"Lock not found","request_id":"D6AC:50EC:370786:6CF26F:5CDBE24D"}
+  headers:
+    Content-Length: '126'
+    Content-Type: application/vnd.git-lfs+json
+    Date: Wed, 15 May 2019 09:56:29 GMT
+    X-GitHub-Request-Id: D6AC:50EC:370786:6CF26F:5CDBE24D
+  statusCode: 404
+  statusText: Not Found
