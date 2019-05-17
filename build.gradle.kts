@@ -37,6 +37,7 @@ subprojects {
 
     apply<JavaPlugin>()
     apply<MavenPublishPlugin>()
+    apply<SigningPlugin>()
 
     configure<JavaPluginExtension> {
         sourceCompatibility = javaVersion
@@ -92,19 +93,6 @@ subprojects {
         archiveClassifier.set("sources")
     }
 
-    val secretKeyRingFile = "${rootProject.projectDir}/secring.gpg"
-
-    if (signingPassword != null && file(secretKeyRingFile).exists()) {
-        extra["signing.secretKeyRingFile"] = secretKeyRingFile
-        extra["signing.keyId"] = "4B49488E"
-        extra["signing.password"] = signingPassword
-
-        configure<SigningExtension> {
-            val publications: PublicationContainer by project
-            sign(publications)
-        }
-    }
-
     configure<PublishingExtension> {
         publications {
             create<MavenPublication>(project.name) {
@@ -146,19 +134,29 @@ subprojects {
             }
         }
 
-        if (ossrhUsername != null) {
-            repositories {
-                maven {
-                    val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                    url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+        repositories {
+            maven {
+                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
 
-                    credentials {
-                        username = ossrhUsername
-                        password = ossrhPassword
-                    }
+                credentials {
+                    username = ossrhUsername
+                    password = ossrhPassword
                 }
             }
         }
+    }
+
+    val secretKeyRingFile = "${rootProject.projectDir}/secring.gpg"
+    extra["signing.secretKeyRingFile"] = secretKeyRingFile
+    extra["signing.keyId"] = "4B49488E"
+    extra["signing.password"] = signingPassword
+
+    configure<SigningExtension> {
+        isRequired = signingPassword != null && file(secretKeyRingFile).exists()
+
+        val publishing: PublishingExtension by project.extensions
+        sign(publishing.publications)
     }
 }
