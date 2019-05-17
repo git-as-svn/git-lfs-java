@@ -150,10 +150,6 @@ subprojects {
         val publishing: PublishingExtension by project.extensions
         sign(publishing.publications)
     }
-
-    configure<NexusPublishExtension> {
-        useStaging.set(true)
-    }
 }
 
 nexusStaging {
