@@ -14,9 +14,11 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/*/fileContent/fileContent.lock
   - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
   - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+  - rm -f  $HOME/.gradle/caches/*/fileHashes/resourceHashesCache.bin
   - rm -f  $HOME/.gradle/caches/*/javaCompile/javaCompile.lock
   - rm -fr $HOME/.gradle/caches/journal-*
   - rm -fr $HOME/.gradle/caches/*/gradle-kotlin-dsl/
+  - rm -fr $HOME/.gradle/caches/*/gradle-kotlin-dsl-accessors/
 
 cache:
   directories:
