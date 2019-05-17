@@ -13,7 +13,7 @@ tasks.wrapper {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.21.0"
-    id("de.marcphilipp.nexus-publish") version "0.2.0"
+    id("de.marcphilipp.nexus-publish") version "0.2.0" apply false
     id("io.codearte.nexus-staging") version "0.20.0"
     idea
 }
@@ -37,10 +37,10 @@ idea {
 }
 
 subprojects {
-
     apply<JavaPlugin>()
     apply<MavenPublishPlugin>()
     apply<SigningPlugin>()
+    apply(plugin = "de.marcphilipp.nexus-publish")
 
     configure<JavaPluginExtension> {
         sourceCompatibility = javaVersion
@@ -155,7 +155,4 @@ nexusStaging {
     packageGroup = "ru.bozaro"
     username = ossrhUsername
     password = ossrhPassword
-}
-
-nexusPublishing {
 }
