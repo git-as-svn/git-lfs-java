@@ -34,7 +34,6 @@ jobs:
     - stage: deploy
       if: repo = "bozaro/git-lfs-java" and type != "pull_request" and (branch = "master" or tag is present)
       jdk: openjdk8 # Deploy releases using oldest supported jdk
-      before_install:
+      script:
         - openssl aes-256-cbc -K $encrypted_8e5c960335c9_key -iv $encrypted_8e5c960335c9_iv -in secring.gpg.enc -out secring.gpg -d
-      after_success:
-        - ./gradlew uploadArchives
+        - ./gradlew publish
