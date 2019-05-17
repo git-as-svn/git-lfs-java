@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
@@ -148,6 +149,10 @@ subprojects {
 
         val publishing: PublishingExtension by project.extensions
         sign(publishing.publications)
+    }
+
+    configure<NexusPublishExtension> {
+        useStaging.set(true)
     }
 }
 
