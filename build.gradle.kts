@@ -152,6 +152,7 @@ subprojects {
 }
 
 nexusStaging {
+    packageGroup = "ru.bozaro"
     username = ossrhUsername
     password = ossrhPassword
 }
