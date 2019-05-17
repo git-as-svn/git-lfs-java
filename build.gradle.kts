@@ -13,6 +13,7 @@ tasks.wrapper {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.21.0"
+    id("de.marcphilipp.nexus-publish") version "0.2.0"
     idea
 }
 
@@ -133,19 +134,6 @@ subprojects {
                 }
             }
         }
-
-        repositories {
-            maven {
-                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-
-                credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
-                }
-            }
-        }
     }
 
     val secretKeyRingFile = "${rootProject.projectDir}/secring.gpg"
@@ -159,4 +147,9 @@ subprojects {
         val publishing: PublishingExtension by project.extensions
         sign(publishing.publications)
     }
+}
+
+nexusPublishing {
+    username.set(ossrhUsername)
+    password.set(ossrhPassword)
 }
