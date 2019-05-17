@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
@@ -13,7 +14,7 @@ tasks.wrapper {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.21.0"
-    id("de.marcphilipp.nexus-publish") version "0.2.0"
+    id("de.marcphilipp.nexus-publish") version "0.2.0" apply false
     idea
 }
 
@@ -39,6 +40,7 @@ subprojects {
     apply<JavaPlugin>()
     apply<MavenPublishPlugin>()
     apply<SigningPlugin>()
+    apply(plugin = "de.marcphilipp.nexus-publish")
 
     configure<JavaPluginExtension> {
         sourceCompatibility = javaVersion
@@ -147,9 +149,9 @@ subprojects {
         val publishing: PublishingExtension by project.extensions
         sign(publishing.publications)
     }
-}
 
-nexusPublishing {
-    username.set(ossrhUsername)
-    password.set(ossrhPassword)
+    configure<NexusPublishExtension> {
+        username.set(ossrhUsername)
+        password.set(ossrhPassword)
+    }
 }
