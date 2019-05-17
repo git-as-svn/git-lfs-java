@@ -1,5 +1,4 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
@@ -21,7 +20,7 @@ plugins {
 
 allprojects {
     group = "ru.bozaro.gitlfs"
-    version = "0.13.0-SNAPSHOT"
+    version = "0.14.0-SNAPSHOT"
 
     apply<IdeaPlugin>()
     apply<VersionsPlugin>()
