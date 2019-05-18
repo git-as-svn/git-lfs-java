@@ -105,6 +105,9 @@ subprojects {
                 artifact(javadocJar)
 
                 pom {
+                    name.set(project.name)
+                    description.set(project.description)
+
                     url.set("https://github.com/bozaro/git-lfs-java")
 
                     scm {
