@@ -1,15 +1,15 @@
 package ru.bozaro.gitlfs.server;
 
-import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.Constants;
-import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
+import ru.bozaro.gitlfs.common.data.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,11 +75,11 @@ public class LocalPointerManager implements PointerManager {
       public BatchItem getLocation(@Nullable Map<String, String> header, @NotNull URI selfUrl, @NotNull Meta meta) throws IOException {
         final Meta storageMeta = manager.getMetadata(meta.getOid());
         if (storageMeta == null) {
-          return new BatchItem(meta, ImmutableMap.of(LinkType.Upload, new Link(selfUrl.resolve(contentLocation).resolve(meta.getOid()), header, null)));
+          return new BatchItem(meta, Collections.singletonMap(LinkType.Upload, new Link(selfUrl.resolve(contentLocation).resolve(meta.getOid()), header, null)));
         } else if ((meta.getSize() >= 0) && (storageMeta.getSize() != meta.getSize())) {
           return new BatchItem(meta, new Error(422, "Invalid object size"));
         } else {
-          return new BatchItem(storageMeta, ImmutableMap.of(LinkType.Download, new Link(selfUrl.resolve(contentLocation).resolve(storageMeta.getOid()), header, null)));
+          return new BatchItem(storageMeta, Collections.singletonMap(LinkType.Download, new Link(selfUrl.resolve(contentLocation).resolve(storageMeta.getOid()), header, null)));
         }
       }
     };

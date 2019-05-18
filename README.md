@@ -56,6 +56,8 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 Version 0.14.0 (Unreleased)
 
+ * Drop dependency on Guava
+
 Version 0.13.0
 
  * [LFS locking](https://github.com/git-lfs/git-lfs/blob/master/docs/api/locking.md) support
@@ -67,7 +69,6 @@ Version 0.12.1
 Version 0.12.0
 
  * Update dependencies
- * Drop dependency on Guava
  * Do not output \r in JSON on Windows
 
 Version 0.11.1

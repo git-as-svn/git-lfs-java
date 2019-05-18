@@ -53,9 +53,12 @@ public final class AuthHelper {
   }
 
   @NotNull
-  public static URI join(@NotNull URI href, @NotNull String path) {
+  public static URI join(@NotNull URI href, @NotNull String... path) {
     try {
-      return new URI(href.getScheme(), href.getAuthority(), href.getPath() + (href.getPath().endsWith("/") ? "" : "/"), null, null).resolve(path);
+      URI uri = new URI(href.getScheme(), href.getAuthority(), href.getPath() + (href.getPath().endsWith("/") ? "" : "/"), null, null);
+      for (String fragment : path)
+        uri = uri.resolve(fragment);
+      return uri;
     } catch (URISyntaxException e) {
       throw new IllegalStateException(e);
     }
