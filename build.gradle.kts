@@ -106,7 +106,11 @@ subprojects {
 
                 pom {
                     name.set(project.name)
-                    description.set(project.description)
+
+                    val pomDescription = description
+                    afterEvaluate {
+                        pomDescription.set(project.description)
+                    }
 
                     url.set("https://github.com/bozaro/git-lfs-java")
 
