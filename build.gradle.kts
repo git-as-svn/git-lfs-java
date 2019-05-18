@@ -153,9 +153,18 @@ subprojects {
     configure<SigningExtension> {
         isRequired = signingPassword != null && file(secretKeyRingFile).exists()
 
+        // TODO: Is it possible to access publishing extension in a safer way?
         val publishing: PublishingExtension by project.extensions
         sign(publishing.publications)
     }
+}
+
+tasks.closeRepository.configure {
+    onlyIf { !project.version.toString().endsWith("-SNAPSHOT") }
+}
+
+tasks.releaseRepository.configure {
+    onlyIf { !project.version.toString().endsWith("-SNAPSHOT") }
 }
 
 nexusStaging {
