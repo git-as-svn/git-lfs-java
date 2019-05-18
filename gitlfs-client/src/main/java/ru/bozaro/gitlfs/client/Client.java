@@ -1,8 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
-import com.google.common.net.UrlEscapers;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -28,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -87,7 +86,7 @@ public class Client {
     return doWork(auth -> doRequest(
         auth,
         new MetaGet(),
-        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(hash))
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash)
     ), Operation.Download);
   }
 
@@ -153,7 +152,7 @@ public class Client {
       final ObjectRes links = doRequest(
           auth,
           new MetaGet(),
-          AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(hash))
+          AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash)
       );
       if (links == null) {
         throw new FileNotFoundException();
@@ -384,7 +383,7 @@ public class Client {
     return doWork(auth -> doRequest(
         auth,
         new LockDelete(force, ref),
-        AuthHelper.join(auth.getHref(), PATH_LOCKS + "/" + UrlEscapers.urlPathSegmentEscaper().escape(lockId) + "/unlock")),
+        AuthHelper.join(auth.getHref(), PATH_LOCKS + "/", lockId + "/unlock")),
         Operation.Upload
     );
   }
@@ -398,9 +397,9 @@ public class Client {
     if (id == null)
       id = "";
 
-    final String params = "?path=" + UrlEscapers.urlFormParameterEscaper().escape(path)
-        + "&id=" + UrlEscapers.urlFormParameterEscaper().escape(id)
-        + "&refspec=" + UrlEscapers.urlFormParameterEscaper().escape(ref == null ? "" : ref.getName());
+    final String params = "?path=" + URLEncoder.encode(path, "UTF-8")
+        + "&id=" + URLEncoder.encode(id, "UTF-8")
+        + "&refspec=" + URLEncoder.encode(ref == null ? "" : ref.getName(), "UTF-8");
 
     String cursor = "";
     do {
@@ -410,13 +409,13 @@ public class Client {
           new LocksList(),
           AuthHelper.join(
               auth.getHref(),
-              PATH_LOCKS + params + "&cursor=" + UrlEscapers.urlFormParameterEscaper().escape(cursorFinal))
+              PATH_LOCKS + params + "&cursor=" + URLEncoder.encode(cursorFinal, "UTF-8"))
           ),
           Operation.Download
       );
       result.addAll(res.getLocks());
       cursor = res.getNextCursor();
-    } while (!Strings.isNullOrEmpty(cursor));
+    } while (cursor != null && !cursor.isEmpty());
 
     return result;
   }
@@ -437,7 +436,7 @@ public class Client {
       result.getOurLocks().addAll(res.getOurs());
       result.getTheirLocks().addAll(res.getTheirs());
       cursor = res.getNextCursor();
-    } while (!Strings.isNullOrEmpty(cursor));
+    } while (cursor != null && !cursor.isEmpty());
 
     return result;
   }
