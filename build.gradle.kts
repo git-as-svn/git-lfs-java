@@ -1,5 +1,6 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
@@ -34,6 +35,7 @@ val javaVersion = JavaVersion.VERSION_1_8
 
 idea {
     project.jdkName = javaVersion.name
+    project.languageLevel = IdeaLanguageLevel(javaVersion)
 }
 
 subprojects {
