@@ -21,17 +21,17 @@ public interface LockManager {
 
   interface LockRead {
     @NotNull
-    List<Lock> getLocks(@Nullable String path, @Nullable String lockId, @Nullable Ref ref);
+    List<Lock> getLocks(@Nullable String path, @Nullable String lockId, @Nullable Ref ref) throws IOException;
   }
 
   interface LockWrite extends LockRead {
     @NotNull
-    Lock lock(@NotNull String path, @Nullable Ref ref) throws LockConflictException;
+    Lock lock(@NotNull String path, @Nullable Ref ref) throws LockConflictException, IOException;
 
     @Nullable
-    Lock unlock(@NotNull String lockId, boolean force, @Nullable Ref ref) throws LockConflictException;
+    Lock unlock(@NotNull String lockId, boolean force, @Nullable Ref ref) throws LockConflictException, IOException;
 
     @NotNull
-    VerifyLocksResult verifyLocks(@Nullable Ref ref);
+    VerifyLocksResult verifyLocks(@Nullable Ref ref) throws IOException;
   }
 }
