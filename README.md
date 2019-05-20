@@ -54,9 +54,9 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Version 0.14.0 (Unreleased)
+Version 0.13.1
 
- * Drop dependency on Guava
+ * LFS locking API fixes
 
 Version 0.13.0
 
