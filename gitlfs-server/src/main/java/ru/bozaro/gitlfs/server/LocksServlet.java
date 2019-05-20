@@ -99,7 +99,7 @@ public class LocksServlet extends HttpServlet {
   }
 
   @NotNull
-  private ResponseWriter listLocks(@NotNull HttpServletRequest req, @NotNull LockManager.LockRead lockRead) {
+  private ResponseWriter listLocks(@NotNull HttpServletRequest req, @NotNull LockManager.LockRead lockRead) throws IOException {
     final String refName = req.getParameter("refspec");
 
     final String path = req.getParameter("path");
