@@ -8,7 +8,7 @@ val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
 val gitCommit = System.getenv("TRAVIS_COMMIT") ?: ""
 
 tasks.wrapper {
-    gradleVersion = "5.4"
+    gradleVersion = "5.4.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 
