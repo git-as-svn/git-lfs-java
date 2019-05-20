@@ -94,7 +94,7 @@ public class LocksServlet extends HttpServlet {
 
       return new ObjectResponse(HttpServletResponse.SC_OK, new CreateLockRes(lock));
     } catch (LockConflictException e) {
-      return new ObjectResponse(HttpServletResponse.SC_CONFLICT, new CreateLockRes(e.getLock()));
+      return new ObjectResponse(HttpServletResponse.SC_FORBIDDEN, new CreateLockRes(e.getLock()));
     }
   }
 
