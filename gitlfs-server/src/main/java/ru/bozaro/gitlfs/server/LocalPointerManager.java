@@ -9,7 +9,7 @@ import ru.bozaro.gitlfs.common.data.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,15 +49,6 @@ public class LocalPointerManager implements PointerManager {
     return createLocator(request, headerProvider, selfUrl);
   }
 
-  protected Map<String, String> createDefaultHeader(@NotNull HttpServletRequest request) {
-    final String auth = request.getHeader(Constants.HEADER_AUTHORIZATION);
-    final Map<String, String> header = new HashMap<>();
-    if (auth != null) {
-      header.put(Constants.HEADER_AUTHORIZATION, auth);
-    }
-    return header;
-  }
-
   protected Locator createLocator(@NotNull HttpServletRequest request, @NotNull ContentManager.HeaderProvider headerProvider, @NotNull final URI selfUrl) {
     final Map<String, String> header = headerProvider.createHeader(createDefaultHeader(request));
     return new Locator() {
@@ -74,14 +65,32 @@ public class LocalPointerManager implements PointerManager {
       @NotNull
       public BatchItem getLocation(@Nullable Map<String, String> header, @NotNull URI selfUrl, @NotNull Meta meta) throws IOException {
         final Meta storageMeta = manager.getMetadata(meta.getOid());
-        if (storageMeta == null) {
-          return new BatchItem(meta, Collections.singletonMap(LinkType.Upload, new Link(selfUrl.resolve(contentLocation).resolve(meta.getOid()), header, null)));
-        } else if ((meta.getSize() >= 0) && (storageMeta.getSize() != meta.getSize())) {
+
+        if (storageMeta != null && meta.getSize() >= 0 && storageMeta.getSize() != meta.getSize())
           return new BatchItem(meta, new Error(422, "Invalid object size"));
-        } else {
-          return new BatchItem(storageMeta, Collections.singletonMap(LinkType.Download, new Link(selfUrl.resolve(contentLocation).resolve(storageMeta.getOid()), header, null)));
-        }
+
+        final Map<LinkType, Link> links = new EnumMap<>(LinkType.class);
+        final Link link = new Link(selfUrl.resolve(contentLocation).resolve(meta.getOid()), header, null);
+
+        if (storageMeta == null)
+          links.put(LinkType.Upload, link);
+        else
+          links.put(LinkType.Download, link);
+
+        links.put(LinkType.Verify, link);
+
+        return new BatchItem(storageMeta == null ? meta : storageMeta, links);
       }
     };
+  }
+
+  @NotNull
+  protected Map<String, String> createDefaultHeader(@NotNull HttpServletRequest request) {
+    final String auth = request.getHeader(Constants.HEADER_AUTHORIZATION);
+    final Map<String, String> header = new HashMap<>();
+    if (auth != null) {
+      header.put(Constants.HEADER_AUTHORIZATION, auth);
+    }
+    return header;
   }
 }
