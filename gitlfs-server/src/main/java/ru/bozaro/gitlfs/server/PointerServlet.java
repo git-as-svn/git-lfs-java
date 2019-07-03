@@ -1,6 +1,5 @@
 package ru.bozaro.gitlfs.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.Constants;
@@ -42,8 +41,6 @@ public class PointerServlet extends HttpServlet {
   @NotNull
   private static final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
   @NotNull
-  private final ObjectMapper mapper;
-  @NotNull
   private final PointerManager manager;
   @NotNull
   private final AccessCheckerVisitor accessCheckerVisitor;
@@ -60,7 +57,6 @@ public class PointerServlet extends HttpServlet {
 
   public PointerServlet(@NotNull PointerManager manager) {
     this.manager = manager;
-    this.mapper = JsonHelper.mapper;
     this.accessCheckerVisitor = new AccessCheckerVisitor(manager);
   }
 
@@ -79,9 +75,9 @@ public class PointerServlet extends HttpServlet {
 
   @NotNull
   private static BatchItem filterDownload(@NotNull BatchItem item) {
-    if (item.getLinks().containsKey(LinkType.Download)) {
+    if (item.getLinks().containsKey(LinkType.Download))
       return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null, null);
-    }
+
     return new BatchItem(item.getOid(), item.getSize(), null, null, new Error(HttpServletResponse.SC_NOT_FOUND, "Object not found"));
   }
 
@@ -96,12 +92,12 @@ public class PointerServlet extends HttpServlet {
 
   @NotNull
   private static BatchItem filterUpload(@NotNull BatchItem item) throws IOException {
-    if (item.getLinks().containsKey(LinkType.Download)) {
-      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null, null);
-    }
-    if (item.getLinks().containsKey(LinkType.Upload)) {
+    if (item.getLinks().containsKey(LinkType.Download))
+      return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Verify), null, null);
+
+    if (item.getLinks().containsKey(LinkType.Upload))
       return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Upload, LinkType.Verify), null, null);
-    }
+
     throw new IOException("Upload link not found");
   }
 
@@ -148,7 +144,7 @@ public class PointerServlet extends HttpServlet {
   private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
     final URI selfUrl = getSelfUrl(req);
     final PointerManager.Locator locator = manager.checkUploadAccess(req, selfUrl);
-    final Meta meta = mapper.readValue(req.getInputStream(), Meta.class);
+    final Meta meta = JsonHelper.mapper.readValue(req.getInputStream(), Meta.class);
     final BatchItem location = getLocation(locator, meta);
     final Error error = location.getError();
     if (error != null) {
@@ -167,9 +163,9 @@ public class PointerServlet extends HttpServlet {
 
   @NotNull
   private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
-    final BatchReq batchReq = mapper.readValue(req.getInputStream(), BatchReq.class);
+    final BatchReq batchReq = JsonHelper.mapper.readValue(req.getInputStream(), BatchReq.class);
     final PointerManager.Locator locator = batchReq.getOperation().visit(accessCheckerVisitor).checkAccess(req, getSelfUrl(req));
-    final BatchItem[] locations = getLocations(locator, batchReq.getObjects().toArray(new Meta[batchReq.getObjects().size()]));
+    final BatchItem[] locations = getLocations(locator, batchReq.getObjects().toArray(new Meta[0]));
     return new ObjectResponse(HttpServletResponse.SC_OK, new BatchRes(Arrays.asList(locations)));
   }
 

@@ -54,7 +54,10 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Version 0.14.0 (Unreleased)
+Version 0.14.0
+
+ * Add LFS object verification server code
+ * Fix broken handling of already existing LFS object 
 
 Version 0.13.3
 

@@ -91,6 +91,56 @@ public class Client {
   }
 
   /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param hash           Object hash.
+   * @param size           Object size.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
+    return putObject(streamProvider, new Meta(hash, size));
+  }
+
+  /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param meta           Object metadata.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
+    return doWork(auth -> {
+      final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
+      return links != null && putObject(streamProvider, meta, links);
+    }, Operation.Upload);
+  }
+
+  protected <T> T doWork(@NotNull Work<T> work, @NotNull Operation operation) throws IOException {
+    Link auth = authProvider.getAuth(operation);
+    int authCount = 0;
+    while (true) {
+      try {
+        return work.exec(auth);
+      } catch (UnauthorizedException | ForbiddenException e) {
+        if (authCount >= MAX_AUTH_COUNT) {
+          throw e;
+        }
+        authCount++;
+        // Get new authentication data.
+        authProvider.invalidateAuth(operation, auth);
+        final Link newAuth = authProvider.getAuth(operation);
+        if (newAuth.getHeader().equals(auth.getHeader()) && newAuth.getHref().equals(auth.getHref())) {
+          throw e;
+        }
+        auth = newAuth;
+      }
+    }
+  }
+
+  /**
    * Get metadata for object by hash.
    *
    * @param hash Object hash.
@@ -191,104 +241,6 @@ public class Client {
     return putObject(streamProvider, generateMeta(streamProvider));
   }
 
-  /**
-   * Generate object metadata.
-   *
-   * @param streamProvider Object stream provider.
-   * @return Return object metadata.
-   * @throws IOException On some errors.
-   */
-  public static Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
-    final MessageDigest digest = sha256();
-    final byte[] buffer = new byte[0x10000];
-    long size = 0;
-    try (InputStream stream = streamProvider.getStream()) {
-      while (true) {
-        int read = stream.read(buffer);
-        if (read <= 0) break;
-        digest.update(buffer, 0, read);
-        size += read;
-      }
-    }
-    return new Meta(new String(Hex.encodeHex(digest.digest())), size);
-  }
-
-  /**
-   * Upload object with specified hash and size.
-   *
-   * @param streamProvider Object stream provider.
-   * @param hash           Object hash.
-   * @param size           Object size.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
-    return putObject(streamProvider, new Meta(hash, size));
-  }
-
-  /**
-   * Upload object with specified hash and size.
-   *
-   * @param streamProvider Object stream provider.
-   * @param meta           Object metadata.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
-    return doWork(auth -> {
-      final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
-      return links != null && putObject(streamProvider, meta, links);
-    }, Operation.Upload);
-  }
-
-  /**
-   * Upload object by metadata.
-   *
-   * @param links          Object links.
-   * @param streamProvider Object stream provider.
-   * @param meta           Object metadata.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
-    if (links.getLinks().containsKey(LinkType.Download)) {
-      return false;
-    }
-    final Link uploadLink = links.getLinks().get(LinkType.Upload);
-    if (uploadLink == null) {
-      throw new IOException("Upload link not found");
-    }
-    doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref());
-
-    final Link verifyLink = links.getLinks().get(LinkType.Verify);
-    if (verifyLink != null) {
-      doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref());
-    }
-    return true;
-  }
-
-  protected <T> T doWork(@NotNull Work<T> work, @NotNull Operation operation) throws IOException {
-    Link auth = authProvider.getAuth(operation);
-    int authCount = 0;
-    while (true) {
-      try {
-        return work.exec(auth);
-      } catch (UnauthorizedException | ForbiddenException e) {
-        if (authCount >= MAX_AUTH_COUNT) {
-          throw e;
-        }
-        authCount++;
-        // Get new authentication data.
-        authProvider.invalidateAuth(operation, auth);
-        final Link newAuth = authProvider.getAuth(operation);
-        if (newAuth.getHeader().equals(auth.getHeader()) && newAuth.getHref().equals(auth.getHref())) {
-          throw e;
-        }
-        auth = newAuth;
-      }
-    }
-  }
-
   public <R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
@@ -342,12 +294,49 @@ public class Client {
     }
   }
 
-  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
-    if (link != null) {
-      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
-        req.setHeader(entry.getKey(), entry.getValue());
+  /**
+   * Generate object metadata.
+   *
+   * @param streamProvider Object stream provider.
+   * @return Return object metadata.
+   * @throws IOException On some errors.
+   */
+  public static Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
+    final MessageDigest digest = sha256();
+    final byte[] buffer = new byte[0x10000];
+    long size = 0;
+    try (InputStream stream = streamProvider.getStream()) {
+      while (true) {
+        int read = stream.read(buffer);
+        if (read <= 0) break;
+        digest.update(buffer, 0, read);
+        size += read;
       }
     }
+    return new Meta(new String(Hex.encodeHex(digest.digest())), size);
+  }
+
+  /**
+   * Upload object by metadata.
+   *
+   * @param links          Object links.
+   * @param streamProvider Object stream provider.
+   * @param meta           Object metadata.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
+    final Link uploadLink = links.getLinks().get(LinkType.Upload);
+    if (uploadLink == null)
+      return false;
+
+    doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref());
+
+    final Link verifyLink = links.getLinks().get(LinkType.Verify);
+    if (verifyLink != null)
+      doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref());
+
+    return true;
   }
 
   protected static MessageDigest sha256() {
@@ -355,6 +344,14 @@ public class Client {
       return MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
+    if (link != null) {
+      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
+        req.setHeader(entry.getKey(), entry.getValue());
+      }
     }
   }
 

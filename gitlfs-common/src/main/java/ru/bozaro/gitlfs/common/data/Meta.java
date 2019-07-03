@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * LFS object location.
  *
@@ -33,5 +35,19 @@ public class Meta {
 
   public long getSize() {
     return size;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(oid, size);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Meta))
+      return false;
+
+    final Meta other = (Meta) o;
+    return size == other.size && oid.equals(other.oid);
   }
 }
