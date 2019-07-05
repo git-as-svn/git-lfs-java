@@ -87,12 +87,12 @@ subprojects {
         (options as? CoreJavadocOptions)?.addStringOption("Xdoclint:none", "-quiet")
     }
 
-    val javadocJar by tasks.creating(Jar::class) {
+    val javadocJar by tasks.registering(Jar::class) {
         from(javadoc)
         archiveClassifier.set("javadoc")
     }
 
-    val sourcesJar by tasks.creating(Jar::class) {
+    val sourcesJar by tasks.registering(Jar::class) {
         val sourceSets: SourceSetContainer by project
         from(sourceSets["main"].allSource)
         archiveClassifier.set("sources")
@@ -103,8 +103,8 @@ subprojects {
             create<MavenPublication>(project.name) {
                 from(components["java"])
 
-                artifact(sourcesJar)
-                artifact(javadocJar)
+                artifact(sourcesJar.get())
+                artifact(javadocJar.get())
 
                 pom {
                     name.set(project.name)
