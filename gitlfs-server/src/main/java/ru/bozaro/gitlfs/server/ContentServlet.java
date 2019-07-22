@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
-import static ru.bozaro.gitlfs.server.PointerServlet.checkMimeTypes;
 import static ru.bozaro.gitlfs.server.PointerServlet.sendError;
 
 /**
@@ -49,15 +48,18 @@ public class ContentServlet extends HttpServlet {
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
     try {
-      checkMimeTypes(req);
-
-      if ((req.getPathInfo() != null) && PATTERN_OID.matcher(req.getPathInfo()).matches())
+      if (req.getPathInfo() != null && PATTERN_OID.matcher(req.getPathInfo()).matches()) {
         processObjectVerify(req, req.getPathInfo().substring(1)).write(resp);
+        return;
+      }
     } catch (ServerError e) {
       sendError(resp, e);
+      return;
     }
+
+    super.doPost(req, resp);
   }
 
   @NotNull
