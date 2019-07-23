@@ -1,5 +1,7 @@
 package ru.bozaro.gitlfs.server;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -9,6 +11,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ForbiddenError extends ServerError {
   public ForbiddenError() {
-    super(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
+    this("Access forbidden");
+  }
+
+  public ForbiddenError(@NotNull String message) {
+    super(HttpServletResponse.SC_FORBIDDEN, message);
   }
 }
