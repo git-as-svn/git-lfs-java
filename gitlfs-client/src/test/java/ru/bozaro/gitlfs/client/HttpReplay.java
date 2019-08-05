@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
@@ -25,7 +25,7 @@ public class HttpReplay implements HttpExecutor {
 
   @NotNull
   @Override
-  public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+  public CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
     final HttpRecord record = records.pollFirst();
     Assert.assertNotNull(record);
 

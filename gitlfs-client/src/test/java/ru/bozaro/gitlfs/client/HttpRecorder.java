@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,8 +25,8 @@ public class HttpRecorder implements HttpExecutor {
 
   @NotNull
   @Override
-  public HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
-    HttpResponse response = executor.executeMethod(request);
+  public CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+    final CloseableHttpResponse response = executor.executeMethod(request);
     records.add(new HttpRecord(request, response));
     return response;
   }
@@ -34,5 +34,10 @@ public class HttpRecorder implements HttpExecutor {
   @NotNull
   public List<HttpRecord> getRecords() {
     return records;
+  }
+
+  @Override
+  public void close() throws IOException {
+    executor.close();
   }
 }

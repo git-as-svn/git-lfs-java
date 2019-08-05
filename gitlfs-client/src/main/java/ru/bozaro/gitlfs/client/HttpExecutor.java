@@ -1,9 +1,10 @@
 package ru.bozaro.gitlfs.client;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -11,7 +12,7 @@ import java.io.IOException;
  *
  * @author Artem V. Navrotskiy
  */
-public interface HttpExecutor {
+public interface HttpExecutor extends Closeable {
   @NotNull
-  HttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException;
+  CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException;
 }

@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.client.io;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -21,7 +20,7 @@ public class ByteArrayStreamProvider implements StreamProvider {
 
   @NotNull
   @Override
-  public InputStream getStream() throws IOException {
+  public InputStream getStream() {
     return new ByteArrayInputStream(data);
   }
 }

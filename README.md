@@ -54,6 +54,10 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
+Version 0.15.0
+
+ * Introduce Client.openObject methods
+
 Version 0.14.1
 
  * Fix object verification to be compatible with git-lfs client

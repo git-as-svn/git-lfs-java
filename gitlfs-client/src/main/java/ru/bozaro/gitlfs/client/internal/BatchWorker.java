@@ -10,8 +10,8 @@ import ru.bozaro.gitlfs.client.BatchSettings;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
-import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.data.Error;
+import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -159,7 +159,7 @@ public abstract class BatchWorker<T, R> {
           currentAuth.set(auth);
         }
         final List<Meta> metas = batch.values().stream().map(s -> s.meta).collect(Collectors.toList());
-        final BatchRes result = client.doRequest(auth, new JsonPost<>(new BatchReq(operation, metas), BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH));
+        final BatchRes result = client.doRequest(auth, new JsonPost<>(new BatchReq(operation, metas), BatchRes.class), AuthHelper.join(auth.getHref(), PATH_BATCH), Client.ConnectionClosePolicy.Close);
         for (BatchItem item : result.getObjects()) {
           final State<T, R> state = batch.remove(item.getOid());
           if (state != null) {
@@ -337,30 +337,6 @@ public abstract class BatchWorker<T, R> {
     }
   }
 
-  private final class StateHolder implements AutoCloseable {
-    @NotNull
-    private AtomicReference<State<T, R>> stateRef;
-
-    public StateHolder(@NotNull State<T, R> state) {
-      this.stateRef = new AtomicReference<>(state);
-      objectInProgress.incrementAndGet();
-    }
-
-    @Override
-    public void close() {
-      final State<T, R> state = stateRef.getAndSet(null);
-      if (state == null) return;
-      if (state.future.isDone()) {
-        objectInProgress.decrementAndGet();
-        objectQueue.remove(state.meta.getOid(), state);
-      } else {
-        state.auth = null;
-        objectInProgress.decrementAndGet();
-      }
-      stateEnqueue(false);
-    }
-  }
-
   public final static class State<T, R> {
     @NotNull
     private final Meta meta;
@@ -399,6 +375,30 @@ public abstract class BatchWorker<T, R> {
     @NotNull
     public CompletableFuture<R> getFuture() {
       return future;
+    }
+  }
+
+  private final class StateHolder implements AutoCloseable {
+    @NotNull
+    private AtomicReference<State<T, R>> stateRef;
+
+    public StateHolder(@NotNull State<T, R> state) {
+      this.stateRef = new AtomicReference<>(state);
+      objectInProgress.incrementAndGet();
+    }
+
+    @Override
+    public void close() {
+      final State<T, R> state = stateRef.getAndSet(null);
+      if (state == null) return;
+      if (state.future.isDone()) {
+        objectInProgress.decrementAndGet();
+        objectQueue.remove(state.meta.getOid(), state);
+      } else {
+        state.auth = null;
+        objectInProgress.decrementAndGet();
+      }
+      stateEnqueue(false);
     }
   }
 }

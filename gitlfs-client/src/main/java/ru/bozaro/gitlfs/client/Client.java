@@ -2,10 +2,10 @@ package ru.bozaro.gitlfs.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +22,7 @@ import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 
+import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,7 @@ import static ru.bozaro.gitlfs.common.Constants.*;
  *
  * @author Artem V. Navrotskiy
  */
-public class Client {
+public class Client implements Closeable {
   private static final int MAX_AUTH_COUNT = 1;
   private static final int MAX_RETRY_COUNT = 2;
   private static final int MAX_REDIRECT_COUNT = 5;
@@ -59,7 +60,7 @@ public class Client {
     this(authProvider, HttpClients.createDefault());
   }
 
-  public Client(@NotNull AuthProvider authProvider, @NotNull final HttpClient http) {
+  public Client(@NotNull AuthProvider authProvider, @NotNull final CloseableHttpClient http) {
     this(authProvider, new HttpClientExecutor(http));
   }
 
@@ -86,36 +87,9 @@ public class Client {
     return doWork(auth -> doRequest(
         auth,
         new MetaGet(),
-        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash)
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash),
+        ConnectionClosePolicy.Close
     ), Operation.Download);
-  }
-
-  /**
-   * Upload object with specified hash and size.
-   *
-   * @param streamProvider Object stream provider.
-   * @param hash           Object hash.
-   * @param size           Object size.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
-    return putObject(streamProvider, new Meta(hash, size));
-  }
-
-  /**
-   * Upload object with specified hash and size.
-   *
-   * @param streamProvider Object stream provider.
-   * @param meta           Object metadata.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
-    return doWork(auth -> {
-      final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS));
-      return links != null && putObject(streamProvider, meta, links);
-    }, Operation.Upload);
   }
 
   protected <T> T doWork(@NotNull Work<T> work, @NotNull Operation operation) throws IOException {
@@ -140,114 +114,15 @@ public class Client {
     }
   }
 
-  /**
-   * Get metadata for object by hash.
-   *
-   * @param hash Object hash.
-   * @param size Object size.
-   * @return Object metadata or null, if object not found.
-   * @throws IOException
-   */
-  @Nullable
-  public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
-    return postMeta(new Meta(hash, size));
-  }
-
-  /**
-   * Get metadata for object by hash.
-   *
-   * @param meta Object meta.
-   * @return Object metadata or null, if object not found.
-   * @throws IOException
-   */
-  @Nullable
-  public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
-    return doWork(auth -> doRequest(
-        auth,
-        new MetaPost(meta),
-        AuthHelper.join(auth.getHref(), PATH_OBJECTS)),
-        Operation.Upload
-    );
-  }
-
-  /**
-   * Send batch request to the LFS-server.
-   *
-   * @param batchReq Batch request.
-   * @return Object metadata.
-   * @throws IOException
-   */
-  @NotNull
-  public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
-    return doWork(auth -> doRequest(
-        auth,
-        new JsonPost<>(batchReq, BatchRes.class),
-        AuthHelper.join(auth.getHref(), PATH_BATCH)),
-        batchReq.getOperation()
-    );
-  }
-
-  /**
-   * Download object by hash.
-   *
-   * @param hash    Object hash.
-   * @param handler Stream handler.
-   * @return Stream handler result.
-   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
-   * @throws IOException           On some errors.
-   */
-  @NotNull
-  public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
-    return doWork(auth -> {
-      final ObjectRes links = doRequest(
-          auth,
-          new MetaGet(),
-          AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash)
-      );
-      if (links == null) {
-        throw new FileNotFoundException();
-      }
-      return getObject(new Meta(hash, -1), links, handler);
-    }, Operation.Download);
-  }
-
-  /**
-   * Download object by metadata.
-   *
-   * @param meta    Object metadata for stream validation.
-   * @param links   Object links.
-   * @param handler Stream handler.
-   * @return Stream handler result.
-   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
-   * @throws IOException           On some errors.
-   */
-  @NotNull
-  public <T> T getObject(@Nullable final Meta meta, @NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
-    final Link link = links.getLinks().get(LinkType.Download);
-    if (link == null) {
-      throw new FileNotFoundException();
-    }
-    return doRequest(link, new ObjectGet<>(inputStream -> handler.accept(meta != null ? new InputStreamValidator(inputStream, meta) : inputStream)), link.getHref());
-  }
-
-  /**
-   * Upload object.
-   *
-   * @param streamProvider Object stream provider.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider) throws IOException {
-    return putObject(streamProvider, generateMeta(streamProvider));
-  }
-
-  public <R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url) throws IOException {
+  public <R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url, @NotNull Client.ConnectionClosePolicy autoClose) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
       final HttpUriRequest request = task.createRequest(mapper, url.toString());
       addHeaders(request, link);
-      final HttpResponse response = http.executeMethod(request);
+
+      final CloseableHttpResponse response = http.executeMethod(request);
+      boolean needClose = true;
       try {
         int[] success = task.statusCodes();
         if (success == null) {
@@ -255,6 +130,8 @@ public class Client {
         }
         for (int item : success) {
           if (response.getStatusLine().getStatusCode() == item) {
+            if (autoClose == ConnectionClosePolicy.DoNotClose)
+              needClose = false;
             return task.processResponse(mapper, response);
           }
         }
@@ -289,9 +166,196 @@ public class Client {
         // Unexpected status code.
         throw new RequestException(request, response);
       } finally {
-        request.abort();
+        if (needClose)
+          response.close();
       }
     }
+  }
+
+  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
+    if (link != null) {
+      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
+        req.setHeader(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param hash           Object hash.
+   * @param size           Object size.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
+    return putObject(streamProvider, new Meta(hash, size));
+  }
+
+  /**
+   * Upload object with specified hash and size.
+   *
+   * @param streamProvider Object stream provider.
+   * @param meta           Object metadata.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
+    return doWork(auth -> {
+      final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS), ConnectionClosePolicy.Close);
+      return links != null && putObject(streamProvider, meta, links);
+    }, Operation.Upload);
+  }
+
+  /**
+   * Upload object by metadata.
+   *
+   * @param links          Object links.
+   * @param streamProvider Object stream provider.
+   * @param meta           Object metadata.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
+    final Link uploadLink = links.getLinks().get(LinkType.Upload);
+    if (uploadLink == null)
+      return false;
+
+    doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref(), ConnectionClosePolicy.Close);
+
+    final Link verifyLink = links.getLinks().get(LinkType.Verify);
+    if (verifyLink != null)
+      doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref(), ConnectionClosePolicy.Close);
+
+    return true;
+  }
+
+  /**
+   * Get metadata for object by hash.
+   *
+   * @param hash Object hash.
+   * @param size Object size.
+   * @return Object metadata or null, if object not found.
+   * @throws IOException
+   */
+  @Nullable
+  public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
+    return postMeta(new Meta(hash, size));
+  }
+
+  /**
+   * Get metadata for object by hash.
+   *
+   * @param meta Object meta.
+   * @return Object metadata or null, if object not found.
+   * @throws IOException
+   */
+  @Nullable
+  public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
+    return doWork(auth -> doRequest(
+        auth,
+        new MetaPost(meta),
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS),
+        ConnectionClosePolicy.Close),
+        Operation.Upload
+    );
+  }
+
+  /**
+   * Send batch request to the LFS-server.
+   *
+   * @param batchReq Batch request.
+   * @return Object metadata.
+   * @throws IOException
+   */
+  @NotNull
+  public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
+    return doWork(auth -> doRequest(
+        auth,
+        new JsonPost<>(batchReq, BatchRes.class),
+        AuthHelper.join(auth.getHref(), PATH_BATCH),
+        ConnectionClosePolicy.Close),
+        batchReq.getOperation()
+    );
+  }
+
+  /**
+   * Download object by hash.
+   *
+   * @param hash    Object hash.
+   * @param handler Stream handler.
+   * @return Stream handler result.
+   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
+   * @throws IOException           On some errors.
+   */
+  @NotNull
+  public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
+    return doWork(auth -> {
+      final ObjectRes links = getLinks(hash, auth);
+      return getObject(links.getMeta() == null ? new Meta(hash, -1) : links.getMeta(), links, handler);
+    }, Operation.Download);
+  }
+
+  @NotNull
+  private ObjectRes getLinks(@NotNull String hash, @NotNull Link auth) throws IOException {
+    final ObjectRes links = doRequest(
+        auth,
+        new MetaGet(),
+        AuthHelper.join(auth.getHref(), PATH_OBJECTS + "/", hash),
+        ConnectionClosePolicy.Close
+    );
+    if (links == null)
+      throw new FileNotFoundException();
+
+    return links;
+  }
+
+  /**
+   * Download object by metadata.
+   *
+   * @param meta    Object metadata for stream validation.
+   * @param links   Object links.
+   * @param handler Stream handler.
+   * @return Stream handler result.
+   * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
+   * @throws IOException           On some errors.
+   */
+  @NotNull
+  public <T> T getObject(@Nullable final Meta meta, @NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
+    final Link link = links.getLinks().get(LinkType.Download);
+    if (link == null) {
+      throw new FileNotFoundException();
+    }
+    return doRequest(link, new ObjectGet<>(inputStream -> handler.accept(meta == null ? inputStream : new InputStreamValidator(inputStream, meta))), link.getHref(), ConnectionClosePolicy.Close);
+  }
+
+  @NotNull
+  public InputStream openObject(@NotNull final String hash) throws IOException {
+    return doWork(auth -> {
+      final ObjectRes links = getLinks(hash, auth);
+      return openObject(links.getMeta() == null ? new Meta(hash, -1) : links.getMeta(), links);
+    }, Operation.Download);
+  }
+
+  @NotNull
+  public InputStream openObject(@Nullable final Meta meta, @NotNull final Links links) throws IOException {
+    final Link link = links.getLinks().get(LinkType.Download);
+    if (link == null)
+      throw new FileNotFoundException();
+
+    return doRequest(link, new ObjectGet<>(inputStream -> meta == null ? inputStream : new InputStreamValidator(inputStream, meta)), link.getHref(), ConnectionClosePolicy.DoNotClose);
+  }
+
+  /**
+   * Upload object.
+   *
+   * @param streamProvider Object stream provider.
+   * @return Return true is object is uploaded successfully and false if object is already uploaded.
+   * @throws IOException On some errors.
+   */
+  public boolean putObject(@NotNull final StreamProvider streamProvider) throws IOException {
+    return putObject(streamProvider, generateMeta(streamProvider));
   }
 
   /**
@@ -316,29 +380,6 @@ public class Client {
     return new Meta(new String(Hex.encodeHex(digest.digest())), size);
   }
 
-  /**
-   * Upload object by metadata.
-   *
-   * @param links          Object links.
-   * @param streamProvider Object stream provider.
-   * @param meta           Object metadata.
-   * @return Return true is object is uploaded successfully and false if object is already uploaded.
-   * @throws IOException On some errors.
-   */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
-    final Link uploadLink = links.getLinks().get(LinkType.Upload);
-    if (uploadLink == null)
-      return false;
-
-    doRequest(uploadLink, new ObjectPut(streamProvider, meta.getSize()), uploadLink.getHref());
-
-    final Link verifyLink = links.getLinks().get(LinkType.Verify);
-    if (verifyLink != null)
-      doRequest(verifyLink, new ObjectVerify(meta), verifyLink.getHref());
-
-    return true;
-  }
-
   protected static MessageDigest sha256() {
     try {
       return MessageDigest.getInstance("SHA-256");
@@ -347,20 +388,13 @@ public class Client {
     }
   }
 
-  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
-    if (link != null) {
-      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
-        req.setHeader(entry.getKey(), entry.getValue());
-      }
-    }
-  }
-
   @NotNull
   public Lock lock(@NotNull String path, @Nullable Ref ref) throws IOException, LockConflictException {
     final LockCreate.Res res = doWork(auth -> doRequest(
         auth,
         new LockCreate(path, ref),
-        AuthHelper.join(auth.getHref(), PATH_LOCKS)),
+        AuthHelper.join(auth.getHref(), PATH_LOCKS),
+        ConnectionClosePolicy.Close),
         Operation.Upload
     );
 
@@ -380,7 +414,8 @@ public class Client {
     return doWork(auth -> doRequest(
         auth,
         new LockDelete(force, ref),
-        AuthHelper.join(auth.getHref(), PATH_LOCKS + "/", lockId + "/unlock")),
+        AuthHelper.join(auth.getHref(), PATH_LOCKS + "/", lockId + "/unlock"),
+        ConnectionClosePolicy.Close),
         Operation.Upload
     );
   }
@@ -406,7 +441,8 @@ public class Client {
           new LocksList(),
           AuthHelper.join(
               auth.getHref(),
-              PATH_LOCKS + params + "&cursor=" + URLEncoder.encode(cursorFinal, "UTF-8"))
+              PATH_LOCKS + params + "&cursor=" + URLEncoder.encode(cursorFinal, "UTF-8")),
+          ConnectionClosePolicy.Close
           ),
           Operation.Download
       );
@@ -427,7 +463,8 @@ public class Client {
       final VerifyLocksRes res = doWork(auth -> doRequest(
           auth,
           new JsonPost<>(new VerifyLocksReq(cursorFinal, ref, null), VerifyLocksRes.class),
-          AuthHelper.join(auth.getHref(), PATH_LOCKS + "/verify")),
+          AuthHelper.join(auth.getHref(), PATH_LOCKS + "/verify"),
+          ConnectionClosePolicy.Close),
           Operation.Upload
       );
       result.getOurLocks().addAll(res.getOurs());
@@ -436,5 +473,15 @@ public class Client {
     } while (cursor != null && !cursor.isEmpty());
 
     return result;
+  }
+
+  @Override
+  public void close() throws IOException {
+    http.close();
+  }
+
+  public enum ConnectionClosePolicy {
+    Close,
+    DoNotClose,
   }
 }
