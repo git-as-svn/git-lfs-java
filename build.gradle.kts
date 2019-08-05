@@ -21,7 +21,7 @@ plugins {
 
 allprojects {
     group = "ru.bozaro.gitlfs"
-    version = "0.15.0-SNAPSHOT"
+    version = "0.15.0"
 
     apply<IdeaPlugin>()
     apply<VersionsPlugin>()
