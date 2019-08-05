@@ -4,6 +4,7 @@ import com.google.common.base.Utf8;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HttpHeaders;
 import org.apache.http.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHttpResponse;
@@ -38,6 +39,15 @@ public class HttpRecord {
   }
 
   @NotNull
+  private static String asString(@NotNull byte[] data) {
+    if (Utf8.isWellFormed(data)) {
+      return new String(data, StandardCharsets.UTF_8);
+    } else {
+      return BaseEncoding.base16().encode(data);
+    }
+  }
+
+  @NotNull
   public Request getRequest() {
     return request;
   }
@@ -45,15 +55,6 @@ public class HttpRecord {
   @NotNull
   public Response getResponse() {
     return response;
-  }
-
-  @NotNull
-  private static String asString(@NotNull byte[] data) {
-    if (Utf8.isWellFormed(data)) {
-      return new String(data, StandardCharsets.UTF_8);
-    } else {
-      return BaseEncoding.base16().encode(data);
-    }
   }
 
   public static class Response {
@@ -65,14 +66,14 @@ public class HttpRecord {
     @Nullable
     private final byte[] body;
 
-    protected Response() {
+    Response() {
       this.statusCode = 0;
       this.statusText = "";
       this.headers = new TreeMap<>();
       this.body = null;
     }
 
-    public Response(@NotNull HttpResponse response) throws IOException {
+    Response(@NotNull HttpResponse response) throws IOException {
       this.statusCode = response.getStatusLine().getStatusCode();
       this.statusText = response.getStatusLine().getReasonPhrase();
       this.headers = new TreeMap<>();
@@ -86,19 +87,15 @@ public class HttpRecord {
       }
     }
 
-    @NotNull
-    public HttpResponse toHttpResponse() {
-      final BasicHttpResponse response = new BasicHttpResponse(
-          new ProtocolVersion("HTTP", 1, 0),
-          statusCode,
-          statusText
-      );
-      for (Map.Entry<String, String> header : headers.entrySet()) {
+    @NotNull CloseableHttpResponse toHttpResponse() {
+      final CloseableBasicHttpResponse response = new CloseableBasicHttpResponse(new ProtocolVersion("HTTP", 1, 0), statusCode, statusText);
+
+      for (Map.Entry<String, String> header : headers.entrySet())
         response.addHeader(header.getKey(), header.getValue());
-      }
-      if (body != null) {
+
+      if (body != null)
         response.setEntity(new ByteArrayEntity(body));
-      }
+
       return response;
     }
 
@@ -114,6 +111,20 @@ public class HttpRecord {
       }
       return sb.toString();
     }
+
+  }
+
+  private static final class CloseableBasicHttpResponse extends BasicHttpResponse implements CloseableHttpResponse {
+    private CloseableBasicHttpResponse(@NotNull final ProtocolVersion ver,
+                                       final int code,
+                                       final String reason) {
+      super(ver, code, reason);
+    }
+
+    @Override
+    public void close() {
+      // noop
+    }
   }
 
   public static class Request {
@@ -126,14 +137,14 @@ public class HttpRecord {
     @Nullable
     private final byte[] body;
 
-    protected Request() {
+    Request() {
       href = "";
       method = "";
       headers = new TreeMap<>();
       body = null;
     }
 
-    public Request(@NotNull HttpUriRequest request) throws IOException {
+    Request(@NotNull HttpUriRequest request) throws IOException {
       this.href = request.getURI().toString();
       this.method = request.getMethod();
       this.headers = new TreeMap<>();

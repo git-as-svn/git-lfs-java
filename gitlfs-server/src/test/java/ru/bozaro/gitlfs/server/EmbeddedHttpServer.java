@@ -29,7 +29,6 @@ public class EmbeddedHttpServer implements AutoCloseable {
     this.http = new ServerConnector(server, new HttpConnectionFactory());
     http.setPort(0);
     http.setHost("127.0.1.1");
-    http.setIdleTimeout(30000);
     server.addConnector(http);
 
     this.servletHandler = new ServletHandler();
