@@ -22,10 +22,7 @@ import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 
-import java.io.Closeable;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
@@ -424,24 +421,22 @@ public class Client implements Closeable {
   public List<Lock> listLocks(@Nullable String path, @Nullable String id, @Nullable Ref ref) throws IOException {
     final List<Lock> result = new ArrayList<>();
 
-    if (path == null)
-      path = "";
-    if (id == null)
-      id = "";
+    final StringBuffer baseParams = new StringBuffer();
 
-    final String params = "?path=" + URLEncoder.encode(path, "UTF-8")
-        + "&id=" + URLEncoder.encode(id, "UTF-8")
-        + "&refspec=" + URLEncoder.encode(ref == null ? "" : ref.getName(), "UTF-8");
+    appendOptionalParam(baseParams, "path", path);
+    appendOptionalParam(baseParams, "id", id);
+    if (ref != null)
+      appendOptionalParam(baseParams, "refspec", ref.getName());
 
-    String cursor = "";
+    String cursor = null;
     do {
       final String cursorFinal = cursor;
+      final StringBuffer params = new StringBuffer(baseParams);
+      appendOptionalParam(params, "cursor", cursorFinal);
       final LocksRes res = doWork(auth -> doRequest(
           auth,
           new LocksList(),
-          AuthHelper.join(
-              auth.getHref(),
-              PATH_LOCKS + params + "&cursor=" + URLEncoder.encode(cursorFinal, "UTF-8")),
+          AuthHelper.join(auth.getHref(), PATH_LOCKS + params),
           ConnectionClosePolicy.Close
           ),
           Operation.Download
@@ -451,6 +446,16 @@ public class Client implements Closeable {
     } while (cursor != null && !cursor.isEmpty());
 
     return result;
+  }
+
+  private static void appendOptionalParam(@NotNull StringBuffer buffer, @NotNull String paramName, @Nullable String paramValue) throws UnsupportedEncodingException {
+    if (paramValue != null) {
+      buffer
+          .append(buffer.length() == 0 ? '?' : '&')
+          .append(paramName)
+          .append('=')
+          .append(URLEncoder.encode(paramValue, "UTF-8"));
+    }
   }
 
   @NotNull

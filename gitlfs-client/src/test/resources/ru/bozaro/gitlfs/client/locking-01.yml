@@ -56,7 +56,7 @@ request:
   headers:
     Accept: application/vnd.git-lfs+json
     Authorization: RemoteAuth Token-1
-  href: http://gitlfs.local/test.git/info/lfs/locks?path=build.gradle&id=&refspec=refs%2Fheads%2Fmaster&cursor=
+  href: http://gitlfs.local/test.git/info/lfs/locks?path=build.gradle&refspec=refs%2Fheads%2Fmaster
   method: GET
 response:
   body: !text |
