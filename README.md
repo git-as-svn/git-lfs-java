@@ -54,7 +54,7 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Unreleased
+Version 0.15.2
 
  * Send error message when lock create fails due to already existing lock
 
