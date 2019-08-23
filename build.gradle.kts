@@ -8,7 +8,7 @@ val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
 val gitCommit = System.getenv("TRAVIS_COMMIT") ?: ""
 
 tasks.wrapper {
-    gradleVersion = "5.5.1"
+    gradleVersion = "5.6"
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -55,8 +55,8 @@ subprojects {
     dependencies {
         compile("org.jetbrains:annotations:17.0.0")
 
-        testCompile("com.google.guava:guava:27.1-jre")
-        testCompile("org.testng:testng:6.14.3")
+        testCompile("com.google.guava:guava:28.0-jre")
+        testCompile("org.testng:testng:7.0.0")
     }
 
     idea {

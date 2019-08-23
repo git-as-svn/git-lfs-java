@@ -6,5 +6,5 @@ dependencies {
 
     testCompile(project(":gitlfs-client"))
     testCompile("org.eclipse.jetty:jetty-servlet:9.4.18.v20190429")
-    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.26")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.28")
 }
