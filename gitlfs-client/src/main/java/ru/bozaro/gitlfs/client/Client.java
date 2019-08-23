@@ -398,7 +398,7 @@ public class Client implements Closeable {
     if (res.isSuccess())
       return res.getLock();
     else
-      throw new LockConflictException(res.getLock());
+      throw new LockConflictException(res.getMessage(), res.getLock());
   }
 
   @Nullable

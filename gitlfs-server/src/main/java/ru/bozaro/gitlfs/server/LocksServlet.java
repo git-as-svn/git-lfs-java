@@ -73,7 +73,7 @@ public class LocksServlet extends HttpServlet {
       final Lock lock = lockWrite.lock(createLockReq.getPath(), createLockReq.getRef());
       return new ObjectResponse(HttpServletResponse.SC_CREATED, new CreateLockRes(lock));
     } catch (LockConflictException e) {
-      return new ObjectResponse(HttpServletResponse.SC_CONFLICT, new CreateLockRes(e.getLock()));
+      return new ObjectResponse(HttpServletResponse.SC_CONFLICT, new LockConflictRes(e.getMessage(), e.getLock()));
     }
   }
 

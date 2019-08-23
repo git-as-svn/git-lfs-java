@@ -10,10 +10,7 @@ import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.bozaro.gitlfs.common.data.CreateLockReq;
-import ru.bozaro.gitlfs.common.data.CreateLockRes;
-import ru.bozaro.gitlfs.common.data.Lock;
-import ru.bozaro.gitlfs.common.data.Ref;
+import ru.bozaro.gitlfs.common.data.*;
 
 import java.io.IOException;
 
@@ -49,9 +46,10 @@ public final class LockCreate implements Request<LockCreate.Res> {
   public LockCreate.Res processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
     switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_CREATED:
-        return new Res(true, mapper.readValue(response.getEntity().getContent(), CreateLockRes.class).getLock());
+        return new Res(true, mapper.readValue(response.getEntity().getContent(), CreateLockRes.class).getLock(), null);
       case HttpStatus.SC_CONFLICT:
-        return new Res(false, mapper.readValue(response.getEntity().getContent(), CreateLockRes.class).getLock());
+        final LockConflictRes res = mapper.readValue(response.getEntity().getContent(), LockConflictRes.class);
+        return new Res(false, res.getLock(), res.getMessage());
       default:
         throw new IllegalStateException();
     }
@@ -69,12 +67,15 @@ public final class LockCreate implements Request<LockCreate.Res> {
   public static final class Res {
 
     private final boolean success;
+    @Nullable
+    private final String message;
     @NotNull
     private final Lock lock;
 
-    private Res(boolean success, @NotNull Lock lock) {
+    private Res(boolean success, @NotNull Lock lock, @Nullable String message) {
       this.success = success;
       this.lock = lock;
+      this.message = message;
     }
 
     public boolean isSuccess() {
@@ -84,6 +85,11 @@ public final class LockCreate implements Request<LockCreate.Res> {
     @NotNull
     public Lock getLock() {
       return lock;
+    }
+
+    @Nullable
+    public String getMessage() {
+      return message;
     }
   }
 }
