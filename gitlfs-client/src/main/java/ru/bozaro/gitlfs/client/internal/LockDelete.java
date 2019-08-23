@@ -10,8 +10,8 @@ import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.bozaro.gitlfs.common.data.CreateLockRes;
 import ru.bozaro.gitlfs.common.data.DeleteLockReq;
+import ru.bozaro.gitlfs.common.data.DeleteLockRes;
 import ru.bozaro.gitlfs.common.data.Lock;
 import ru.bozaro.gitlfs.common.data.Ref;
 
@@ -48,7 +48,7 @@ public final class LockDelete implements Request<Lock> {
   public Lock processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
     switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_OK:
-        return mapper.readValue(response.getEntity().getContent(), CreateLockRes.class).getLock();
+        return mapper.readValue(response.getEntity().getContent(), DeleteLockRes.class).getLock();
       case HttpStatus.SC_NOT_FOUND:
         return null;
       default:
