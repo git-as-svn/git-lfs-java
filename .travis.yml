@@ -41,4 +41,4 @@ jobs:
       install: true
       script:
         - openssl aes-256-cbc -K $encrypted_8e5c960335c9_key -iv $encrypted_8e5c960335c9_iv -in secring.gpg.enc -out secring.gpg -d
-        - ./gradlew publish closeAndReleaseRepository
+        - ./gradlew --info publish closeAndReleaseRepository
