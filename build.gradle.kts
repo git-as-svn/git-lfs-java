@@ -8,14 +8,14 @@ val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
 val gitCommit = System.getenv("TRAVIS_COMMIT") ?: ""
 
 tasks.wrapper {
-    gradleVersion = "5.6"
+    gradleVersion = "5.6.2"
     distributionType = Wrapper.DistributionType.ALL
 }
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.21.0"
-    id("de.marcphilipp.nexus-publish") version "0.2.0" apply false
-    id("io.codearte.nexus-staging") version "0.21.0"
+    id("com.github.ben-manes.versions") version "0.25.0"
+    id("de.marcphilipp.nexus-publish") version "0.3.1" apply false
+    id("io.codearte.nexus-staging") version "0.21.1"
     idea
 }
 
@@ -55,7 +55,7 @@ subprojects {
     dependencies {
         compile("org.jetbrains:annotations:17.0.0")
 
-        testCompile("com.google.guava:guava:28.0-jre")
+        testCompile("com.google.guava:guava:28.1-jre")
         testCompile("org.testng:testng:7.0.0")
     }
 
