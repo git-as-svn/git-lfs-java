@@ -2,9 +2,9 @@ package ru.bozaro.gitlfs.client.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -24,6 +24,8 @@ public interface Request<R> {
    *
    * @return Success status codes.
    */
-  @Nullable
-  int[] statusCodes();
+  @NotNull
+  default int[] statusCodes() {
+    return new int[]{HttpStatus.SC_OK};
+  }
 }

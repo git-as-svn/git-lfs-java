@@ -7,7 +7,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -39,12 +38,6 @@ public class JsonPost<Req, Res> implements Request<Res> {
     entity.setContentType(MIME_LFS_JSON);
     method.setEntity(entity);
     return method;
-  }
-
-  @Nullable
-  @Override
-  public int[] statusCodes() {
-    return null;
   }
 
   @Override

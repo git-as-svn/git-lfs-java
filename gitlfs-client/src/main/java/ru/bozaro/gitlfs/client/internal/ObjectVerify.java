@@ -7,7 +7,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
 
 import java.io.IOException;
@@ -40,14 +39,8 @@ public class ObjectVerify implements Request<Void> {
     return req;
   }
 
-  @Nullable
   @Override
-  public int[] statusCodes() {
-    return null;
-  }
-
-  @Override
-  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) {
     return null;
   }
 }
