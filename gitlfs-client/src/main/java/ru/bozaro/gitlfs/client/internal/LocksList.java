@@ -5,7 +5,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.LocksRes;
 
 import java.io.IOException;
@@ -25,11 +24,5 @@ public final class LocksList implements Request<LocksRes> {
   @Override
   public LocksRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
     return mapper.readValue(response.getEntity().getContent(), LocksRes.class);
-  }
-
-  @Nullable
-  @Override
-  public int[] statusCodes() {
-    return null;
   }
 }

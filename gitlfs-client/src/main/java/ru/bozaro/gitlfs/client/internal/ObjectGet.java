@@ -5,7 +5,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.io.IOException;
  */
 public class ObjectGet<T> implements Request<T> {
   @NotNull
-  final StreamHandler<T> handler;
+  private final StreamHandler<T> handler;
 
   public ObjectGet(@NotNull StreamHandler<T> handler) {
     this.handler = handler;
@@ -27,12 +26,6 @@ public class ObjectGet<T> implements Request<T> {
   @Override
   public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
     return new HttpGet(url);
-  }
-
-  @Nullable
-  @Override
-  public int[] statusCodes() {
-    return null;
   }
 
   @Override

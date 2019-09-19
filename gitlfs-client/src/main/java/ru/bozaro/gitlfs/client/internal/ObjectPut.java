@@ -8,7 +8,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 
 import java.io.IOException;
@@ -39,17 +38,17 @@ public class ObjectPut implements Request<Void> {
     return req;
   }
 
-  @Nullable
+  @Override
+  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+    return null;
+  }
+
+  @NotNull
   @Override
   public int[] statusCodes() {
     return new int[]{
         HttpStatus.SC_OK,
         HttpStatus.SC_CREATED,
     };
-  }
-
-  @Override
-  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
-    return null;
   }
 }

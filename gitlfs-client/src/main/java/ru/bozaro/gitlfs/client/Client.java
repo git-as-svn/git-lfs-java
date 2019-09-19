@@ -43,10 +43,6 @@ public class Client implements Closeable {
   private static final int MAX_RETRY_COUNT = 2;
   private static final int MAX_REDIRECT_COUNT = 5;
   @NotNull
-  private static final int[] DEFAULT_HTTP_SUCCESS = new int[]{
-      HttpStatus.SC_OK
-  };
-  @NotNull
   private final ObjectMapper mapper;
   @NotNull
   private final AuthProvider authProvider;
@@ -122,9 +118,6 @@ public class Client implements Closeable {
       boolean needClose = true;
       try {
         int[] success = task.statusCodes();
-        if (success == null) {
-          success = DEFAULT_HTTP_SUCCESS;
-        }
         for (int item : success) {
           if (response.getStatusLine().getStatusCode() == item) {
             if (autoClose == ConnectionClosePolicy.DoNotClose)
