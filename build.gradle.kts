@@ -1,6 +1,8 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
+import java.time.Duration
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
@@ -98,6 +100,15 @@ subprojects {
         archiveClassifier.set("sources")
     }
 
+    configure<NexusPublishExtension> {
+        // We're constantly getting socket timeouts on Travis
+        clientTimeout.set(Duration.ofMinutes(3))
+
+        repositories {
+            sonatype()
+        }
+    }
+
     configure<PublishingExtension> {
         publications {
             create<MavenPublication>(project.name) {
@@ -171,6 +182,7 @@ tasks.releaseRepository.configure {
 
 nexusStaging {
     packageGroup = "ru.bozaro"
+    stagingProfileId = "365bc6dc8b7aa3"
     username = ossrhUsername
     password = ossrhPassword
 }
