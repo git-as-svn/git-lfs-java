@@ -34,6 +34,8 @@ jobs:
       jdk: openjdk11
     - stage: test
       jdk: openjdk12
+    - stage: test
+      jdk: openjdk13
 
     - stage: deploy
       if: repo = "bozaro/git-lfs-java" and type != "pull_request" and (branch = "master" or tag is present)
