@@ -45,7 +45,7 @@ You can download latest stable version from [Maven Central](http://mvnrepository
   // Batch mode
   final ExecutorService pool = Executors.newFixedThreadPool(4);
   final BatchDownloader downloader = new BatchDownloader(client, pool);
-  CompletableFuture<byte[]> future = uploader.download(new Meta("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", 10), ByteStreams::toByteArray);
+  CompletableFuture<byte[]> future = downloader.download(new Meta("4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393", 10), ByteStreams::toByteArray);
 ```
 
 ### Embedded LFS server
