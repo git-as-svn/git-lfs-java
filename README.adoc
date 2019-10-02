@@ -1,0 +1,154 @@
+= git-lfs-java
+
+image:https://travis-ci.org/bozaro/git-lfs-java.svg?branch=master[Build Status,link=https://travis-ci.org/bozaro/git-lfs-java]
+image:https://img.shields.io/maven-central/v/ru.bozaro.gitlfs/gitlfs-common.svg[Maven Central,link=http://mvnrepository.com/artifact/ru.bozaro.gitlfs]
+
+== What is this?
+
+This is Git LFS Java API implementation.
+
+This project contains:
+
+* gitlfs-common - Common structures for serialization/deserialization Git LFS messages
+* gitlfs-pointer - Git LFS pointer serialization/deserialization
+* gitlfs-client - API for uploading/downloading Git LFS objects from server
+* gitlfs-server - Servlets for creating custom LFS server
+
+== How to use?
+
+You can download latest stable from http://mvnrepository.com/artifact/ru.bozaro.gitlfs[Maven Central].
+
+=== Downloading object from Git LFS server
+
+[source,java]
+----
+include::gitlfs-client/src/test/java/ru/bozaro/gitlfs/client/Examples.java[tags=download]
+----
+
+=== Uploading object to Git LFS server
+
+[source,java]
+----
+include::gitlfs-client/src/test/java/ru/bozaro/gitlfs/client/Examples.java[tags=upload]
+----
+
+=== Embedded LFS server
+
+See link:gitlfs-server/src/test/java/ru/bozaro/gitlfs/server/ServerTest.java[] for example.
+
+== Changelog
+
+=== 0.16.0
+
+* Update dependencies
+
+=== 0.15.2
+
+* Send error message when lock create fails due to already existing lock
+
+=== 0.15.1
+
+* Fix compatibility with GitLab LFS locks API
+
+=== 0.15.0
+
+* Introduce Client.openObject methods
+
+=== 0.14.1
+
+* Fix object verification to be compatible with git-lfs client
+
+=== 0.14.0
+
+* Add LFS object verification server code
+* Fix broken handling of already existing LFS object
+
+=== 0.13.3
+
+* Update dependencies
+* Fix deprecated Jackson API usage
+
+=== 0.13.2
+
+* Fix ISO 8601 date formatting again
+
+=== 0.13.1
+
+* LFS locking API fixes
+* Drop dependency on Guava
+
+=== 0.13.0
+
+* https://github.com/git-lfs/git-lfs/blob/master/docs/api/locking.md[LFS locking] support
+
+=== 0.12.1
+
+* Fix compatibility with Gitea LFS
+
+=== 0.12.0
+
+* Update dependencies
+* Do not output \r in JSON on Windows
+
+=== 0.11.1
+
+* Fix ISO 8601 date formatting
+
+=== 0.11.0
+
+* JFrog Artifactory git-lfs compatibility (see #4)
+
+=== 0.10.0
+
+* Add request/response content information to RequestException
+
+=== 0.9.0
+
+* Update all dependencies
+
+=== 0.8.0
+
+* Replace commons-httpclient:commons-httpclient:3.1 by org.apache.httpcomponents:httpclient:4.1.3
+
+=== 0.7.0
+
+* Add header modification for replacing Basic authentication by Token
+* Don't ask password for SSH authentication
+* Add more informative HTTP error message
+
+=== 0.6.0
+
+* Require JDK 8
+* High level batch API implementation
+* Add steam hash validation on download
+
+=== 0.5.0
+
+* Server implemetation stabilization
+* Create multitheaded HttpClient by default
+* Fix single object downloading API
+
+=== 0.4.0
+
+* Initial server implementation
+* Fix url concatenation
+* Fix downloading for not uploaded object (404 error)
+* Fix minor bugs
+
+=== 0.3.0
+
+* Add authenticator for git-lfs-authenticate command (experimental)
+* Add AuthHelper class for simple AuthProvider creation
+* Fix verify url bug
+* Fix basic authentication
+* Fix already uploaded behaviour
+
+=== 0.2.0
+
+* Support https://github.com/github/git-lfs/blob/master/docs/api/http-v1-batch.md[Git LFS v1 Batch API]
+
+=== 0.1.0
+
+* Initial version;
+* Support https://github.com/github/git-lfs/blob/master/docs/api/http-v1-original.md[Git LFS v1 Original API]
+* Support https://github.com/github/git-lfs/blob/master/docs/spec.md[Git LFS pointer serialize/parse]
