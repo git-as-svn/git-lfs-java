@@ -15,9 +15,9 @@ tasks.wrapper {
 }
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.25.0"
-    id("de.marcphilipp.nexus-publish") version "0.3.1" apply false
-    id("io.codearte.nexus-staging") version "0.21.1"
+    id("com.github.ben-manes.versions") version "0.27.0"
+    id("de.marcphilipp.nexus-publish") version "0.4.0" apply false
+    id("io.codearte.nexus-staging") version "0.21.2"
     idea
 }
 
@@ -102,6 +102,7 @@ subprojects {
 
     configure<NexusPublishExtension> {
         // We're constantly getting socket timeouts on Travis
+        connectTimeout.set(Duration.ofMinutes(3))
         clientTimeout.set(Duration.ofMinutes(3))
 
         repositories {
