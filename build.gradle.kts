@@ -56,8 +56,8 @@ subprojects {
     dependencies {
         api("com.google.code.findbugs:jsr305:3.0.2")
 
-        testImplementation("com.google.guava:guava:28.1-jre")
-        testImplementation("org.testng:testng:7.0.0")
+        testImplementation("com.google.guava:guava:28.2-jre")
+        testImplementation("org.testng:testng:7.1.0")
     }
 
     idea {
