@@ -1,10 +1,10 @@
 package ru.bozaro.gitlfs.client;
 
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.annotation.Nonnull;
 import java.net.URI;
 
 /**
@@ -25,7 +25,7 @@ public class AuthHelperTest {
   }
 
   @Test(dataProvider = "joinUrlProvider")
-  public void joinUrl(@NotNull String base, @NotNull String str, @NotNull String expected) {
+  public void joinUrl(@Nonnull String base, @Nonnull String str, @Nonnull String expected) {
     Assert.assertEquals(AuthHelper.join(URI.create(base), str), URI.create(expected));
   }
 }

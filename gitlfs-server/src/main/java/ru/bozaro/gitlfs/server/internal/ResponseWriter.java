@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.server.internal;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -11,5 +10,5 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public interface ResponseWriter {
-  void write(@NotNull HttpServletResponse response) throws IOException;
+  void write(@Nonnull HttpServletResponse response) throws IOException;
 }

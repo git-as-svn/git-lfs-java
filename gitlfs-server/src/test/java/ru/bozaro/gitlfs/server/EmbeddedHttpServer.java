@@ -5,8 +5,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.servlet.Servlet;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,11 +17,11 @@ import java.net.URISyntaxException;
  * @author Artem V. Navrotskiy
  */
 public class EmbeddedHttpServer implements AutoCloseable {
-  @NotNull
+  @Nonnull
   private final Server server;
-  @NotNull
+  @Nonnull
   private final ServerConnector http;
-  @NotNull
+  @Nonnull
   private final ServletHandler servletHandler;
 
   public EmbeddedHttpServer() throws Exception {
@@ -37,7 +37,7 @@ public class EmbeddedHttpServer implements AutoCloseable {
     server.start();
   }
 
-  @NotNull
+  @Nonnull
   public URI getBase() {
     try {
       return new URI("http", null, http.getHost(), http.getLocalPort(), null, null, null);
@@ -46,7 +46,7 @@ public class EmbeddedHttpServer implements AutoCloseable {
     }
   }
 
-  public void addServlet(@NotNull String pathSpec, @NotNull Servlet servlet) {
+  public void addServlet(@Nonnull String pathSpec, @Nonnull Servlet servlet) {
     servletHandler.addServletWithMapping(new ServletHolder(servlet), pathSpec);
   }
 

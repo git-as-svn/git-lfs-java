@@ -1,12 +1,11 @@
 package ru.bozaro.gitlfs.client.auth;
 
 import org.apache.commons.codec.binary.Base64;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
-import java.io.IOException;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -21,14 +20,14 @@ import static ru.bozaro.gitlfs.common.Constants.HEADER_AUTHORIZATION;
  * @author Artem V. Navrotskiy
  */
 public class BasicAuthProvider implements AuthProvider {
-  @NotNull
+  @Nonnull
   private final Link auth;
 
-  public BasicAuthProvider(@NotNull URI href) {
+  public BasicAuthProvider(@Nonnull URI href) {
     this(href, null, null);
   }
 
-  public BasicAuthProvider(@NotNull URI href, @Nullable String login, @Nullable String password) {
+  public BasicAuthProvider(@Nonnull URI href, @CheckForNull String login, @CheckForNull String password) {
     final String authLogin;
     if (isEmpty(login)) {
       authLogin = extractLogin(href.getUserInfo());
@@ -52,31 +51,31 @@ public class BasicAuthProvider implements AuthProvider {
     }
   }
 
-  @NotNull
-  @Override
-  public Link getAuth(@NotNull Operation operation) throws IOException {
-    return auth;
-  }
-
-  @Override
-  public void invalidateAuth(@NotNull Operation operation, @NotNull Link auth) {
-  }
-
-  private static boolean isEmpty(@Nullable String value) {
+  private static boolean isEmpty(@CheckForNull String value) {
     return value == null || value.isEmpty();
   }
 
-  @NotNull
-  private static String extractLogin(@Nullable String userInfo) {
+  @Nonnull
+  private static String extractLogin(@CheckForNull String userInfo) {
     if (userInfo == null) return "";
     final int separator = userInfo.indexOf(':');
     return (separator >= 0) ? userInfo.substring(0, separator) : userInfo;
   }
 
-  @NotNull
-  private static String extractPassword(@Nullable String userInfo) {
+  @Nonnull
+  private static String extractPassword(@CheckForNull String userInfo) {
     if (userInfo == null) return "";
     final int separator = userInfo.indexOf(':');
     return (separator >= 0) ? userInfo.substring(separator + 1) : "";
+  }
+
+  @Nonnull
+  @Override
+  public Link getAuth(@Nonnull Operation operation) {
+    return auth;
+  }
+
+  @Override
+  public void invalidateAuth(@Nonnull Operation operation, @Nonnull Link auth) {
   }
 }

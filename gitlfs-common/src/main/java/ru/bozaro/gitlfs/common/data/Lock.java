@@ -1,16 +1,16 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 
 public final class Lock implements Comparable<Lock> {
 
-  @NotNull
+  @Nonnull
   public static final Comparator<Lock> lockComparator = Comparator
       .comparing(Lock::getLockedAt)
       .thenComparing(Lock::getId);
@@ -19,35 +19,35 @@ public final class Lock implements Comparable<Lock> {
    * String ID of the Lock.
    */
   @JsonProperty(value = "id", required = true)
-  @NotNull
+  @Nonnull
   private final String id;
 
   /**
    * String path name of the locked file.
    */
   @JsonProperty(value = "path", required = true)
-  @NotNull
+  @Nonnull
   private final String path;
 
   /**
    * The timestamp the lock was created, as an ISO 8601 formatted string.
    */
   @JsonProperty(value = "locked_at", required = true)
-  @NotNull
+  @Nonnull
   private final Date lockedAt;
 
   /**
    * The name of the user that created the Lock. This should be set from the user credentials posted when creating the lock.
    */
   @JsonProperty(value = "owner")
-  @Nullable
+  @CheckForNull
   private final User owner;
 
   public Lock(
-      @JsonProperty(value = "id", required = true) @NotNull String id,
-      @JsonProperty(value = "path", required = true) @NotNull String path,
-      @JsonProperty(value = "locked_at") @NotNull Date lockedAt,
-      @JsonProperty(value = "owner") @Nullable User owner
+      @JsonProperty(value = "id", required = true) @Nonnull String id,
+      @JsonProperty(value = "path", required = true) @Nonnull String path,
+      @JsonProperty(value = "locked_at") @Nonnull Date lockedAt,
+      @JsonProperty(value = "owner") @CheckForNull User owner
   ) {
     this.id = id;
     this.path = path;
@@ -55,12 +55,12 @@ public final class Lock implements Comparable<Lock> {
     this.owner = owner;
   }
 
-  @NotNull
+  @Nonnull
   public String getPath() {
     return path;
   }
 
-  @Nullable
+  @CheckForNull
   public User getOwner() {
     return owner;
   }
@@ -79,16 +79,16 @@ public final class Lock implements Comparable<Lock> {
   }
 
   @Override
-  public int compareTo(@NotNull Lock o) {
+  public int compareTo(@Nonnull Lock o) {
     return lockComparator.compare(this, o);
   }
 
-  @NotNull
+  @Nonnull
   public Date getLockedAt() {
     return lockedAt;
   }
 
-  @NotNull
+  @Nonnull
   public String getId() {
     return id;
   }

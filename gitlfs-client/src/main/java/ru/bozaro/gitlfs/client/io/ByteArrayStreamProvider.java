@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.client.io;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
@@ -11,14 +10,14 @@ import java.io.InputStream;
  * @author Artem V. Navrotskiy
  */
 public class ByteArrayStreamProvider implements StreamProvider {
-  @NotNull
+  @Nonnull
   private final byte[] data;
 
-  public ByteArrayStreamProvider(@NotNull byte[] data) {
+  public ByteArrayStreamProvider(@Nonnull byte[] data) {
     this.data = data;
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public InputStream getStream() {
     return new ByteArrayInputStream(data);

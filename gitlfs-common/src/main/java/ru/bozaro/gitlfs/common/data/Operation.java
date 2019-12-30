@@ -2,7 +2,8 @@ package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /**
  * LFSP operation type.
@@ -17,7 +18,7 @@ public enum Operation {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitDownload();
     }
   },
@@ -28,13 +29,13 @@ public enum Operation {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitUpload();
     }
   };
 
   @JsonCreator
-  public static Operation forValue(@NotNull String value) {
+  public static Operation forValue(@Nonnull String value) {
     for (Operation item : values()) {
       if (item.toValue().equals(value)) {
         return item;
@@ -46,7 +47,7 @@ public enum Operation {
   @JsonValue
   public abstract String toValue();
 
-  public abstract <R> R visit(@NotNull Visitor<R> visitor);
+  public abstract <R> R visit(@Nonnull Visitor<R> visitor);
 
   public interface Visitor<R> {
     R visitDownload();

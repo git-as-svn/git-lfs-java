@@ -8,13 +8,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.DeleteLockReq;
 import ru.bozaro.gitlfs.common.data.DeleteLockRes;
 import ru.bozaro.gitlfs.common.data.Lock;
 import ru.bozaro.gitlfs.common.data.Ref;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.HEADER_ACCEPT;
@@ -22,17 +22,17 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 
 public final class LockDelete implements Request<Lock> {
   private final boolean force;
-  @Nullable
+  @CheckForNull
   private final Ref ref;
 
-  public LockDelete(boolean force, @Nullable Ref ref) {
+  public LockDelete(boolean force, @CheckForNull Ref ref) {
     this.force = force;
     this.ref = ref;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost req = new HttpPost(url);
     req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
 
@@ -45,7 +45,7 @@ public final class LockDelete implements Request<Lock> {
   }
 
   @Override
-  public Lock processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public Lock processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException {
     switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_OK:
         return mapper.readValue(response.getEntity().getContent(), DeleteLockRes.class).getLock();
@@ -56,7 +56,7 @@ public final class LockDelete implements Request<Lock> {
     }
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public int[] statusCodes() {
     return new int[]{

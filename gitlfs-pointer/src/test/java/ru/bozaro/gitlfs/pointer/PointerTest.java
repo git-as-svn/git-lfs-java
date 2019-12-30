@@ -1,11 +1,11 @@
 package ru.bozaro.gitlfs.pointer;
 
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -51,8 +51,24 @@ public class PointerTest {
     };
   }
 
+  @DataProvider(name = "parseInvalidProvider")
+  public static Object[][] parseInvalidProvider() {
+    return new Object[][]{
+        new Object[]{"pointer-invalid-01.dat", "Version is not in first line"},
+        new Object[]{"pointer-invalid-02.dat", "Two empty lines at end of file"},
+        new Object[]{"pointer-invalid-03.dat", "Size not found"},
+        new Object[]{"pointer-invalid-04.dat", "Oid not found"},
+        new Object[]{"pointer-invalid-05.dat", "Version not found"},
+        new Object[]{"pointer-invalid-06.dat", "Invalid items order"},
+        new Object[]{"pointer-invalid-07.dat", "Non utf-8"},
+        new Object[]{"pointer-invalid-08.dat", "Size is not number"},
+        new Object[]{"pointer-invalid-09.dat", "Duplicate line"},
+        new Object[]{"pointer-invalid-10.dat", "Duplicate version"},
+    };
+  }
+
   @Test(dataProvider = "parseValidProvider")
-  public void parseValid(@NotNull String fileName, @NotNull Map<String, String> expected) throws IOException {
+  public void parseValid(@Nonnull String fileName, @Nonnull Map<String, String> expected) throws IOException {
     try (InputStream stream = getClass().getResourceAsStream(fileName)) {
       Assert.assertNotNull(stream);
       Assert.assertEquals(Pointer.parsePointer(stream), expected);
@@ -70,24 +86,8 @@ public class PointerTest {
     Assert.assertEquals(parsed, pointer);
   }
 
-  @DataProvider(name = "parseInvalidProvider")
-  public static Object[][] parseInvalidProvider() {
-    return new Object[][]{
-        new Object[]{"pointer-invalid-01.dat", "Version is not in first line"},
-        new Object[]{"pointer-invalid-02.dat", "Two empty lines at end of file"},
-        new Object[]{"pointer-invalid-03.dat", "Size not found"},
-        new Object[]{"pointer-invalid-04.dat", "Oid not found"},
-        new Object[]{"pointer-invalid-05.dat", "Version not found"},
-        new Object[]{"pointer-invalid-06.dat", "Invalid items order"},
-        new Object[]{"pointer-invalid-07.dat", "Non utf-8"},
-        new Object[]{"pointer-invalid-08.dat", "Size is not number"},
-        new Object[]{"pointer-invalid-09.dat", "Duplicate line"},
-        new Object[]{"pointer-invalid-10.dat", "Duplicate version"},
-    };
-  }
-
   @Test(dataProvider = "parseInvalidProvider")
-  public void parseInvalid(@NotNull String fileName, @NotNull String description) throws IOException {
+  public void parseInvalid(@Nonnull String fileName, @Nonnull String description) throws IOException {
     try (InputStream stream = getClass().getResourceAsStream(fileName)) {
       Assert.assertNotNull(stream);
       Assert.assertNull(Pointer.parsePointer(stream), description);

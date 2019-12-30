@@ -7,9 +7,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.MIME_BINARY;
@@ -28,9 +28,9 @@ public class ObjectPut implements Request<Void> {
     this.size = size;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws IOException {
     final HttpPut req = new HttpPut(url);
     final AbstractHttpEntity entity = new InputStreamEntity(streamProvider.getStream(), size);
     entity.setContentType(MIME_BINARY);
@@ -39,11 +39,11 @@ public class ObjectPut implements Request<Void> {
   }
 
   @Override
-  public Void processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public Void processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) {
     return null;
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public int[] statusCodes() {
     return new int[]{

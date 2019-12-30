@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.client.io;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -10,7 +9,7 @@ import java.nio.charset.StandardCharsets;
  * @author Artem V. Navrotskiy
  */
 public class StringStreamProvider extends ByteArrayStreamProvider {
-  public StringStreamProvider(@NotNull String data) {
+  public StringStreamProvider(@Nonnull String data) {
     super(data.getBytes(StandardCharsets.UTF_8));
   }
 }

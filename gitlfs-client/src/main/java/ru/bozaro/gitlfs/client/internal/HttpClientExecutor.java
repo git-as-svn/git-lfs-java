@@ -3,9 +3,9 @@ package ru.bozaro.gitlfs.client.internal;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.HttpExecutor;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -14,16 +14,16 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public final class HttpClientExecutor implements HttpExecutor {
-  @NotNull
+  @Nonnull
   private final CloseableHttpClient http;
 
-  public HttpClientExecutor(@NotNull CloseableHttpClient http) {
+  public HttpClientExecutor(@Nonnull CloseableHttpClient http) {
     this.http = http;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+  public CloseableHttpResponse executeMethod(@Nonnull HttpUriRequest request) throws IOException {
     return http.execute(request);
   }
 

@@ -1,11 +1,11 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Error;
 import ru.bozaro.gitlfs.common.data.*;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
@@ -19,9 +19,9 @@ import java.util.Map;
  * @author Artem V. Navrotskiy
  */
 public class LocalPointerManager implements PointerManager {
-  @NotNull
+  @Nonnull
   private final ContentManager manager;
-  @NotNull
+  @Nonnull
   private final String contentLocation;
 
   /**
@@ -30,31 +30,31 @@ public class LocalPointerManager implements PointerManager {
    * @param manager         Content manager.
    * @param contentLocation Absolute or relative URL to ContentServlet.
    */
-  public LocalPointerManager(@NotNull ContentManager manager, @NotNull String contentLocation) {
+  public LocalPointerManager(@Nonnull ContentManager manager, @Nonnull String contentLocation) {
     this.manager = manager;
     this.contentLocation = contentLocation.endsWith("/") ? contentLocation : contentLocation + "/";
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public Locator checkUploadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+  public Locator checkUploadAccess(@Nonnull HttpServletRequest request, @Nonnull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
     final ContentManager.HeaderProvider headerProvider = manager.checkUploadAccess(request);
     return createLocator(request, headerProvider, selfUrl);
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public Locator checkDownloadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
+  public Locator checkDownloadAccess(@Nonnull HttpServletRequest request, @Nonnull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError {
     final ContentManager.HeaderProvider headerProvider = manager.checkDownloadAccess(request);
     return createLocator(request, headerProvider, selfUrl);
   }
 
-  protected Locator createLocator(@NotNull HttpServletRequest request, @NotNull ContentManager.HeaderProvider headerProvider, @NotNull final URI selfUrl) {
+  protected Locator createLocator(@Nonnull HttpServletRequest request, @Nonnull ContentManager.HeaderProvider headerProvider, @Nonnull final URI selfUrl) {
     final Map<String, String> header = headerProvider.createHeader(createDefaultHeader(request));
     return new Locator() {
-      @NotNull
+      @Nonnull
       @Override
-      public BatchItem[] getLocations(@NotNull Meta[] metas) throws IOException {
+      public BatchItem[] getLocations(@Nonnull Meta[] metas) throws IOException {
         final BatchItem[] result = new BatchItem[metas.length];
         for (int i = 0; i < metas.length; ++i) {
           result[i] = getLocation(header, selfUrl, metas[i]);
@@ -62,8 +62,8 @@ public class LocalPointerManager implements PointerManager {
         return result;
       }
 
-      @NotNull
-      public BatchItem getLocation(@Nullable Map<String, String> header, @NotNull URI selfUrl, @NotNull Meta meta) throws IOException {
+      @Nonnull
+      public BatchItem getLocation(@CheckForNull Map<String, String> header, @Nonnull URI selfUrl, @Nonnull Meta meta) throws IOException {
         final Meta storageMeta = manager.getMetadata(meta.getOid());
 
         if (storageMeta != null && meta.getSize() >= 0 && storageMeta.getSize() != meta.getSize())
@@ -84,8 +84,8 @@ public class LocalPointerManager implements PointerManager {
     };
   }
 
-  @NotNull
-  protected Map<String, String> createDefaultHeader(@NotNull HttpServletRequest request) {
+  @Nonnull
+  protected Map<String, String> createDefaultHeader(@Nonnull HttpServletRequest request) {
     final String auth = request.getHeader(Constants.HEADER_AUTHORIZATION);
     final Map<String, String> header = new HashMap<>();
     if (auth != null) {

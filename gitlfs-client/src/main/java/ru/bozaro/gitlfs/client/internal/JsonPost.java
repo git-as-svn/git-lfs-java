@@ -6,8 +6,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.HEADER_ACCEPT;
@@ -19,19 +19,19 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
  * @author Artem V. Navrotskiy
  */
 public class JsonPost<Req, Res> implements Request<Res> {
-  @NotNull
+  @Nonnull
   private final Class<Res> type;
-  @NotNull
+  @Nonnull
   private final Req req;
 
-  public JsonPost(@NotNull Req req, @NotNull Class<Res> type) {
+  public JsonPost(@Nonnull Req req, @Nonnull Class<Res> type) {
     this.req = req;
     this.type = type;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost method = new HttpPost(url);
     method.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     final ByteArrayEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(req));
@@ -41,7 +41,7 @@ public class JsonPost<Req, Res> implements Request<Res> {
   }
 
   @Override
-  public Res processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public Res processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException {
     return mapper.readValue(response.getEntity().getContent(), type);
   }
 }

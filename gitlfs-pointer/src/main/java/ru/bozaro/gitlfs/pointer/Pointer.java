@@ -1,8 +1,7 @@
 package ru.bozaro.gitlfs.pointer;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -22,25 +21,13 @@ import static ru.bozaro.gitlfs.pointer.Constants.*;
  * @author Artem V. Navrotskiy
  */
 public class Pointer {
-  @NotNull
+  @Nonnull
   private static final byte[] PREFIX = (VERSION + ' ').getBytes(StandardCharsets.UTF_8);
-  @NotNull
+  @Nonnull
   private static final RequiredKey[] REQUIRED = new RequiredKey[]{
       new RequiredKey(OID, Pattern.compile("^[0-9a-z]+:[0-9a-f]+$")),
       new RequiredKey(SIZE, Pattern.compile("^\\d+$")),
   };
-
-  private static final class RequiredKey {
-    @NotNull
-    private final String name;
-    @NotNull
-    private final Pattern pattern;
-
-    public RequiredKey(@NotNull String name, @NotNull Pattern pattern) {
-      this.name = name;
-      this.pattern = pattern;
-    }
-  }
 
   /**
    * Serialize pointer map.
@@ -48,8 +35,8 @@ public class Pointer {
    * @param pointer Pointer data.
    * @return Pointer content bytes.
    */
-  @NotNull
-  public static byte[] serializePointer(@NotNull Map<String, String> pointer) {
+  @Nonnull
+  public static byte[] serializePointer(@Nonnull Map<String, String> pointer) {
     final Map<String, String> data = new TreeMap<>(pointer);
     final StringBuilder buffer = new StringBuilder();
     // Write version.
@@ -73,8 +60,8 @@ public class Pointer {
    * @param size Object size.
    * @return Return pointer data.
    */
-  @NotNull
-  public static Map<String, String> createPointer(@NotNull String oid, long size) {
+  @Nonnull
+  public static Map<String, String> createPointer(@Nonnull String oid, long size) {
     final Map<String, String> pointer = new TreeMap<>();
     pointer.put(VERSION, VERSION_URL);
     pointer.put(OID, oid);
@@ -88,8 +75,8 @@ public class Pointer {
    * @param stream Input stream.
    * @return Return pointer info or null if blob is not a pointer data.
    */
-  @Nullable
-  public static Map<String, String> parsePointer(@NotNull InputStream stream) throws IOException {
+  @CheckForNull
+  public static Map<String, String> parsePointer(@Nonnull InputStream stream) throws IOException {
     byte[] buffer = new byte[Constants.POINTER_MAX_SIZE];
     int size = 0;
     while (size < buffer.length) {
@@ -108,19 +95,8 @@ public class Pointer {
    * @param blob Blob data.
    * @return Return pointer info or null if blob is not a pointer data.
    */
-  @Nullable
-  public static Map<String, String> parsePointer(@NotNull byte[] blob) {
-    return parsePointer(blob, 0, blob.length);
-  }
-
-  /**
-   * Read pointer data.
-   *
-   * @param blob Blob data.
-   * @return Return pointer info or null if blob is not a pointer data.
-   */
-  @Nullable
-  public static Map<String, String> parsePointer(@NotNull byte[] blob, final int offset, final int length) {
+  @CheckForNull
+  public static Map<String, String> parsePointer(@Nonnull byte[] blob, final int offset, final int length) {
     // Check prefix
     if (length < PREFIX.length) return null;
     for (int i = 0; i < PREFIX.length; ++i) {
@@ -132,10 +108,7 @@ public class Pointer {
     String lastKey = null;
     int keyOffset = offset;
     int required = 0;
-    while (true) {
-      if (keyOffset >= length) {
-        break;
-      }
+    while (keyOffset < length) {
       int valueOffset = keyOffset;
       // Key
       while (true) {
@@ -153,12 +126,11 @@ public class Pointer {
       }
       int endOffset = valueOffset;
       // Value
-      while (true) {
+      do {
         endOffset++;
         if (endOffset >= length) return null;
         // Values MUST NOT contain return or newline characters.
-        if (blob[endOffset] == '\n') break;
-      }
+      } while (blob[endOffset] != '\n');
       final String key = new String(blob, keyOffset, valueOffset - keyOffset, StandardCharsets.UTF_8);
 
       final String value;
@@ -189,5 +161,28 @@ public class Pointer {
       return null;
     }
     return result;
+  }
+
+  /**
+   * Read pointer data.
+   *
+   * @param blob Blob data.
+   * @return Return pointer info or null if blob is not a pointer data.
+   */
+  @CheckForNull
+  public static Map<String, String> parsePointer(@Nonnull byte[] blob) {
+    return parsePointer(blob, 0, blob.length);
+  }
+
+  private static final class RequiredKey {
+    @Nonnull
+    private final String name;
+    @Nonnull
+    private final Pattern pattern;
+
+    public RequiredKey(@Nonnull String name, @Nonnull Pattern pattern) {
+      this.name = name;
+      this.pattern = pattern;
+    }
   }
 }

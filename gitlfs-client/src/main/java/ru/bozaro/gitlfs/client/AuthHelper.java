@@ -1,10 +1,10 @@
 package ru.bozaro.gitlfs.client;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.auth.BasicAuthProvider;
 import ru.bozaro.gitlfs.client.auth.ExternalAuthProvider;
 
+import javax.annotation.Nonnull;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +34,8 @@ public final class AuthHelper {
    * @param gitURL URL to repository.
    * @return Created auth provider.
    */
-  public static AuthProvider create(@NotNull String gitURL) throws MalformedURLException {
+  @Nonnull
+  public static AuthProvider create(@Nonnull String gitURL) throws MalformedURLException {
     if (gitURL.contains("://")) {
       final URI uri = URI.create(gitURL);
       final String path = uri.getPath();
@@ -52,8 +53,8 @@ public final class AuthHelper {
     return new ExternalAuthProvider(gitURL);
   }
 
-  @NotNull
-  public static URI join(@NotNull URI href, @NotNull String... path) {
+  @Nonnull
+  public static URI join(@Nonnull URI href, @Nonnull String... path) {
     try {
       URI uri = new URI(href.getScheme(), href.getAuthority(), href.getPath() + (href.getPath().endsWith("/") ? "" : "/"), null, null);
       for (String fragment : path)

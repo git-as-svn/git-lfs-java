@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -26,6 +25,6 @@ public class ServerError extends Exception {
     return statusCode;
   }
 
-  public void updateHeaders(@NotNull HttpServletResponse response) {
+  public void updateHeaders(@Nonnull HttpServletResponse response) {
   }
 }

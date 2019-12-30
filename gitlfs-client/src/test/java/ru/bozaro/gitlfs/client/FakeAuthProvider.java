@@ -1,13 +1,12 @@
 package ru.bozaro.gitlfs.client;
 
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
-import java.io.IOException;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,16 +16,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Artem V. Navrotskiy
  */
 public class FakeAuthProvider implements AuthProvider {
-  @NotNull
+  @Nonnull
   private final Object lock = new Object();
-  @NotNull
+  @Nonnull
   private final AtomicInteger id = new AtomicInteger(0);
-  @Nullable
+  @CheckForNull
   private Link auth = null;
 
-  @NotNull
+  @Nonnull
   @Override
-  public Link getAuth(@NotNull Operation operation) throws IOException {
+  public Link getAuth(@Nonnull Operation operation) {
     synchronized (lock) {
       if (auth == null) {
         auth = createAuth();
@@ -36,7 +35,7 @@ public class FakeAuthProvider implements AuthProvider {
   }
 
   @Override
-  public void invalidateAuth(@NotNull Operation operation, @NotNull Link auth) {
+  public void invalidateAuth(@Nonnull Operation operation, @Nonnull Link auth) {
     synchronized (lock) {
       if (this.auth == auth) {
         this.auth = null;
@@ -44,7 +43,7 @@ public class FakeAuthProvider implements AuthProvider {
     }
   }
 
-  @NotNull
+  @Nonnull
   private Link createAuth() {
     return new Link(URI.create("http://gitlfs.local/test.git/info/lfs"), ImmutableMap.<String, String>builder()
         .put("Authorization", "RemoteAuth Token-" + id.incrementAndGet())

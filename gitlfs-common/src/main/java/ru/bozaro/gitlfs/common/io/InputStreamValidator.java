@@ -1,8 +1,8 @@
 package ru.bozaro.gitlfs.common.io;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -14,18 +14,18 @@ import java.security.NoSuchAlgorithmException;
  * @author Artem V. Navrotskiy
  */
 public class InputStreamValidator extends InputStream {
-  @NotNull
+  @Nonnull
   private static final char[] hexDigits = "0123456789abcdef".toCharArray();
-  @NotNull
+  @Nonnull
   private final MessageDigest digest;
-  @NotNull
+  @Nonnull
   private final InputStream stream;
-  @NotNull
+  @Nonnull
   private final Meta meta;
   private boolean eof;
   private long totalSize;
 
-  public InputStreamValidator(@NotNull InputStream stream, @NotNull Meta meta) throws IOException {
+  public InputStreamValidator(@Nonnull InputStream stream, @Nonnull Meta meta) throws IOException {
     try {
       this.digest = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
@@ -71,8 +71,8 @@ public class InputStreamValidator extends InputStream {
     }
   }
 
-  @NotNull
-  private static String toHexString(@NotNull byte[] bytes) {
+  @Nonnull
+  private static String toHexString(@Nonnull byte[] bytes) {
     StringBuilder sb = new StringBuilder(2 * bytes.length);
     for (byte b : bytes) {
       sb.append(hexDigits[(b >> 4) & 0xf]).append(hexDigits[b & 0xf]);
@@ -81,7 +81,7 @@ public class InputStreamValidator extends InputStream {
   }
 
   @Override
-  public int read(@NotNull byte[] buffer, int off, int len) throws IOException {
+  public int read(@Nonnull byte[] buffer, int off, int len) throws IOException {
     if (eof) {
       return -1;
     }

@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.client;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import static ru.bozaro.gitlfs.common.Constants.BATCH_SIZE;
 
@@ -36,7 +36,7 @@ public class BatchSettings {
     return limit;
   }
 
-  @NotNull
+  @Nonnull
   public BatchSettings setLimit(int limit) {
     this.limit = Math.min(limit, 1);
     return this;
@@ -46,7 +46,7 @@ public class BatchSettings {
     return threshold;
   }
 
-  @NotNull
+  @Nonnull
   public BatchSettings setThreshold(int threshold) {
     this.threshold = Math.max(threshold, 0);
     return this;
@@ -56,7 +56,7 @@ public class BatchSettings {
     return retryCount;
   }
 
-  @NotNull
+  @Nonnull
   public BatchSettings setRetryCount(int retryCount) {
     this.retryCount = Math.max(retryCount, 1);
     return this;

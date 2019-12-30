@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -15,21 +15,21 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public class ObjectGet<T> implements Request<T> {
-  @NotNull
+  @Nonnull
   private final StreamHandler<T> handler;
 
-  public ObjectGet(@NotNull StreamHandler<T> handler) {
+  public ObjectGet(@Nonnull StreamHandler<T> handler) {
     this.handler = handler;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) {
     return new HttpGet(url);
   }
 
   @Override
-  public T processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public T processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException {
     return handler.accept(response.getEntity().getContent());
   }
 }

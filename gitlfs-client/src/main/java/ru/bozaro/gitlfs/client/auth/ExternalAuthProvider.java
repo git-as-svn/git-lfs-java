@@ -1,10 +1,10 @@
 package ru.bozaro.gitlfs.client.auth;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +18,9 @@ import java.util.Arrays;
  * @author Artem V. Navrotskiy
  */
 public class ExternalAuthProvider extends CachedAuthProvider {
-  @NotNull
+  @Nonnull
   private final String authority;
-  @NotNull
+  @Nonnull
   private final String path;
 
   /**
@@ -28,7 +28,7 @@ public class ExternalAuthProvider extends CachedAuthProvider {
    *
    * @param gitUrl Git URL like: git@github.com:bozaro/git-lfs-java.git
    */
-  public ExternalAuthProvider(@NotNull String gitUrl) throws MalformedURLException {
+  public ExternalAuthProvider(@Nonnull String gitUrl) throws MalformedURLException {
     final int separator = gitUrl.indexOf(':');
     if (separator < 0) {
       throw new MalformedURLException("Can't find separator ':' in gitUrl: " + gitUrl);
@@ -43,26 +43,13 @@ public class ExternalAuthProvider extends CachedAuthProvider {
    * @param authority SSH server authority with user name
    * @param path      Repostiry path
    */
-  public ExternalAuthProvider(@NotNull String authority, @NotNull String path) {
+  public ExternalAuthProvider(@Nonnull String authority, @Nonnull String path) {
     this.authority = authority;
     this.path = path;
   }
 
-  @NotNull
-  protected String[] getCommand(@NotNull Operation operation) {
-    return new String[]{
-        "ssh",
-        getAuthority(),
-        "-oBatchMode=yes",
-        "-C",
-        "git-lfs-authenticate",
-        getPath(),
-        operation.toValue()
-    };
-  }
-
-  @NotNull
-  protected Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException {
+  @Nonnull
+  protected Link getAuthUncached(@Nonnull Operation operation) throws IOException, InterruptedException {
     final ProcessBuilder builder = new ProcessBuilder()
         .command(getCommand(operation))
         .redirectError(ProcessBuilder.Redirect.PIPE)
@@ -84,12 +71,25 @@ public class ExternalAuthProvider extends CachedAuthProvider {
     return JsonHelper.mapper.readValue(stdoutData.toByteArray(), Link.class);
   }
 
-  @NotNull
+  @Nonnull
+  protected String[] getCommand(@Nonnull Operation operation) {
+    return new String[]{
+        "ssh",
+        getAuthority(),
+        "-oBatchMode=yes",
+        "-C",
+        "git-lfs-authenticate",
+        getPath(),
+        operation.toValue()
+    };
+  }
+
+  @Nonnull
   public String getAuthority() {
     return authority;
   }
 
-  @NotNull
+  @Nonnull
   public String getPath() {
     return path;
   }

@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -10,21 +9,21 @@ import javax.servlet.http.HttpServletResponse;
  * @author Artem V. Navrotskiy
  */
 public class UnauthorizedError extends ServerError {
-  @NotNull
+  @Nonnull
   private String authenticate;
 
-  public UnauthorizedError(@NotNull String authenticate) {
+  public UnauthorizedError(@Nonnull String authenticate) {
     super(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     this.authenticate = authenticate;
   }
 
-  @NotNull
+  @Nonnull
   public String getAuthenticate() {
     return authenticate;
   }
 
   @Override
-  public void updateHeaders(@NotNull HttpServletResponse response) {
+  public void updateHeaders(@Nonnull HttpServletResponse response) {
     super.updateHeaders(response);
     response.addHeader("WWW-Authenticate", authenticate);
   }

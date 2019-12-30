@@ -2,7 +2,6 @@ package ru.bozaro.gitlfs.client;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.internal.HttpClientExecutor;
@@ -10,6 +9,7 @@ import ru.bozaro.gitlfs.common.data.BatchReq;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
 
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author Artem V. Navrotskiy
  */
 public class Recorder {
-  public static void main(@NotNull String[] args) throws IOException {
+  public static void main(@Nonnull String[] args) throws IOException {
     final AuthProvider auth = AuthHelper.create("git@github.com:bozaro/test.git");
     try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
       final HttpRecorder recorder = new HttpRecorder(new HttpClientExecutor(httpClient));
@@ -37,7 +37,7 @@ public class Recorder {
     }
   }
 
-  private static void doWork(@NotNull Client client) throws IOException {
+  private static void doWork(@Nonnull Client client) throws IOException {
     client.postBatch(new BatchReq(
         Operation.Upload,
         Arrays.asList(

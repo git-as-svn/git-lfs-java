@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.common.data;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 /**
@@ -10,6 +9,6 @@ import java.util.Map;
  * @author Artem V. Navrotskiy
  */
 public interface Links {
-  @NotNull
+  @Nonnull
   Map<LinkType, Link> getLinks();
 }

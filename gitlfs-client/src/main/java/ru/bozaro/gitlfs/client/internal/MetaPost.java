@@ -8,10 +8,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.ObjectRes;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.HEADER_ACCEPT;
@@ -23,16 +23,16 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
  * @author Artem V. Navrotskiy
  */
 public class MetaPost implements Request<ObjectRes> {
-  @NotNull
+  @Nonnull
   private final Meta meta;
 
-  public MetaPost(@NotNull Meta meta) {
+  public MetaPost(@Nonnull Meta meta) {
     this.meta = meta;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost req = new HttpPost(url);
     req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     final AbstractHttpEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(meta));
@@ -42,7 +42,7 @@ public class MetaPost implements Request<ObjectRes> {
   }
 
   @Override
-  public ObjectRes processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public ObjectRes processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException {
     switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_OK:
         return null;
@@ -53,7 +53,7 @@ public class MetaPost implements Request<ObjectRes> {
     }
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public int[] statusCodes() {
     return new int[]{

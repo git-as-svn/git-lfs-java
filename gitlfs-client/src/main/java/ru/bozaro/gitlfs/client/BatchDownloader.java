@@ -1,7 +1,5 @@
 package ru.bozaro.gitlfs.client;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.internal.BatchWorker;
 import ru.bozaro.gitlfs.client.internal.Work;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
@@ -10,6 +8,8 @@ import ru.bozaro.gitlfs.common.data.LinkType;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -20,22 +20,22 @@ import java.util.concurrent.ExecutorService;
  * @author Artem V. Navrotskiy
  */
 public class BatchDownloader extends BatchWorker<StreamHandler<?>, Object> {
-  public BatchDownloader(@NotNull Client client, @NotNull ExecutorService pool) {
+  public BatchDownloader(@Nonnull Client client, @Nonnull ExecutorService pool) {
     this(client, pool, new BatchSettings());
   }
 
-  public BatchDownloader(@NotNull Client client, @NotNull ExecutorService pool, @NotNull BatchSettings settings) {
+  public BatchDownloader(@Nonnull Client client, @Nonnull ExecutorService pool, @Nonnull BatchSettings settings) {
     super(client, pool, settings, Operation.Download);
   }
 
   @SuppressWarnings("unchecked")
-  @NotNull
-  public <T> CompletableFuture<T> download(@NotNull final Meta meta, @NotNull StreamHandler<T> callback) {
+  @Nonnull
+  public <T> CompletableFuture<T> download(@Nonnull final Meta meta, @Nonnull StreamHandler<T> callback) {
     return (CompletableFuture<T>) enqueue(meta, callback);
   }
 
-  @Nullable
-  protected Work<Object> objectTask(@NotNull State<StreamHandler<?>, Object> state, @NotNull BatchItem item) {
+  @CheckForNull
+  protected Work<Object> objectTask(@Nonnull State<StreamHandler<?>, Object> state, @Nonnull BatchItem item) {
     // Invalid links data
     if (!item.getLinks().containsKey(LinkType.Download)) {
       state.getFuture().completeExceptionally(new IOException("Download link not found"));

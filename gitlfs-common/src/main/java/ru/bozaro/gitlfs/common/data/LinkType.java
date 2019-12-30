@@ -2,7 +2,8 @@ package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /**
  * LFSP operation type.
@@ -17,7 +18,7 @@ public enum LinkType {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitDownload();
     }
   },
@@ -28,7 +29,7 @@ public enum LinkType {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitUpload();
     }
   },
@@ -39,7 +40,7 @@ public enum LinkType {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitVerify();
     }
   },
@@ -50,13 +51,13 @@ public enum LinkType {
     }
 
     @Override
-    public <R> R visit(@NotNull Visitor<R> visitor) {
+    public <R> R visit(@Nonnull Visitor<R> visitor) {
       return visitor.visitSelf();
     }
   };
 
   @JsonCreator
-  public static LinkType forValue(@NotNull String value) {
+  public static LinkType forValue(@Nonnull String value) {
     for (LinkType item : values()) {
       if (item.toValue().equals(value)) {
         return item;
@@ -68,7 +69,7 @@ public enum LinkType {
   @JsonValue
   public abstract String toValue();
 
-  public abstract <R> R visit(@NotNull Visitor<R> visitor);
+  public abstract <R> R visit(@Nonnull Visitor<R> visitor);
 
   public interface Visitor<R> {
     R visitDownload();

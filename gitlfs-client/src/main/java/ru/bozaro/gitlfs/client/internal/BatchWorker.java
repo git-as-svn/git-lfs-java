@@ -1,8 +1,6 @@
 package ru.bozaro.gitlfs.client.internal;
 
 import org.apache.http.HttpStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.bozaro.gitlfs.client.AuthHelper;
@@ -13,6 +11,8 @@ import ru.bozaro.gitlfs.client.exceptions.UnauthorizedException;
 import ru.bozaro.gitlfs.common.data.Error;
 import ru.bozaro.gitlfs.common.data.*;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,28 +35,28 @@ public abstract class BatchWorker<T, R> {
 
   private final Logger log = LoggerFactory.getLogger(BatchWorker.class);
 
-  @NotNull
+  @Nonnull
   private final Client client;
-  @NotNull
+  @Nonnull
   private final ExecutorService pool;
 
-  @NotNull
+  @Nonnull
   private final AtomicInteger batchSequence = new AtomicInteger(0);
-  @NotNull
+  @Nonnull
   private final AtomicInteger batchInProgress = new AtomicInteger();
 
-  @NotNull
+  @Nonnull
   private final ConcurrentMap<String, State<T, R>> objectQueue = new ConcurrentHashMap<>();
-  @NotNull
+  @Nonnull
   private final AtomicInteger objectInProgress = new AtomicInteger(0);
-  @NotNull
+  @Nonnull
   private final AtomicReference<Link> currentAuth = new AtomicReference<>(null);
-  @NotNull
+  @Nonnull
   private final BatchSettings settings;
-  @NotNull
+  @Nonnull
   private final Operation operation;
 
-  public BatchWorker(@NotNull Client client, @NotNull ExecutorService pool, @NotNull BatchSettings settings, @NotNull Operation operation) {
+  public BatchWorker(@Nonnull Client client, @Nonnull ExecutorService pool, @Nonnull BatchSettings settings, @Nonnull Operation operation) {
     this.settings = settings;
     this.client = client;
     this.pool = pool;
@@ -70,8 +70,8 @@ public abstract class BatchWorker<T, R> {
    * @param meta    Object metadata.
    * @return Return future with result. For same objects can return same future.
    */
-  @NotNull
-  protected CompletableFuture<R> enqueue(@NotNull final Meta meta, @NotNull final T context) {
+  @Nonnull
+  protected CompletableFuture<R> enqueue(@Nonnull final Meta meta, @Nonnull final T context) {
     State<T, R> state = objectQueue.get(meta.getOid());
     if (state != null) {
       if (state.future.isCancelled()) {
@@ -90,12 +90,12 @@ public abstract class BatchWorker<T, R> {
     return state.future;
   }
 
-  @NotNull
+  @Nonnull
   protected ExecutorService getPool() {
     return pool;
   }
 
-  @NotNull
+  @Nonnull
   protected Client getClient() {
     return client;
   }
@@ -143,7 +143,7 @@ public abstract class BatchWorker<T, R> {
     return false;
   }
 
-  private void invalidateAuth(@NotNull Link auth) {
+  private void invalidateAuth(@Nonnull Link auth) {
     if (currentAuth.compareAndSet(auth, null)) {
       client.getAuthProvider().invalidateAuth(operation, auth);
     }
@@ -172,7 +172,7 @@ public abstract class BatchWorker<T, R> {
             }
           }
         }
-        for (State value : batch.values()) {
+        for (State<?, ?> value : batch.values()) {
           value.future.completeExceptionally(new IOException("Requested object not found in server response: " + value.meta.getOid()));
         }
       }
@@ -181,22 +181,22 @@ public abstract class BatchWorker<T, R> {
         invalidateAuth(auth);
       }
     } catch (IOException e) {
-      for (State state : batch.values()) {
+      for (State<?, ?> state : batch.values()) {
         state.onException(e, state.retry);
       }
     }
   }
 
-  @NotNull
-  protected Throwable createError(@NotNull Error error) {
+  @Nonnull
+  protected Throwable createError(@Nonnull Error error) {
     if (error.getCode() == HttpStatus.SC_NOT_FOUND) {
       return new FileNotFoundException(error.getMessage());
     }
     return new IOException("Can't process object (code " + error.getCode() + "): " + error.getMessage());
   }
 
-  @Nullable
-  protected abstract Work<R> objectTask(@NotNull State<T, R> state, @NotNull BatchItem item);
+  @CheckForNull
+  protected abstract Work<R> objectTask(@Nonnull State<T, R> state, @Nonnull BatchItem item);
 
   /**
    * Submit object processing task.
@@ -205,7 +205,7 @@ public abstract class BatchWorker<T, R> {
    * @param item  Metadata information with upload/download urls.
    * @param auth  Urls authentication state.
    */
-  private void submitTask(@NotNull State<T, R> state, @NotNull BatchItem item, @NotNull Link auth) {
+  private void submitTask(@Nonnull State<T, R> state, @Nonnull BatchItem item, @Nonnull Link auth) {
     // Submit task
     final StateHolder holder = new StateHolder(state);
     try {
@@ -230,7 +230,7 @@ public abstract class BatchWorker<T, R> {
     }
   }
 
-  @NotNull
+  @Nonnull
   private Map<String, State<T, R>> takeBatch() {
     final Map<String, State<T, R>> batch = new HashMap<>();
     final List<State<T, R>> completed = new ArrayList<>();
@@ -252,7 +252,7 @@ public abstract class BatchWorker<T, R> {
     return batch;
   }
 
-  private void processObject(@NotNull State<T, R> state, @NotNull Link auth, @NotNull Work<R> worker) {
+  private void processObject(@Nonnull State<T, R> state, @Nonnull Link auth, @Nonnull Work<R> worker) {
     if (currentAuth.get() != auth) {
       state.auth = null;
       return;
@@ -284,7 +284,7 @@ public abstract class BatchWorker<T, R> {
    * @param task      Task runnable
    * @param finalizer Finalizer to execute like 'try-final' block
    */
-  private void executeInPool(@NotNull String name, @NotNull Runnable task, @Nullable Runnable finalizer, boolean pooled) {
+  private void executeInPool(@Nonnull String name, @Nonnull Runnable task, @CheckForNull Runnable finalizer, boolean pooled) {
     if (pool.isShutdown()) {
       log.warn("Thread pool is shutdown");
       if (finalizer != null) {
@@ -338,23 +338,23 @@ public abstract class BatchWorker<T, R> {
   }
 
   public final static class State<T, R> {
-    @NotNull
+    @Nonnull
     private final Meta meta;
-    @NotNull
+    @Nonnull
     private final T context;
-    @NotNull
+    @Nonnull
     private final CompletableFuture<R> future = new CompletableFuture<>();
-    @Nullable
+    @CheckForNull
     private volatile Link auth;
     private int retry;
 
-    public State(@NotNull Meta meta, @NotNull T context) {
+    public State(@Nonnull Meta meta, @Nonnull T context) {
       this.context = context;
       this.meta = meta;
       this.auth = null;
     }
 
-    public void onException(@NotNull Throwable e, int maxRetryCount) {
+    public void onException(@Nonnull Throwable e, int maxRetryCount) {
       retry++;
       if (retry >= maxRetryCount) {
         future.completeExceptionally(e);
@@ -362,27 +362,27 @@ public abstract class BatchWorker<T, R> {
       auth = null;
     }
 
-    @NotNull
+    @Nonnull
     public Meta getMeta() {
       return meta;
     }
 
-    @NotNull
+    @Nonnull
     public T getContext() {
       return context;
     }
 
-    @NotNull
+    @Nonnull
     public CompletableFuture<R> getFuture() {
       return future;
     }
   }
 
   private final class StateHolder implements AutoCloseable {
-    @NotNull
+    @Nonnull
     private AtomicReference<State<T, R>> stateRef;
 
-    public StateHolder(@NotNull State<T, R> state) {
+    public StateHolder(@Nonnull State<T, R> state) {
       this.stateRef = new AtomicReference<>(state);
       objectInProgress.incrementAndGet();
     }

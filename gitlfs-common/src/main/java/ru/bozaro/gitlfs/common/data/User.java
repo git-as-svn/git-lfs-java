@@ -1,21 +1,22 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public final class User {
 
   @JsonProperty(value = "name", required = true)
-  @NotNull
+  @Nonnull
   private final String name;
 
   public User(
-      @JsonProperty(value = "name", required = true) @NotNull String name
+      @JsonProperty(value = "name", required = true) @Nonnull String name
   ) {
     this.name = name;
   }
 
-  @NotNull
+  @Nonnull
   public String getName() {
     return name;
   }

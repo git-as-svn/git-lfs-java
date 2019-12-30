@@ -50,11 +50,11 @@ subprojects {
         targetCompatibility = javaVersion
     }
 
-    val implementation by configurations
+    val api by configurations
     val testImplementation by configurations
 
     dependencies {
-        implementation("org.jetbrains:annotations:17.0.0")
+        api("com.google.code.findbugs:jsr305:3.0.2")
 
         testImplementation("com.google.guava:guava:28.1-jre")
         testImplementation("org.testng:testng:7.0.0")

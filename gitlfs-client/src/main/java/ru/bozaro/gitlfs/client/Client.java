@@ -7,8 +7,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
 import ru.bozaro.gitlfs.client.exceptions.ForbiddenException;
 import ru.bozaro.gitlfs.client.exceptions.RequestException;
@@ -22,6 +20,8 @@ import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -42,28 +42,28 @@ public class Client implements Closeable {
   private static final int MAX_AUTH_COUNT = 1;
   private static final int MAX_RETRY_COUNT = 2;
   private static final int MAX_REDIRECT_COUNT = 5;
-  @NotNull
+  @Nonnull
   private final ObjectMapper mapper;
-  @NotNull
+  @Nonnull
   private final AuthProvider authProvider;
-  @NotNull
+  @Nonnull
   private final HttpExecutor http;
 
-  public Client(@NotNull AuthProvider authProvider) {
+  public Client(@Nonnull AuthProvider authProvider) {
     this(authProvider, HttpClients.createDefault());
   }
 
-  public Client(@NotNull AuthProvider authProvider, @NotNull final CloseableHttpClient http) {
+  public Client(@Nonnull AuthProvider authProvider, @Nonnull final CloseableHttpClient http) {
     this(authProvider, new HttpClientExecutor(http));
   }
 
-  public Client(@NotNull AuthProvider authProvider, @NotNull HttpExecutor http) {
+  public Client(@Nonnull AuthProvider authProvider, @Nonnull HttpExecutor http) {
     this.authProvider = authProvider;
     this.mapper = JsonHelper.mapper;
     this.http = http;
   }
 
-  @NotNull
+  @Nonnull
   public AuthProvider getAuthProvider() {
     return authProvider;
   }
@@ -73,10 +73,9 @@ public class Client implements Closeable {
    *
    * @param hash Object hash.
    * @return Object metadata or null, if object not found.
-   * @throws IOException
    */
-  @Nullable
-  public ObjectRes getMeta(@NotNull final String hash) throws IOException {
+  @CheckForNull
+  public ObjectRes getMeta(@Nonnull final String hash) throws IOException {
     return doWork(auth -> doRequest(
         auth,
         new MetaGet(),
@@ -85,7 +84,7 @@ public class Client implements Closeable {
     ), Operation.Download);
   }
 
-  protected <T> T doWork(@NotNull Work<T> work, @NotNull Operation operation) throws IOException {
+  protected <T> T doWork(@Nonnull Work<T> work, @Nonnull Operation operation) throws IOException {
     Link auth = authProvider.getAuth(operation);
     int authCount = 0;
     while (true) {
@@ -107,7 +106,7 @@ public class Client implements Closeable {
     }
   }
 
-  public <R> R doRequest(@Nullable Link link, @NotNull Request<R> task, @NotNull URI url, @NotNull Client.ConnectionClosePolicy autoClose) throws IOException {
+  public <R> R doRequest(@CheckForNull Link link, @Nonnull Request<R> task, @Nonnull URI url, @Nonnull Client.ConnectionClosePolicy autoClose) throws IOException {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
@@ -162,7 +161,7 @@ public class Client implements Closeable {
     }
   }
 
-  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
+  protected void addHeaders(@Nonnull HttpUriRequest req, @CheckForNull Link link) {
     if (link != null) {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
         req.setHeader(entry.getKey(), entry.getValue());
@@ -179,7 +178,7 @@ public class Client implements Closeable {
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final String hash, final long size) throws IOException {
+  public boolean putObject(@Nonnull final StreamProvider streamProvider, @Nonnull final String hash, final long size) throws IOException {
     return putObject(streamProvider, new Meta(hash, size));
   }
 
@@ -191,7 +190,7 @@ public class Client implements Closeable {
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta) throws IOException {
+  public boolean putObject(@Nonnull final StreamProvider streamProvider, @Nonnull final Meta meta) throws IOException {
     return doWork(auth -> {
       final ObjectRes links = doRequest(auth, new MetaPost(meta), AuthHelper.join(auth.getHref(), PATH_OBJECTS), ConnectionClosePolicy.Close);
       return links != null && putObject(streamProvider, meta, links);
@@ -207,7 +206,7 @@ public class Client implements Closeable {
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final StreamProvider streamProvider, @NotNull final Meta meta, @NotNull final Links links) throws IOException {
+  public boolean putObject(@Nonnull final StreamProvider streamProvider, @Nonnull final Meta meta, @Nonnull final Links links) throws IOException {
     final Link uploadLink = links.getLinks().get(LinkType.Upload);
     if (uploadLink == null)
       return false;
@@ -227,10 +226,9 @@ public class Client implements Closeable {
    * @param hash Object hash.
    * @param size Object size.
    * @return Object metadata or null, if object not found.
-   * @throws IOException
    */
-  @Nullable
-  public ObjectRes postMeta(@NotNull final String hash, final long size) throws IOException {
+  @CheckForNull
+  public ObjectRes postMeta(@Nonnull final String hash, final long size) throws IOException {
     return postMeta(new Meta(hash, size));
   }
 
@@ -239,10 +237,9 @@ public class Client implements Closeable {
    *
    * @param meta Object meta.
    * @return Object metadata or null, if object not found.
-   * @throws IOException
    */
-  @Nullable
-  public ObjectRes postMeta(@NotNull final Meta meta) throws IOException {
+  @CheckForNull
+  public ObjectRes postMeta(@Nonnull final Meta meta) throws IOException {
     return doWork(auth -> doRequest(
         auth,
         new MetaPost(meta),
@@ -257,10 +254,9 @@ public class Client implements Closeable {
    *
    * @param batchReq Batch request.
    * @return Object metadata.
-   * @throws IOException
    */
-  @NotNull
-  public BatchRes postBatch(@NotNull final BatchReq batchReq) throws IOException {
+  @Nonnull
+  public BatchRes postBatch(@Nonnull final BatchReq batchReq) throws IOException {
     return doWork(auth -> doRequest(
         auth,
         new JsonPost<>(batchReq, BatchRes.class),
@@ -279,16 +275,16 @@ public class Client implements Closeable {
    * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
    * @throws IOException           On some errors.
    */
-  @NotNull
-  public <T> T getObject(@NotNull final String hash, @NotNull final StreamHandler<T> handler) throws IOException {
+  @Nonnull
+  public <T> T getObject(@Nonnull final String hash, @Nonnull final StreamHandler<T> handler) throws IOException {
     return doWork(auth -> {
       final ObjectRes links = getLinks(hash, auth);
       return getObject(links.getMeta() == null ? new Meta(hash, -1) : links.getMeta(), links, handler);
     }, Operation.Download);
   }
 
-  @NotNull
-  private ObjectRes getLinks(@NotNull String hash, @NotNull Link auth) throws IOException {
+  @Nonnull
+  private ObjectRes getLinks(@Nonnull String hash, @Nonnull Link auth) throws IOException {
     final ObjectRes links = doRequest(
         auth,
         new MetaGet(),
@@ -311,8 +307,8 @@ public class Client implements Closeable {
    * @throws FileNotFoundException File not found exception if object don't exists on LFS server.
    * @throws IOException           On some errors.
    */
-  @NotNull
-  public <T> T getObject(@Nullable final Meta meta, @NotNull final Links links, @NotNull final StreamHandler<T> handler) throws IOException {
+  @Nonnull
+  public <T> T getObject(@CheckForNull final Meta meta, @Nonnull final Links links, @Nonnull final StreamHandler<T> handler) throws IOException {
     final Link link = links.getLinks().get(LinkType.Download);
     if (link == null) {
       throw new FileNotFoundException();
@@ -320,16 +316,16 @@ public class Client implements Closeable {
     return doRequest(link, new ObjectGet<>(inputStream -> handler.accept(meta == null ? inputStream : new InputStreamValidator(inputStream, meta))), link.getHref(), ConnectionClosePolicy.Close);
   }
 
-  @NotNull
-  public InputStream openObject(@NotNull final String hash) throws IOException {
+  @Nonnull
+  public InputStream openObject(@Nonnull final String hash) throws IOException {
     return doWork(auth -> {
       final ObjectRes links = getLinks(hash, auth);
       return openObject(links.getMeta() == null ? new Meta(hash, -1) : links.getMeta(), links);
     }, Operation.Download);
   }
 
-  @NotNull
-  public InputStream openObject(@Nullable final Meta meta, @NotNull final Links links) throws IOException {
+  @Nonnull
+  public InputStream openObject(@CheckForNull final Meta meta, @Nonnull final Links links) throws IOException {
     final Link link = links.getLinks().get(LinkType.Download);
     if (link == null)
       throw new FileNotFoundException();
@@ -344,7 +340,7 @@ public class Client implements Closeable {
    * @return Return true is object is uploaded successfully and false if object is already uploaded.
    * @throws IOException On some errors.
    */
-  public boolean putObject(@NotNull final StreamProvider streamProvider) throws IOException {
+  public boolean putObject(@Nonnull final StreamProvider streamProvider) throws IOException {
     return putObject(streamProvider, generateMeta(streamProvider));
   }
 
@@ -355,7 +351,7 @@ public class Client implements Closeable {
    * @return Return object metadata.
    * @throws IOException On some errors.
    */
-  public static Meta generateMeta(@NotNull final StreamProvider streamProvider) throws IOException {
+  public static Meta generateMeta(@Nonnull final StreamProvider streamProvider) throws IOException {
     final MessageDigest digest = sha256();
     final byte[] buffer = new byte[0x10000];
     long size = 0;
@@ -378,8 +374,8 @@ public class Client implements Closeable {
     }
   }
 
-  @NotNull
-  public Lock lock(@NotNull String path, @Nullable Ref ref) throws IOException, LockConflictException {
+  @Nonnull
+  public Lock lock(@Nonnull String path, @CheckForNull Ref ref) throws IOException, LockConflictException {
     final LockCreate.Res res = doWork(auth -> doRequest(
         auth,
         new LockCreate(path, ref),
@@ -394,13 +390,13 @@ public class Client implements Closeable {
       throw new LockConflictException(res.getMessage(), res.getLock());
   }
 
-  @Nullable
-  public Lock unlock(@NotNull Lock lock, boolean force, @Nullable Ref ref) throws IOException {
+  @CheckForNull
+  public Lock unlock(@Nonnull Lock lock, boolean force, @CheckForNull Ref ref) throws IOException {
     return unlock(lock.getId(), force, ref);
   }
 
-  @Nullable
-  public Lock unlock(@NotNull String lockId, boolean force, @Nullable Ref ref) throws IOException {
+  @CheckForNull
+  public Lock unlock(@Nonnull String lockId, boolean force, @CheckForNull Ref ref) throws IOException {
     return doWork(auth -> doRequest(
         auth,
         new LockDelete(force, ref),
@@ -410,8 +406,8 @@ public class Client implements Closeable {
     );
   }
 
-  @NotNull
-  public List<Lock> listLocks(@Nullable String path, @Nullable String id, @Nullable Ref ref) throws IOException {
+  @Nonnull
+  public List<Lock> listLocks(@CheckForNull String path, @CheckForNull String id, @CheckForNull Ref ref) throws IOException {
     final List<Lock> result = new ArrayList<>();
 
     final StringBuffer baseParams = new StringBuffer();
@@ -441,7 +437,7 @@ public class Client implements Closeable {
     return result;
   }
 
-  private static void appendOptionalParam(@NotNull StringBuffer buffer, @NotNull String paramName, @Nullable String paramValue) throws UnsupportedEncodingException {
+  private static void appendOptionalParam(@Nonnull StringBuffer buffer, @Nonnull String paramName, @CheckForNull String paramValue) throws UnsupportedEncodingException {
     if (paramValue != null) {
       buffer
           .append(buffer.length() == 0 ? '?' : '&')
@@ -451,8 +447,8 @@ public class Client implements Closeable {
     }
   }
 
-  @NotNull
-  public VerifyLocksResult verifyLocks(@Nullable Ref ref) throws IOException {
+  @Nonnull
+  public VerifyLocksResult verifyLocks(@CheckForNull Ref ref) throws IOException {
     final VerifyLocksResult result = new VerifyLocksResult(new ArrayList<>(), new ArrayList<>());
 
     String cursor = null;

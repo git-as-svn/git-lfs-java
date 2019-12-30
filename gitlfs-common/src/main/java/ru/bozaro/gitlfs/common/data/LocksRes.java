@@ -1,33 +1,33 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public final class LocksRes {
   @JsonProperty(value = "locks", required = true)
-  @NotNull
+  @Nonnull
   private final List<Lock> locks;
 
   @JsonProperty(value = "next_cursor")
-  @Nullable
+  @CheckForNull
   private final String nextCursor;
 
   public LocksRes(
-      @JsonProperty(value = "locks", required = true) @NotNull List<Lock> locks,
-      @JsonProperty(value = "next_cursor") @Nullable String nextCursor) {
+      @JsonProperty(value = "locks", required = true) @Nonnull List<Lock> locks,
+      @JsonProperty(value = "next_cursor") @CheckForNull String nextCursor) {
     this.locks = locks;
     this.nextCursor = nextCursor;
   }
 
-  @NotNull
+  @Nonnull
   public List<Lock> getLocks() {
     return locks;
   }
 
-  @Nullable
+  @CheckForNull
   public String getNextCursor() {
     return nextCursor;
   }

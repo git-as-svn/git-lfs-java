@@ -3,8 +3,6 @@ package ru.bozaro.gitlfs.server;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -15,6 +13,8 @@ import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Meta;
 import ru.bozaro.gitlfs.common.data.Operation;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -31,9 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Artem V. Navrotskiy
  */
 public class MemoryStorage implements ContentManager {
-  @NotNull
+  @Nonnull
   private final Map<String, byte[]> storage = new ConcurrentHashMap<>();
-  @NotNull
+  @Nonnull
   private final AtomicInteger tokenId = new AtomicInteger(0);
   private final int tokenMaxUsage;
 
@@ -41,35 +41,28 @@ public class MemoryStorage implements ContentManager {
     this.tokenMaxUsage = tokenMaxUsage;
   }
 
-  @Nullable
+  @Nonnull
   @Override
-  public Meta getMetadata(@NotNull String hash) throws IOException {
-    final byte[] data = storage.get(hash);
-    return data == null ? null : new Meta(hash, data.length);
-  }
-
-  @NotNull
-  @Override
-  public Downloader checkDownloadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
+  public Downloader checkDownloadAccess(@Nonnull HttpServletRequest request) throws UnauthorizedError {
     if (!getToken().equals(request.getHeader(Constants.HEADER_AUTHORIZATION))) {
       throw new UnauthorizedError("Basic realm=\"Test\"");
     }
     return new Downloader() {
-      @NotNull
-      public InputStream openObject(@NotNull String hash) throws IOException {
+      @Nonnull
+      public InputStream openObject(@Nonnull String hash) throws IOException {
         final byte[] data = storage.get(hash);
         if (data == null) throw new FileNotFoundException();
         return new ByteArrayInputStream(data);
       }
 
-      @Nullable
-      public InputStream openObjectGzipped(@NotNull String hash) throws IOException {
+      @CheckForNull
+      public InputStream openObjectGzipped(@Nonnull String hash) {
         return null;
       }
     };
   }
 
-  @NotNull
+  @Nonnull
   private String getToken() {
     if (tokenMaxUsage > 0) {
       final int token = tokenId.incrementAndGet();
@@ -79,14 +72,23 @@ public class MemoryStorage implements ContentManager {
     }
   }
 
-  public void saveObject(@NotNull StreamProvider provider) throws IOException {
-    final Meta meta = Client.generateMeta(provider);
-    try (InputStream stream = provider.getStream()) {
-      saveObject(meta, stream);
+  @Nonnull
+  @Override
+  public Uploader checkUploadAccess(@Nonnull HttpServletRequest request) throws UnauthorizedError {
+    if (!getToken().equals(request.getHeader(Constants.HEADER_AUTHORIZATION))) {
+      throw new UnauthorizedError("Basic realm=\"Test\"");
     }
+    return this::saveObject;
   }
 
-  public void saveObject(@NotNull Meta meta, @NotNull InputStream content) throws IOException {
+  @CheckForNull
+  @Override
+  public Meta getMetadata(@Nonnull String hash) {
+    final byte[] data = storage.get(hash);
+    return data == null ? null : new Meta(hash, data.length);
+  }
+
+  public void saveObject(@Nonnull Meta meta, @Nonnull InputStream content) throws IOException {
     final byte[] data = ByteStreams.toByteArray(content);
     if (meta.getSize() >= 0) {
       Assert.assertEquals(meta.getSize(), data.length);
@@ -95,26 +97,24 @@ public class MemoryStorage implements ContentManager {
     storage.put(meta.getOid(), data);
   }
 
-  @Nullable
-  public byte[] getObject(@NotNull String oid) {
+  public void saveObject(@Nonnull StreamProvider provider) throws IOException {
+    final Meta meta = Client.generateMeta(provider);
+    try (InputStream stream = provider.getStream()) {
+      saveObject(meta, stream);
+    }
+  }
+
+  @CheckForNull
+  public byte[] getObject(@Nonnull String oid) {
     return storage.get(oid);
   }
 
-  @NotNull
-  @Override
-  public Uploader checkUploadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
-    if (!getToken().equals(request.getHeader(Constants.HEADER_AUTHORIZATION))) {
-      throw new UnauthorizedError("Basic realm=\"Test\"");
-    }
-    return this::saveObject;
-  }
-
-  @NotNull
-  public AuthProvider getAuthProvider(@NotNull URI href) {
+  @Nonnull
+  public AuthProvider getAuthProvider(@Nonnull URI href) {
     return new CachedAuthProvider() {
-      @NotNull
+      @Nonnull
       @Override
-      protected Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException {
+      protected Link getAuthUncached(@Nonnull Operation operation) {
         return new Link(href, ImmutableMap.of(Constants.HEADER_AUTHORIZATION, getToken()), null);
       }
     };

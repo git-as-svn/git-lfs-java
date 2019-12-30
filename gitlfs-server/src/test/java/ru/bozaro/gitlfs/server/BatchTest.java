@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.server;
 
 import com.google.common.io.ByteStreams;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -14,6 +13,7 @@ import ru.bozaro.gitlfs.client.auth.ExternalAuthProvider;
 import ru.bozaro.gitlfs.client.io.ByteArrayStreamProvider;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +42,7 @@ public class BatchTest {
   }
 
   @Test(dataProvider = "batchProvider")
-  public void uploadTest(int tokenMaxUsage, @NotNull BatchSettings settings) throws Exception {
+  public void uploadTest(int tokenMaxUsage, @Nonnull BatchSettings settings) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
     try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage), null)) {
       final AuthProvider auth = server.getAuthProvider();
@@ -81,8 +81,43 @@ public class BatchTest {
     }
   }
 
+  private void upload(@Nonnull BatchUploader uploader, @Nonnull List<byte[]> contents, @Nonnull MemoryStorage storage) throws Exception {
+    // Upload data
+    upload(uploader, contents);
+    // Check result
+    for (byte[] content : contents) {
+      final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content));
+      Assert.assertNotNull(storage.getMetadata(meta.getOid()), new String(content, StandardCharsets.UTF_8));
+    }
+  }
+
+  @Nonnull
+  private static byte[] content(int id) {
+    return content("TEST", id);
+  }
+
+  private void upload(@Nonnull BatchUploader uploader, @Nonnull List<byte[]> contents) throws Exception {
+    // Upload data
+    @SuppressWarnings("unchecked") final CompletableFuture<Meta>[] futures = contents
+        .stream()
+        .map(content -> uploader.upload(new ByteArrayStreamProvider(content)))
+        .toArray(CompletableFuture[]::new);
+    // Wait uploading finished
+    CompletableFuture.allOf(futures).get(TIMEOUT, TimeUnit.MILLISECONDS);
+    // Check future status
+    for (CompletableFuture<Meta> future : futures) {
+      future.get();
+    }
+  }
+
+  @Nonnull
+  private static byte[] content(@Nonnull String prefix, int id) {
+    final String result = prefix + " " + id;
+    return result.getBytes(StandardCharsets.UTF_8);
+  }
+
   @Test(dataProvider = "batchProvider")
-  public void downloadTest(int tokenMaxUsage, @NotNull BatchSettings settings) throws Exception {
+  public void downloadTest(int tokenMaxUsage, @Nonnull BatchSettings settings) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
     try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(tokenMaxUsage), null)) {
       final AuthProvider auth = server.getAuthProvider();
@@ -126,19 +161,17 @@ public class BatchTest {
     }
   }
 
-  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull MemoryStorage storage) throws Exception {
+  private void download(@Nonnull BatchDownloader downloader, @Nonnull List<byte[]> contents, @Nonnull MemoryStorage storage) throws Exception {
     download(downloader, contents, meta -> storage.getObject(meta.getOid()) != null);
   }
 
-  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull List<byte[]> expected) throws Exception {
-    final Set<String> oids = new HashSet<>();
-    for (byte[] content : expected) {
-      oids.add(Client.generateMeta(new ByteArrayStreamProvider(content)).getOid());
+  private void populate(@Nonnull MemoryStorage storage, @Nonnull List<byte[]> contents) throws IOException {
+    for (byte[] content : contents) {
+      storage.saveObject(new ByteArrayStreamProvider(content));
     }
-    download(downloader, contents, meta -> oids.contains(meta.getOid()));
   }
 
-  private void download(@NotNull BatchDownloader downloader, @NotNull List<byte[]> contents, @NotNull Function<Meta, Boolean> checker) throws Exception {
+  private void download(@Nonnull BatchDownloader downloader, @Nonnull List<byte[]> contents, @Nonnull Function<Meta, Boolean> checker) throws Exception {
     // Download data
     final Map<Meta, CompletableFuture<byte[]>> map = new HashMap<>();
     for (byte[] content : contents) {
@@ -161,37 +194,6 @@ public class BatchTest {
     }
   }
 
-  private void upload(@NotNull BatchUploader uploader, @NotNull List<byte[]> contents) throws Exception {
-    // Upload data
-    @SuppressWarnings("unchecked")
-    final CompletableFuture<Meta>[] futures = contents
-        .stream()
-        .map(content -> uploader.upload(new ByteArrayStreamProvider(content)))
-        .toArray(CompletableFuture[]::new);
-    // Wait uploading finished
-    CompletableFuture.allOf(futures).get(TIMEOUT, TimeUnit.MILLISECONDS);
-    // Check future status
-    for (CompletableFuture<Meta> future : futures) {
-      future.get();
-    }
-  }
-
-  private void upload(@NotNull BatchUploader uploader, @NotNull List<byte[]> contents, @NotNull MemoryStorage storage) throws Exception {
-    // Upload data
-    upload(uploader, contents);
-    // Check result
-    for (byte[] content : contents) {
-      final Meta meta = Client.generateMeta(new ByteArrayStreamProvider(content));
-      Assert.assertNotNull(storage.getMetadata(meta.getOid()), new String(content, StandardCharsets.UTF_8));
-    }
-  }
-
-  private void populate(@NotNull MemoryStorage storage, @NotNull List<byte[]> contents) throws InterruptedException, ExecutionException, TimeoutException, IOException {
-    for (byte[] content : contents) {
-      storage.saveObject(new ByteArrayStreamProvider(content));
-    }
-  }
-
   @Test
   public void simple() throws Exception {
     try (final EmbeddedLfsServer server = new EmbeddedLfsServer(new MemoryStorage(-1), null)) {
@@ -204,7 +206,7 @@ public class BatchTest {
     fullCircle(new ExternalAuthProvider("git@github.com:bozaro/test.git"));
   }
 
-  private void fullCircle(@NotNull AuthProvider auth) throws Exception {
+  private void fullCircle(@Nonnull AuthProvider auth) throws Exception {
     final ExecutorService pool = Executors.newFixedThreadPool(4);
     try {
       BatchSettings settings = new BatchSettings()
@@ -249,14 +251,11 @@ public class BatchTest {
     }
   }
 
-  @NotNull
-  private static byte[] content(int id) {
-    return content("TEST", id);
-  }
-
-  @NotNull
-  private static byte[] content(@NotNull String prefix, int id) {
-    final String result = prefix + " " + id;
-    return result.getBytes(StandardCharsets.UTF_8);
+  private void download(@Nonnull BatchDownloader downloader, @Nonnull List<byte[]> contents, @Nonnull List<byte[]> expected) throws Exception {
+    final Set<String> oids = new HashSet<>();
+    for (byte[] content : expected) {
+      oids.add(Client.generateMeta(new ByteArrayStreamProvider(content)).getOid());
+    }
+    download(downloader, contents, meta -> oids.contains(meta.getOid()));
   }
 }
