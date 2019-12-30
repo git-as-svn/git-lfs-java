@@ -40,7 +40,7 @@ idea {
 }
 
 subprojects {
-    apply(plugin = "java")
+    apply(plugin = "java-library")
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
     apply(plugin = "de.marcphilipp.nexus-publish")
@@ -50,14 +50,14 @@ subprojects {
         targetCompatibility = javaVersion
     }
 
-    val compile by configurations
-    val testCompile by configurations
+    val implementation by configurations
+    val testImplementation by configurations
 
     dependencies {
-        compile("org.jetbrains:annotations:17.0.0")
+        implementation("org.jetbrains:annotations:17.0.0")
 
-        testCompile("com.google.guava:guava:28.1-jre")
-        testCompile("org.testng:testng:7.0.0")
+        testImplementation("com.google.guava:guava:28.1-jre")
+        testImplementation("org.testng:testng:7.0.0")
     }
 
     idea {
