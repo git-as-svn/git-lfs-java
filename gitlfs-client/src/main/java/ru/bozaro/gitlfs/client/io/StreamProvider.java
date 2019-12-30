@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.client.io;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,6 +11,6 @@ import java.io.InputStream;
  */
 @FunctionalInterface
 public interface StreamProvider {
-  @NotNull
+  @Nonnull
   InputStream getStream() throws IOException;
 }

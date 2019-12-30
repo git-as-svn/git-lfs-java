@@ -3,8 +3,8 @@ package ru.bozaro.gitlfs.client.exceptions;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -13,12 +13,12 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public class RequestException extends IOException {
-  @NotNull
+  @Nonnull
   private final HttpUriRequest request;
-  @NotNull
+  @Nonnull
   private final HttpResponse response;
 
-  public RequestException(@NotNull HttpUriRequest request, @NotNull HttpResponse response) {
+  public RequestException(@Nonnull HttpUriRequest request, @Nonnull HttpResponse response) {
     this.request = request;
     this.response = response;
   }

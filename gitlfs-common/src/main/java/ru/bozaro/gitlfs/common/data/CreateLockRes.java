@@ -1,21 +1,22 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public final class CreateLockRes {
 
   @JsonProperty(value = "lock", required = true)
-  @NotNull
+  @Nonnull
   private final Lock lock;
 
   public CreateLockRes(
-      @JsonProperty(value = "lock", required = true) @NotNull Lock lock
+      @JsonProperty(value = "lock", required = true) @Nonnull Lock lock
   ) {
     this.lock = lock;
   }
 
-  @NotNull
+  @Nonnull
   public Lock getLock() {
     return lock;
   }

@@ -1,9 +1,9 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +15,33 @@ import java.util.Map;
  * @author Artem V. Navrotskiy
  */
 public interface ContentManager {
+  /**
+   * Check access for requested operation and return some user information.
+   *
+   * @param request HTTP request.
+   * @return Object for send object.
+   */
+  @Nonnull
+  Downloader checkDownloadAccess(@Nonnull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError;
+
+  /**
+   * Check access for requested operation and return some user information.
+   *
+   * @param request HTTP request.
+   * @return Object for receive object.
+   */
+  @Nonnull
+  Uploader checkUploadAccess(@Nonnull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError;
+
+  /**
+   * Get metadata of uploaded object.
+   *
+   * @param hash Object metadata (hash and size).
+   * @return Return metadata of uploaded object.
+   */
+  @CheckForNull
+  Meta getMetadata(@Nonnull String hash) throws IOException;
+
   interface HeaderProvider {
     /**
      * Generate pointer header information (for example: replace transit Basic auth by Toker auth).
@@ -22,8 +49,8 @@ public interface ContentManager {
      * @param header Default header. Can be modified.
      * @return Pointer header information.
      */
-    @NotNull
-    default Map<String, String> createHeader(@NotNull Map<String, String> header) {
+    @Nonnull
+    default Map<String, String> createHeader(@Nonnull Map<String, String> header) {
       return header;
     }
   }
@@ -35,8 +62,8 @@ public interface ContentManager {
      * @param hash Object metadata (hash and size).
      * @return Return object stream.
      */
-    @NotNull
-    InputStream openObject(@NotNull String hash) throws IOException;
+    @Nonnull
+    InputStream openObject(@Nonnull String hash) throws IOException;
 
     /**
      * Get gzip-compressed object from storage.
@@ -44,8 +71,8 @@ public interface ContentManager {
      * @param hash Object metadata (hash and size).
      * @return Return gzip-compressed object stream. If gzip-stream is not available return null.
      */
-    @Nullable
-    InputStream openObjectGzipped(@NotNull String hash) throws IOException;
+    @CheckForNull
+    InputStream openObjectGzipped(@Nonnull String hash) throws IOException;
   }
 
   interface Uploader extends HeaderProvider {
@@ -56,33 +83,6 @@ public interface ContentManager {
      * @param meta    Object metadata (hash and size).
      * @param content Stream with object data.
      */
-    void saveObject(@NotNull Meta meta, @NotNull InputStream content) throws IOException;
+    void saveObject(@Nonnull Meta meta, @Nonnull InputStream content) throws IOException;
   }
-
-  /**
-   * Check access for requested operation and return some user information.
-   *
-   * @param request HTTP request.
-   * @return Object for send object.
-   */
-  @NotNull
-  Downloader checkDownloadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError;
-
-  /**
-   * Check access for requested operation and return some user information.
-   *
-   * @param request HTTP request.
-   * @return Object for receive object.
-   */
-  @NotNull
-  Uploader checkUploadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError;
-
-  /**
-   * Get metadata of uploaded object.
-   *
-   * @param hash Object metadata (hash and size).
-   * @return Return metadata of uploaded object.
-   */
-  @Nullable
-  Meta getMetadata(@NotNull String hash) throws IOException;
 }

@@ -1,8 +1,8 @@
 package ru.bozaro.gitlfs.client.internal;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Link;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -11,5 +11,5 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public interface Work<R> {
-  R exec(@NotNull Link auth) throws IOException;
+  R exec(@Nonnull Link auth) throws IOException;
 }

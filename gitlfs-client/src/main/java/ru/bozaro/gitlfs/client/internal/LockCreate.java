@@ -8,29 +8,29 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.data.*;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.HEADER_ACCEPT;
 import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 
 public final class LockCreate implements Request<LockCreate.Res> {
-  @NotNull
+  @Nonnull
   private final String path;
-  @Nullable
+  @CheckForNull
   private final Ref ref;
 
-  public LockCreate(@NotNull String path, @Nullable Ref ref) {
+  public LockCreate(@Nonnull String path, @CheckForNull Ref ref) {
     this.path = path;
     this.ref = ref;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws JsonProcessingException {
+  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost req = new HttpPost(url);
     req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
 
@@ -43,7 +43,7 @@ public final class LockCreate implements Request<LockCreate.Res> {
   }
 
   @Override
-  public LockCreate.Res processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException {
+  public LockCreate.Res processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException {
     switch (response.getStatusLine().getStatusCode()) {
       case HttpStatus.SC_CREATED:
         return new Res(true, mapper.readValue(response.getEntity().getContent(), CreateLockRes.class).getLock(), null);
@@ -55,7 +55,7 @@ public final class LockCreate implements Request<LockCreate.Res> {
     }
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public int[] statusCodes() {
     return new int[]{
@@ -67,12 +67,12 @@ public final class LockCreate implements Request<LockCreate.Res> {
   public static final class Res {
 
     private final boolean success;
-    @Nullable
+    @CheckForNull
     private final String message;
-    @NotNull
+    @Nonnull
     private final Lock lock;
 
-    private Res(boolean success, @NotNull Lock lock, @Nullable String message) {
+    private Res(boolean success, @Nonnull Lock lock, @CheckForNull String message) {
       this.success = success;
       this.lock = lock;
       this.message = message;
@@ -82,12 +82,12 @@ public final class LockCreate implements Request<LockCreate.Res> {
       return success;
     }
 
-    @NotNull
+    @Nonnull
     public Lock getLock() {
       return lock;
     }
 
-    @Nullable
+    @CheckForNull
     public String getMessage() {
       return message;
     }

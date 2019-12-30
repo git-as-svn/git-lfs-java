@@ -1,8 +1,9 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 public final class Ref {
 
@@ -10,19 +11,19 @@ public final class Ref {
    * Fully-qualified server refspec.
    */
   @JsonProperty(value = "name", required = true)
-  @NotNull
+  @Nonnull
   private final String name;
 
-  public Ref(@JsonProperty(value = "name", required = true) @NotNull String name) {
+  public Ref(@JsonProperty(value = "name", required = true) @Nonnull String name) {
     this.name = name;
   }
 
-  @Nullable
-  public static Ref create(@Nullable String ref) {
+  @CheckForNull
+  public static Ref create(@CheckForNull String ref) {
     return ref == null ? null : new Ref(ref);
   }
 
-  @NotNull
+  @Nonnull
   public String getName() {
     return name;
   }

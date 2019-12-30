@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.client.io;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,14 +12,14 @@ import java.io.InputStream;
  * @author Artem V. Navrotskiy
  */
 public class FileStreamProvider implements StreamProvider {
-  @NotNull
+  @Nonnull
   private final File file;
 
-  public FileStreamProvider(@NotNull File file) {
+  public FileStreamProvider(@Nonnull File file) {
     this.file = file;
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public InputStream getStream() throws IOException {
     return new FileInputStream(file);

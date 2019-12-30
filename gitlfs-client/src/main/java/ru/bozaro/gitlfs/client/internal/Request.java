@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -14,17 +14,17 @@ import java.io.IOException;
  * @author Artem V. Navrotskiy
  */
 public interface Request<R> {
-  @NotNull
-  HttpUriRequest createRequest(@NotNull ObjectMapper mapper, @NotNull String url) throws IOException;
+  @Nonnull
+  HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws IOException;
 
-  R processResponse(@NotNull ObjectMapper mapper, @NotNull HttpResponse response) throws IOException;
+  R processResponse(@Nonnull ObjectMapper mapper, @Nonnull HttpResponse response) throws IOException;
 
   /**
    * Success status codes.
    *
    * @return Success status codes.
    */
-  @NotNull
+  @Nonnull
   default int[] statusCodes() {
     return new int[]{HttpStatus.SC_OK};
   }

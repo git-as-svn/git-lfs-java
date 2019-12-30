@@ -1,8 +1,8 @@
 package ru.bozaro.gitlfs.server.internal;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.JsonHelper;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -15,16 +15,16 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
  */
 public class ObjectResponse implements ResponseWriter {
   private int status;
-  @NotNull
+  @Nonnull
   private Object value;
 
-  public ObjectResponse(int status, @NotNull Object value) {
+  public ObjectResponse(int status, @Nonnull Object value) {
     this.status = status;
     this.value = value;
   }
 
   @Override
-  public void write(@NotNull HttpServletResponse response) throws IOException {
+  public void write(@Nonnull HttpServletResponse response) throws IOException {
     response.setStatus(status);
     response.setContentType(MIME_LFS_JSON);
     JsonHelper.mapper.writeValue(response.getOutputStream(), value);

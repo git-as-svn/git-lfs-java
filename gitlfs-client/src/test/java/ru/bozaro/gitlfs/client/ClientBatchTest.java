@@ -1,13 +1,13 @@
 package ru.bozaro.gitlfs.client;
 
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.Error;
 import ru.bozaro.gitlfs.common.data.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ public class ClientBatchTest {
     batchUpload("/ru/bozaro/gitlfs/client/batch-upload-02.yml");
   }
 
-  private void batchUpload(@NotNull String path) throws IOException {
+  private void batchUpload(@Nonnull String path) throws IOException {
     final HttpReplay replay = YamlHelper.createReplay(path);
     final Client client = new Client(new FakeAuthProvider(), replay);
     final BatchRes result = client.postBatch(new BatchReq(
@@ -94,7 +94,7 @@ public class ClientBatchTest {
     batchDownload("/ru/bozaro/gitlfs/client/batch-download-02.yml");
   }
 
-  private void batchDownload(@NotNull String path) throws IOException {
+  private void batchDownload(@Nonnull String path) throws IOException {
     final HttpReplay replay = YamlHelper.createReplay(path);
     final Client client = new Client(new FakeAuthProvider(), replay);
     final BatchRes result = client.postBatch(new BatchReq(

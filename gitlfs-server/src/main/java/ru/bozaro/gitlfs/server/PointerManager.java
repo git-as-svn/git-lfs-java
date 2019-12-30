@@ -1,9 +1,9 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.BatchItem;
 import ru.bozaro.gitlfs.common.data.Meta;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
@@ -14,16 +14,6 @@ import java.net.URI;
  * @author Artem V. Navrotskiy
  */
 public interface PointerManager {
-  interface Locator {
-    /**
-     * @param metas Object hash array (note: metadata can have negative size for GET object request).
-     * @return Return batch items with same order and same count as metas array.
-     * @throws IOException
-     */
-    @NotNull
-    BatchItem[] getLocations(@NotNull Meta[] metas) throws IOException;
-  }
-
   /**
    * Check access for upload objects.
    *
@@ -31,8 +21,8 @@ public interface PointerManager {
    * @param selfUrl Http URL for this request.
    * @return Location provider.
    */
-  @NotNull
-  Locator checkUploadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+  @Nonnull
+  Locator checkUploadAccess(@Nonnull HttpServletRequest request, @Nonnull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
 
   /**
    * Check access for download objects.
@@ -41,6 +31,15 @@ public interface PointerManager {
    * @param selfUrl Http URL for this request.
    * @return Location provider.
    */
-  @NotNull
-  Locator checkDownloadAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+  @Nonnull
+  Locator checkDownloadAccess(@Nonnull HttpServletRequest request, @Nonnull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+
+  interface Locator {
+    /**
+     * @param metas Object hash array (note: metadata can have negative size for GET object request).
+     * @return Return batch items with same order and same count as metas array.
+     */
+    @Nonnull
+    BatchItem[] getLocations(@Nonnull Meta[] metas) throws IOException;
+  }
 }

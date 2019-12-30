@@ -1,7 +1,6 @@
 package ru.bozaro.gitlfs.client.io;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -12,14 +11,14 @@ import java.net.URL;
  * @author Artem V. Navrotskiy
  */
 public class UrlStreamProvider implements StreamProvider {
-  @NotNull
+  @Nonnull
   private final URL url;
 
-  public UrlStreamProvider(@NotNull URL url) {
+  public UrlStreamProvider(@Nonnull URL url) {
     this.url = url;
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public InputStream getStream() throws IOException {
     return url.openStream();

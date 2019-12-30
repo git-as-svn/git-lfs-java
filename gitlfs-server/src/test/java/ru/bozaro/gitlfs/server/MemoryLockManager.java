@@ -1,14 +1,14 @@
 package ru.bozaro.gitlfs.server;
 
 import com.google.common.base.Strings;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.LockConflictException;
 import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.Lock;
 import ru.bozaro.gitlfs.common.data.Ref;
 import ru.bozaro.gitlfs.common.data.User;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,35 +20,35 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class MemoryLockManager implements LockManager, LockManager.LockWrite {
-  @NotNull
+  @Nonnull
   private final AtomicInteger nextId = new AtomicInteger(1);
 
-  @NotNull
+  @Nonnull
   private final List<Lock> locks = new ArrayList<>();
-  @NotNull
+  @Nonnull
   private final ContentManager contentManager;
 
-  public MemoryLockManager(@NotNull ContentManager contentManager) {
+  public MemoryLockManager(@Nonnull ContentManager contentManager) {
     this.contentManager = contentManager;
   }
 
   @Override
-  @NotNull
-  public LockRead checkDownloadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
+  @Nonnull
+  public LockRead checkDownloadAccess(@Nonnull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
     contentManager.checkDownloadAccess(request);
     return this;
   }
 
   @Override
-  @NotNull
-  public LockWrite checkUploadAccess(@NotNull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
+  @Nonnull
+  public LockWrite checkUploadAccess(@Nonnull HttpServletRequest request) throws IOException, ForbiddenError, UnauthorizedError {
     contentManager.checkUploadAccess(request);
     return this;
   }
 
   @Override
-  @NotNull
-  public List<Lock> getLocks(@Nullable String path, @Nullable String lockId, @Nullable Ref ref) {
+  @Nonnull
+  public List<Lock> getLocks(@CheckForNull String path, @CheckForNull String lockId, @CheckForNull Ref ref) {
     Stream<Lock> stream = locks.stream();
 
     if (!Strings.isNullOrEmpty(path))
@@ -61,8 +61,8 @@ public final class MemoryLockManager implements LockManager, LockManager.LockWri
   }
 
   @Override
-  @NotNull
-  public Lock lock(@NotNull String path, @Nullable Ref ref) throws LockConflictException {
+  @Nonnull
+  public Lock lock(@Nonnull String path, @CheckForNull Ref ref) throws LockConflictException {
     for (Lock lock : locks)
       if (lock.getPath().equals(path))
         throw new LockConflictException(lock);
@@ -73,8 +73,8 @@ public final class MemoryLockManager implements LockManager, LockManager.LockWri
   }
 
   @Override
-  @Nullable
-  public Lock unlock(@NotNull String lockId, boolean force, @Nullable Ref ref) throws LockConflictException {
+  @CheckForNull
+  public Lock unlock(@Nonnull String lockId, boolean force, @CheckForNull Ref ref) {
     Lock lock = null;
     for (Lock l : locks) {
       if (l.getId().equals(lockId)) {
@@ -91,7 +91,8 @@ public final class MemoryLockManager implements LockManager, LockManager.LockWri
   }
 
   @Override
-  public @NotNull VerifyLocksResult verifyLocks(@Nullable Ref ref) {
+  public @Nonnull
+  VerifyLocksResult verifyLocks(@CheckForNull Ref ref) {
     return new VerifyLocksResult(locks, Collections.emptyList());
   }
 }

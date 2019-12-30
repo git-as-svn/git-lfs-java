@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.pointer;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * Git-lfs constants.
@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public class Constants {
   public static final int POINTER_MAX_SIZE = 1024;
-  @NotNull
+  @Nonnull
   public static final String VERSION_URL = "https://git-lfs.github.com/spec/v1";
-  @NotNull
+  @Nonnull
   public static final String OID = "oid";
-  @NotNull
+  @Nonnull
   public static final String SIZE = "size";
-  @NotNull
+  @Nonnull
   public static final String VERSION = "version";
 }

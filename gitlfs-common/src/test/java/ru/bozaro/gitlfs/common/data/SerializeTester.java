@@ -1,9 +1,9 @@
 package ru.bozaro.gitlfs.common.data;
 
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import ru.bozaro.gitlfs.common.JsonHelper;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,7 +13,7 @@ import java.io.InputStream;
  * @author Artem V. Navrotskiy
  */
 public class SerializeTester {
-  public static <T> T deserialize(@NotNull String path, @NotNull Class<T> type) throws IOException {
+  public static <T> T deserialize(@Nonnull String path, @Nonnull Class<T> type) throws IOException {
     try (InputStream stream = SerializeTester.class.getResourceAsStream(path)) {
       Assert.assertNotNull(stream);
 

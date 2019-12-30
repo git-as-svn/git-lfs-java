@@ -1,8 +1,9 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 public final class CreateLockReq {
 
@@ -10,29 +11,29 @@ public final class CreateLockReq {
    * String path name of the locked file.
    */
   @JsonProperty(value = "path", required = true)
-  @NotNull
+  @Nonnull
   private final String path;
 
   /**
    * Optional object describing the server ref that the locks belong to.
    */
   @JsonProperty(value = "ref")
-  @Nullable
+  @CheckForNull
   private final Ref ref;
 
   public CreateLockReq(
-      @JsonProperty(value = "path", required = true) @NotNull String path,
-      @JsonProperty(value = "ref") @Nullable Ref ref) {
+      @JsonProperty(value = "path", required = true) @Nonnull String path,
+      @JsonProperty(value = "ref") @CheckForNull Ref ref) {
     this.path = path;
     this.ref = ref;
   }
 
-  @NotNull
+  @Nonnull
   public String getPath() {
     return path;
   }
 
-  @Nullable
+  @CheckForNull
   public Ref getRef() {
     return ref;
   }

@@ -1,7 +1,8 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.CheckForNull;
 
 public final class DeleteLockReq {
 
@@ -9,19 +10,19 @@ public final class DeleteLockReq {
    * Optional boolean specifying that the user is deleting another user's lock.
    */
   @JsonProperty(value = "force")
-  @Nullable
+  @CheckForNull
   private final Boolean force;
 
   /**
    * Optional object describing the server ref that the locks belong to.
    */
   @JsonProperty(value = "ref")
-  @Nullable
+  @CheckForNull
   private final Ref ref;
 
   public DeleteLockReq(
-      @JsonProperty(value = "force") @Nullable Boolean force,
-      @JsonProperty(value = "ref") @Nullable Ref ref) {
+      @JsonProperty(value = "force") @CheckForNull Boolean force,
+      @JsonProperty(value = "ref") @CheckForNull Ref ref) {
     this.force = force;
     this.ref = ref;
   }
@@ -30,7 +31,7 @@ public final class DeleteLockReq {
     return force != null && force;
   }
 
-  @Nullable
+  @CheckForNull
   public Ref getRef() {
     return ref;
   }

@@ -1,6 +1,5 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.Meta;
@@ -8,6 +7,7 @@ import ru.bozaro.gitlfs.common.io.InputStreamValidator;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,12 +24,12 @@ import static ru.bozaro.gitlfs.server.PointerServlet.sendError;
  * @author Artem V. Navrotskiy
  */
 public class ContentServlet extends HttpServlet {
-  @NotNull
+  @Nonnull
   private final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
-  @NotNull
+  @Nonnull
   private final ContentManager manager;
 
-  public ContentServlet(@NotNull ContentManager manager) {
+  public ContentServlet(@Nonnull ContentManager manager) {
     this.manager = manager;
   }
 
@@ -62,8 +62,8 @@ public class ContentServlet extends HttpServlet {
     super.doPost(req, resp);
   }
 
-  @NotNull
-  private ResponseWriter processObjectVerify(@NotNull HttpServletRequest req, @NotNull String oid) throws IOException, ServerError {
+  @Nonnull
+  private ResponseWriter processObjectVerify(@Nonnull HttpServletRequest req, @Nonnull String oid) throws IOException, ServerError {
     manager.checkUploadAccess(req);
     final Meta expectedMeta = JsonHelper.mapper.readValue(req.getInputStream(), Meta.class);
     final Meta actualMeta = manager.getMetadata(oid);
@@ -87,22 +87,21 @@ public class ContentServlet extends HttpServlet {
     super.doPut(req, resp);
   }
 
-  @NotNull
-  private ResponseWriter processPut(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
+  @Nonnull
+  private ResponseWriter processPut(@Nonnull HttpServletRequest req, @Nonnull String oid) throws ServerError, IOException {
     final ContentManager.Uploader uploader = manager.checkUploadAccess(req);
     final Meta meta = new Meta(oid, -1);
     uploader.saveObject(meta, new InputStreamValidator(req.getInputStream(), meta));
     return new ObjectResponse(HttpServletResponse.SC_OK, meta);
   }
 
-  @NotNull
-  private ResponseWriter processGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
+  @Nonnull
+  private ResponseWriter processGet(@Nonnull HttpServletRequest req, @Nonnull String oid) throws ServerError, IOException {
     final ContentManager.Downloader downloader = manager.checkDownloadAccess(req);
     final InputStream stream = downloader.openObject(oid);
     return response -> {
       response.setStatus(HttpServletResponse.SC_OK);
       response.setContentType(Constants.MIME_BINARY);
-      //noinspection TryFinallyCanBeTryWithResources
       try {
         byte[] buffer = new byte[0x10000];
         while (true) {

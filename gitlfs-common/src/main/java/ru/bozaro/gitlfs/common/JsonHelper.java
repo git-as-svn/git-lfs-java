@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.text.DateFormat;
 
 import static com.fasterxml.jackson.core.util.DefaultPrettyPrinter.DEFAULT_ROOT_VALUE_SEPARATOR;
@@ -26,10 +26,10 @@ public final class JsonHelper {
    * <p/>
    * See https://github.com/git-lfs/git-lfs/issues/3660
    */
-  @NotNull
+  @Nonnull
   public static final DateFormat dateFormat = StdDateFormat.instance.withColonInTimeZone(true);
 
-  @NotNull
+  @Nonnull
   public static final ObjectMapper mapper = new ObjectMapper();
 
   static {

@@ -8,9 +8,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHttpResponse;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,12 +23,12 @@ import java.util.TreeMap;
  * @author Artem V. Navrotskiy
  */
 public class HttpRecord {
-  @NotNull
+  @Nonnull
   private final Request request;
-  @NotNull
+  @Nonnull
   private final Response response;
 
-  public HttpRecord(@NotNull HttpUriRequest request, @NotNull HttpResponse response) throws IOException {
+  public HttpRecord(@Nonnull HttpUriRequest request, @Nonnull HttpResponse response) throws IOException {
     this.request = new Request(request);
     this.response = new Response(response);
   }
@@ -38,8 +38,8 @@ public class HttpRecord {
     this.response = new Response();
   }
 
-  @NotNull
-  private static String asString(@NotNull byte[] data) {
+  @Nonnull
+  private static String asString(@Nonnull byte[] data) {
     if (Utf8.isWellFormed(data)) {
       return new String(data, StandardCharsets.UTF_8);
     } else {
@@ -47,23 +47,23 @@ public class HttpRecord {
     }
   }
 
-  @NotNull
+  @Nonnull
   public Request getRequest() {
     return request;
   }
 
-  @NotNull
+  @Nonnull
   public Response getResponse() {
     return response;
   }
 
   public static class Response {
     private final int statusCode;
-    @NotNull
+    @Nonnull
     private final String statusText;
-    @NotNull
+    @Nonnull
     private final TreeMap<String, String> headers;
-    @Nullable
+    @CheckForNull
     private final byte[] body;
 
     Response() {
@@ -73,7 +73,7 @@ public class HttpRecord {
       this.body = null;
     }
 
-    Response(@NotNull HttpResponse response) throws IOException {
+    Response(@Nonnull HttpResponse response) throws IOException {
       this.statusCode = response.getStatusLine().getStatusCode();
       this.statusText = response.getStatusLine().getReasonPhrase();
       this.headers = new TreeMap<>();
@@ -87,7 +87,8 @@ public class HttpRecord {
       }
     }
 
-    @NotNull CloseableHttpResponse toHttpResponse() {
+    @Nonnull
+    CloseableHttpResponse toHttpResponse() {
       final CloseableBasicHttpResponse response = new CloseableBasicHttpResponse(new ProtocolVersion("HTTP", 1, 0), statusCode, statusText);
 
       for (Map.Entry<String, String> header : headers.entrySet())
@@ -115,7 +116,7 @@ public class HttpRecord {
   }
 
   private static final class CloseableBasicHttpResponse extends BasicHttpResponse implements CloseableHttpResponse {
-    private CloseableBasicHttpResponse(@NotNull final ProtocolVersion ver,
+    private CloseableBasicHttpResponse(@Nonnull final ProtocolVersion ver,
                                        final int code,
                                        final String reason) {
       super(ver, code, reason);
@@ -128,13 +129,13 @@ public class HttpRecord {
   }
 
   public static class Request {
-    @NotNull
+    @Nonnull
     private final String href;
-    @NotNull
+    @Nonnull
     private final String method;
-    @NotNull
+    @Nonnull
     private final TreeMap<String, String> headers;
-    @Nullable
+    @CheckForNull
     private final byte[] body;
 
     Request() {
@@ -144,7 +145,7 @@ public class HttpRecord {
       body = null;
     }
 
-    Request(@NotNull HttpUriRequest request) throws IOException {
+    Request(@Nonnull HttpUriRequest request) throws IOException {
       this.href = request.getURI().toString();
       this.method = request.getMethod();
       this.headers = new TreeMap<>();

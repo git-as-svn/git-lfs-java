@@ -2,9 +2,9 @@ package ru.bozaro.gitlfs.client;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -16,16 +16,16 @@ import java.util.List;
  * @author Artem V. Navrotskiy
  */
 public class HttpReplay implements HttpExecutor {
-  @NotNull
+  @Nonnull
   private final Deque<HttpRecord> records;
 
-  public HttpReplay(@NotNull List<HttpRecord> records) {
+  public HttpReplay(@Nonnull List<HttpRecord> records) {
     this.records = new ArrayDeque<>(records);
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+  public CloseableHttpResponse executeMethod(@Nonnull HttpUriRequest request) throws IOException {
     final HttpRecord record = records.pollFirst();
     Assert.assertNotNull(record);
 

@@ -1,6 +1,5 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.LockConflictException;
 import ru.bozaro.gitlfs.common.VerifyLocksResult;
@@ -8,6 +7,7 @@ import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,10 +19,10 @@ import static ru.bozaro.gitlfs.server.PointerServlet.checkMimeTypes;
 
 public class LocksServlet extends HttpServlet {
 
-  @NotNull
+  @Nonnull
   private final LockManager lockManager;
 
-  public LocksServlet(@NotNull LockManager lockManager) {
+  public LocksServlet(@Nonnull LockManager lockManager) {
     this.lockManager = lockManager;
   }
 
@@ -66,8 +66,8 @@ public class LocksServlet extends HttpServlet {
     super.doPost(req, resp);
   }
 
-  @NotNull
-  private ResponseWriter createLock(@NotNull HttpServletRequest req, @NotNull LockManager.LockWrite lockWrite) throws IOException {
+  @Nonnull
+  private ResponseWriter createLock(@Nonnull HttpServletRequest req, @Nonnull LockManager.LockWrite lockWrite) throws IOException {
     final CreateLockReq createLockReq = JsonHelper.mapper.readValue(req.getInputStream(), CreateLockReq.class);
     try {
       final Lock lock = lockWrite.lock(createLockReq.getPath(), createLockReq.getRef());
@@ -77,15 +77,15 @@ public class LocksServlet extends HttpServlet {
     }
   }
 
-  @NotNull
-  private ResponseWriter verifyLocks(@NotNull HttpServletRequest req, @NotNull LockManager.LockWrite lockWrite) throws IOException {
+  @Nonnull
+  private ResponseWriter verifyLocks(@Nonnull HttpServletRequest req, @Nonnull LockManager.LockWrite lockWrite) throws IOException {
     final VerifyLocksReq verifyLocksReq = JsonHelper.mapper.readValue(req.getInputStream(), VerifyLocksReq.class);
     final VerifyLocksResult result = lockWrite.verifyLocks(verifyLocksReq.getRef());
     return new ObjectResponse(HttpServletResponse.SC_OK, new VerifyLocksRes(result.getOurLocks(), result.getTheirLocks(), null));
   }
 
-  @NotNull
-  private ResponseWriter deleteLock(@NotNull HttpServletRequest req, @NotNull LockManager.LockWrite lockWrite, @NotNull String lockId) throws IOException, ServerError {
+  @Nonnull
+  private ResponseWriter deleteLock(@Nonnull HttpServletRequest req, @Nonnull LockManager.LockWrite lockWrite, @Nonnull String lockId) throws IOException, ServerError {
     final DeleteLockReq deleteLockReq = JsonHelper.mapper.readValue(req.getInputStream(), DeleteLockReq.class);
     try {
       final Lock lock = lockWrite.unlock(lockId, deleteLockReq.isForce(), deleteLockReq.getRef());
@@ -98,8 +98,8 @@ public class LocksServlet extends HttpServlet {
     }
   }
 
-  @NotNull
-  private ResponseWriter listLocks(@NotNull HttpServletRequest req, @NotNull LockManager.LockRead lockRead) throws IOException {
+  @Nonnull
+  private ResponseWriter listLocks(@Nonnull HttpServletRequest req, @Nonnull LockManager.LockRead lockRead) throws IOException {
     final String refName = req.getParameter("refspec");
 
     final String path = req.getParameter("path");

@@ -1,8 +1,9 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Embedded LFS server for servlet testing.
@@ -10,14 +11,14 @@ import ru.bozaro.gitlfs.client.auth.AuthProvider;
  * @author Artem V. Navrotskiy
  */
 public class EmbeddedLfsServer implements AutoCloseable {
-  @NotNull
+  @Nonnull
   private final EmbeddedHttpServer server;
-  @NotNull
+  @Nonnull
   private final MemoryStorage storage;
-  @Nullable
+  @CheckForNull
   private final LockManager lockManager;
 
-  public EmbeddedLfsServer(@NotNull MemoryStorage storage, @Nullable LockManager lockManager) throws Exception {
+  public EmbeddedLfsServer(@Nonnull MemoryStorage storage, @CheckForNull LockManager lockManager) throws Exception {
     this.lockManager = lockManager;
     this.server = new EmbeddedHttpServer();
     this.storage = storage;
@@ -31,12 +32,12 @@ public class EmbeddedLfsServer implements AutoCloseable {
     return storage.getAuthProvider(server.getBase().resolve("/foo/bar.git/info/lfs"));
   }
 
-  @NotNull
+  @Nonnull
   public MemoryStorage getStorage() {
     return storage;
   }
 
-  @Nullable
+  @CheckForNull
   public LockManager getLockManager() {
     return lockManager;
   }

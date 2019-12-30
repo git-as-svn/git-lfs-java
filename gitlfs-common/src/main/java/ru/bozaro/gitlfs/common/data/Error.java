@@ -2,7 +2,8 @@ package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.CheckForNull;
 
 /**
  * LFS error description.
@@ -13,14 +14,14 @@ public final class Error {
   @JsonProperty(value = "code", required = true)
   private final int code;
 
-  @JsonProperty(value = "message", required = false)
-  @Nullable
+  @JsonProperty(value = "message")
+  @CheckForNull
   private final String message;
 
   @JsonCreator
   public Error(
       @JsonProperty(value = "code") int code,
-      @JsonProperty(value = "message") @Nullable String message
+      @JsonProperty(value = "message") @CheckForNull String message
   ) {
     this.code = code;
     this.message = message;
@@ -30,7 +31,7 @@ public final class Error {
     return code;
   }
 
-  @Nullable
+  @CheckForNull
   public String getMessage() {
     return message;
   }

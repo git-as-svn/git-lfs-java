@@ -2,33 +2,34 @@ package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public final class LockConflictRes {
 
   @JsonProperty(value = "lock", required = true)
-  @NotNull
+  @Nonnull
   private final Lock lock;
 
   @JsonProperty(value = "message", required = true)
-  @NotNull
+  @Nonnull
   private final String message;
 
   @JsonCreator
   public LockConflictRes(
-      @JsonProperty(value = "message", required = true) @NotNull String message,
-      @JsonProperty(value = "lock", required = true) @NotNull Lock lock
+      @JsonProperty(value = "message", required = true) @Nonnull String message,
+      @JsonProperty(value = "lock", required = true) @Nonnull Lock lock
   ) {
     this.lock = lock;
     this.message = message;
   }
 
-  @NotNull
+  @Nonnull
   public Lock getLock() {
     return lock;
   }
 
-  @NotNull
+  @Nonnull
   public String getMessage() {
     return message;
   }

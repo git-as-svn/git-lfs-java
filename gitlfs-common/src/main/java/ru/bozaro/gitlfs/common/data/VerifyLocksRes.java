@@ -1,43 +1,43 @@
 package ru.bozaro.gitlfs.common.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public final class VerifyLocksRes {
   @JsonProperty(value = "ours", required = true)
-  @NotNull
+  @Nonnull
   private final List<Lock> ours;
   @JsonProperty(value = "theirs", required = true)
-  @NotNull
+  @Nonnull
   private final List<Lock> theirs;
 
   @JsonProperty(value = "next_cursor")
-  @Nullable
+  @CheckForNull
   private final String nextCursor;
 
   public VerifyLocksRes(
-      @JsonProperty(value = "ours", required = true) @NotNull List<Lock> ours,
-      @JsonProperty(value = "theirs", required = true) @NotNull List<Lock> theirs,
-      @JsonProperty(value = "next_cursor") @Nullable String nextCursor) {
+      @JsonProperty(value = "ours", required = true) @Nonnull List<Lock> ours,
+      @JsonProperty(value = "theirs", required = true) @Nonnull List<Lock> theirs,
+      @JsonProperty(value = "next_cursor") @CheckForNull String nextCursor) {
     this.ours = ours;
     this.theirs = theirs;
     this.nextCursor = nextCursor;
   }
 
-  @NotNull
+  @Nonnull
   public List<Lock> getOurs() {
     return ours;
   }
 
-  @NotNull
+  @Nonnull
   public List<Lock> getTheirs() {
     return theirs;
   }
 
-  @Nullable
+  @CheckForNull
   public String getNextCursor() {
     return nextCursor;
   }

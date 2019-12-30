@@ -1,9 +1,9 @@
 package ru.bozaro.gitlfs.client.auth;
 
-import org.jetbrains.annotations.NotNull;
 import ru.bozaro.gitlfs.common.data.Link;
 import ru.bozaro.gitlfs.common.data.Operation;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentMap;
  * @author Artem V. Navrotskiy
  */
 public abstract class CachedAuthProvider implements AuthProvider {
-  @NotNull
+  @Nonnull
   private final ConcurrentMap<Operation, Link> authCache;
-  @NotNull
+  @Nonnull
   private final EnumMap<Operation, Object> locks;
 
   public CachedAuthProvider() {
@@ -26,9 +26,18 @@ public abstract class CachedAuthProvider implements AuthProvider {
     this.authCache = new ConcurrentHashMap<>(Operation.values().length);
   }
 
-  @NotNull
+  @Nonnull
+  private static EnumMap<Operation, Object> createLocks() {
+    final EnumMap<Operation, Object> result = new EnumMap<>(Operation.class);
+    for (Operation value : Operation.values()) {
+      result.put(value, new Object());
+    }
+    return result;
+  }
+
+  @Nonnull
   @Override
-  public final Link getAuth(@NotNull Operation operation) throws IOException {
+  public final Link getAuth(@Nonnull Operation operation) throws IOException {
     Link auth = authCache.get(operation);
     if (auth == null) {
       synchronized (locks.get(operation)) {
@@ -46,20 +55,11 @@ public abstract class CachedAuthProvider implements AuthProvider {
     return auth;
   }
 
-  @NotNull
-  private static EnumMap<Operation, Object> createLocks() {
-    final EnumMap<Operation, Object> result = new EnumMap<>(Operation.class);
-    for (Operation value : Operation.values()) {
-      result.put(value, new Object());
-    }
-    return result;
-  }
-
-  @NotNull
-  protected abstract Link getAuthUncached(@NotNull Operation operation) throws IOException, InterruptedException;
+  @Nonnull
+  protected abstract Link getAuthUncached(@Nonnull Operation operation) throws IOException, InterruptedException;
 
   @Override
-  public final void invalidateAuth(@NotNull Operation operation, @NotNull Link auth) {
+  public final void invalidateAuth(@Nonnull Operation operation, @Nonnull Link auth) {
     authCache.remove(operation, auth);
   }
 }

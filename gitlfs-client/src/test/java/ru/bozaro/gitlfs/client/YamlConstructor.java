@@ -1,6 +1,5 @@
 package ru.bozaro.gitlfs.client;
 
-import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -8,6 +7,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
+import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -22,17 +22,17 @@ public class YamlConstructor extends Constructor {
   }
 
   private class ConstructBlob extends AbstractConstruct {
-    @NotNull
-    public Object construct(@NotNull Node node) {
-      final String value = constructScalar((ScalarNode) node).toString();
+    @Nonnull
+    public Object construct(@Nonnull Node node) {
+      final String value = constructScalar((ScalarNode) node);
       return value.getBytes(StandardCharsets.UTF_8);
     }
   }
 
   private class ConstructBinary extends AbstractConstruct {
-    @NotNull
-    public Object construct(@NotNull Node node) {
-      final String value = constructScalar((ScalarNode) node).toString();
+    @Nonnull
+    public Object construct(@Nonnull Node node) {
+      final String value = constructScalar((ScalarNode) node);
       return Base64Coder.decodeLines(value);
     }
   }

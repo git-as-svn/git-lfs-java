@@ -1,7 +1,5 @@
 package ru.bozaro.gitlfs.server;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.JsonHelper;
 import ru.bozaro.gitlfs.common.data.Error;
@@ -9,6 +7,8 @@ import ru.bozaro.gitlfs.common.data.*;
 import ru.bozaro.gitlfs.server.internal.ObjectResponse;
 import ru.bozaro.gitlfs.server.internal.ResponseWriter;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,11 +38,11 @@ import java.util.regex.Pattern;
  * @author Artem V. Navrotskiy
  */
 public class PointerServlet extends HttpServlet {
-  @NotNull
+  @Nonnull
   private static final Pattern PATTERN_OID = Pattern.compile("^/[0-9a-f]{64}$");
-  @NotNull
+  @Nonnull
   private final PointerManager manager;
-  @NotNull
+  @Nonnull
   private final AccessCheckerVisitor accessCheckerVisitor;
 
   /**
@@ -51,17 +51,17 @@ public class PointerServlet extends HttpServlet {
    * @param manager         Content manager.
    * @param contentLocation Absolute or relative URL to ContentServlet.
    */
-  public PointerServlet(@NotNull ContentManager manager, @NotNull String contentLocation) {
+  public PointerServlet(@Nonnull ContentManager manager, @Nonnull String contentLocation) {
     this(new LocalPointerManager(manager, contentLocation));
   }
 
-  public PointerServlet(@NotNull PointerManager manager) {
+  public PointerServlet(@Nonnull PointerManager manager) {
     this.manager = manager;
     this.accessCheckerVisitor = new AccessCheckerVisitor(manager);
   }
 
-  @NotNull
-  private static BatchItem[] filterLocations(@NotNull BatchItem[] items, @NotNull LocationFilter filter) throws IOException {
+  @Nonnull
+  private static BatchItem[] filterLocations(@Nonnull BatchItem[] items, @Nonnull LocationFilter filter) throws IOException {
     final BatchItem[] result = new BatchItem[items.length];
     for (int i = 0; i < items.length; ++i) {
       if (items[i].getError() == null) {
@@ -73,15 +73,15 @@ public class PointerServlet extends HttpServlet {
     return result;
   }
 
-  @NotNull
-  private static BatchItem filterDownload(@NotNull BatchItem item) {
+  @Nonnull
+  private static BatchItem filterDownload(@Nonnull BatchItem item) {
     if (item.getLinks().containsKey(LinkType.Download))
       return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Download), null, null);
 
     return new BatchItem(item.getOid(), item.getSize(), null, null, new Error(HttpServletResponse.SC_NOT_FOUND, "Object not found"));
   }
 
-  private static Map<LinkType, Link> filterLocation(@NotNull Map<LinkType, Link> links, @NotNull LinkType... linkTypes) {
+  private static Map<LinkType, Link> filterLocation(@Nonnull Map<LinkType, Link> links, @Nonnull LinkType... linkTypes) {
     final Map<LinkType, Link> result = new TreeMap<>();
     for (LinkType linkType : linkTypes) {
       final Link link = links.get(linkType);
@@ -90,8 +90,8 @@ public class PointerServlet extends HttpServlet {
     return result;
   }
 
-  @NotNull
-  private static BatchItem filterUpload(@NotNull BatchItem item) throws IOException {
+  @Nonnull
+  private static BatchItem filterUpload(@Nonnull BatchItem item) throws IOException {
     if (item.getLinks().containsKey(LinkType.Download))
       return new BatchItem(item.getOid(), item.getSize(), filterLocation(item.getLinks(), LinkType.Verify), null, null);
 
@@ -116,7 +116,7 @@ public class PointerServlet extends HttpServlet {
   }
 
   @Override
-  protected void doPost(@NotNull HttpServletRequest req, @NotNull HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(@Nonnull HttpServletRequest req, @Nonnull HttpServletResponse resp) throws ServletException, IOException {
     try {
       checkMimeTypes(req);
 
@@ -135,13 +135,13 @@ public class PointerServlet extends HttpServlet {
     super.doPost(req, resp);
   }
 
-  public static void checkMimeTypes(@NotNull HttpServletRequest request) throws ServerError {
+  public static void checkMimeTypes(@Nonnull HttpServletRequest request) throws ServerError {
     checkMimeType(request.getContentType());
     checkMimeType(request.getHeader(Constants.HEADER_ACCEPT));
   }
 
-  @NotNull
-  private ResponseWriter processObjectPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
+  @Nonnull
+  private ResponseWriter processObjectPost(@Nonnull HttpServletRequest req) throws ServerError, IOException {
     final URI selfUrl = getSelfUrl(req);
     final PointerManager.Locator locator = manager.checkUploadAccess(req, selfUrl);
     final Meta meta = JsonHelper.mapper.readValue(req.getInputStream(), Meta.class);
@@ -161,15 +161,21 @@ public class PointerServlet extends HttpServlet {
     throw new ServerError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Invalid locations list", null);
   }
 
-  @NotNull
-  private ResponseWriter processBatchPost(@NotNull HttpServletRequest req) throws ServerError, IOException {
+  @Nonnull
+  private ResponseWriter processBatchPost(@Nonnull HttpServletRequest req) throws ServerError, IOException {
     final BatchReq batchReq = JsonHelper.mapper.readValue(req.getInputStream(), BatchReq.class);
     final PointerManager.Locator locator = batchReq.getOperation().visit(accessCheckerVisitor).checkAccess(req, getSelfUrl(req));
     final BatchItem[] locations = getLocations(locator, batchReq.getObjects().toArray(new Meta[0]));
     return new ObjectResponse(HttpServletResponse.SC_OK, new BatchRes(Arrays.asList(locations)));
   }
 
-  private static void checkMimeType(@Nullable String contentType) throws ServerError {
+  public static void sendError(@Nonnull HttpServletResponse resp, @Nonnull ServerError e) throws IOException {
+    resp.setStatus(e.getStatusCode());
+    resp.setContentType(Constants.MIME_LFS_JSON);
+    JsonHelper.mapper.writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
+  }
+
+  private static void checkMimeType(@CheckForNull String contentType) throws ServerError {
     String actualType = contentType;
     if (actualType != null) {
       int separator = actualType.indexOf(';');
@@ -185,29 +191,8 @@ public class PointerServlet extends HttpServlet {
     }
   }
 
-  @NotNull
-  private ResponseWriter processObjectGet(@NotNull HttpServletRequest req, @NotNull String oid) throws ServerError, IOException {
-    final PointerManager.Locator locator = manager.checkDownloadAccess(req, getSelfUrl(req));
-    final BatchItem location = getLocation(locator, new Meta(oid, -1));
-    // Return error information.
-    final Error error = location.getError();
-    if (error != null) {
-      throw new ServerError(error.getCode(), error.getMessage(), null);
-    }
-    if (location.getLinks().containsKey(LinkType.Download)) {
-      return new ObjectResponse(HttpServletResponse.SC_OK, new ObjectRes(location.getOid(), location.getSize(), addSelfLink(req, location.getLinks())));
-    }
-    throw new ServerError(HttpServletResponse.SC_NOT_FOUND, "Object not found", null);
-  }
-
-  public static void sendError(@NotNull HttpServletResponse resp, @NotNull ServerError e) throws IOException {
-    resp.setStatus(e.getStatusCode());
-    resp.setContentType(Constants.MIME_LFS_JSON);
-    JsonHelper.mapper.writeValue(resp.getOutputStream(), new Error(e.getStatusCode(), e.getMessage()));
-  }
-
-  @NotNull
-  protected URI getSelfUrl(@NotNull HttpServletRequest req) {
+  @Nonnull
+  protected URI getSelfUrl(@Nonnull HttpServletRequest req) {
     try {
       return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), req.getServletPath(), null, null);
     } catch (URISyntaxException e) {
@@ -215,19 +200,19 @@ public class PointerServlet extends HttpServlet {
     }
   }
 
-  @NotNull
-  private BatchItem getLocation(@NotNull PointerManager.Locator locator, @NotNull Meta meta) throws IOException, ServerError {
+  @Nonnull
+  private BatchItem getLocation(@Nonnull PointerManager.Locator locator, @Nonnull Meta meta) throws IOException, ServerError {
     return getLocations(locator, new Meta[]{meta})[0];
   }
 
-  private static Map<LinkType, Link> addSelfLink(@NotNull HttpServletRequest req, @NotNull Map<LinkType, Link> links) {
+  private static Map<LinkType, Link> addSelfLink(@Nonnull HttpServletRequest req, @Nonnull Map<LinkType, Link> links) {
     final Map<LinkType, Link> result = new TreeMap<>(links);
     result.put(LinkType.Self, new Link(URI.create(String.valueOf(req.getRequestURL())), null, null));
     return result;
   }
 
-  @NotNull
-  private BatchItem[] getLocations(@NotNull PointerManager.Locator locator, @NotNull Meta[] metas) throws ServerError, IOException {
+  @Nonnull
+  private BatchItem[] getLocations(@Nonnull PointerManager.Locator locator, @Nonnull Meta[] metas) throws ServerError, IOException {
     final BatchItem[] locations = locator.getLocations(metas);
     // Invalid locations list.
     if (locations.length != metas.length) {
@@ -241,23 +226,38 @@ public class PointerServlet extends HttpServlet {
     return locations;
   }
 
+  @Nonnull
+  private ResponseWriter processObjectGet(@Nonnull HttpServletRequest req, @Nonnull String oid) throws ServerError, IOException {
+    final PointerManager.Locator locator = manager.checkDownloadAccess(req, getSelfUrl(req));
+    final BatchItem location = getLocation(locator, new Meta(oid, -1));
+    // Return error information.
+    final Error error = location.getError();
+    if (error != null) {
+      throw new ServerError(error.getCode(), error.getMessage(), null);
+    }
+    if (location.getLinks().containsKey(LinkType.Download)) {
+      return new ObjectResponse(HttpServletResponse.SC_OK, new ObjectRes(location.getOid(), location.getSize(), addSelfLink(req, location.getLinks())));
+    }
+    throw new ServerError(HttpServletResponse.SC_NOT_FOUND, "Object not found", null);
+  }
+
   @FunctionalInterface
   protected interface AccessChecker {
-    @NotNull
-    PointerManager.Locator checkAccess(@NotNull HttpServletRequest request, @NotNull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
+    @Nonnull
+    PointerManager.Locator checkAccess(@Nonnull HttpServletRequest request, @Nonnull URI selfUrl) throws IOException, ForbiddenError, UnauthorizedError;
   }
 
   @FunctionalInterface
   protected interface LocationFilter {
-    @NotNull
-    BatchItem filter(@NotNull BatchItem item) throws IOException;
+    @Nonnull
+    BatchItem filter(@Nonnull BatchItem item) throws IOException;
   }
 
   private static class AccessCheckerVisitor implements Operation.Visitor<AccessChecker> {
-    @NotNull
+    @Nonnull
     private final PointerManager manager;
 
-    public AccessCheckerVisitor(@NotNull PointerManager manager) {
+    public AccessCheckerVisitor(@Nonnull PointerManager manager) {
       this.manager = manager;
     }
 
@@ -271,7 +271,7 @@ public class PointerServlet extends HttpServlet {
       return wrapChecker(manager::checkUploadAccess, PointerServlet::filterUpload);
     }
 
-    private AccessChecker wrapChecker(@NotNull AccessChecker checker, @NotNull LocationFilter filter) {
+    private AccessChecker wrapChecker(@Nonnull AccessChecker checker, @Nonnull LocationFilter filter) {
       return (request, selfUrl) -> {
         PointerManager.Locator locator = checker.checkAccess(request, selfUrl);
         return metas -> filterLocations(locator.getLocations(metas), filter);

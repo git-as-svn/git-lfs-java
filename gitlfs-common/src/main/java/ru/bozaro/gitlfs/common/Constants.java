@@ -1,6 +1,6 @@
 package ru.bozaro.gitlfs.common;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * Git-lfs constants.
@@ -11,22 +11,22 @@ public final class Constants {
   /**
    * See {@link <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1">HTTP/1.1 documentation</a>}.
    */
-  @NotNull
+  @Nonnull
   public static final String HEADER_AUTHORIZATION = "Authorization";
-  @NotNull
+  @Nonnull
   public static final String HEADER_ACCEPT = "Accept";
-  @NotNull
+  @Nonnull
   public static final String HEADER_LOCATION = "Location";
 
-  @NotNull
+  @Nonnull
   public static final String MIME_LFS_JSON = "application/vnd.git-lfs+json";
-  @NotNull
+  @Nonnull
   public static final String MIME_BINARY = "application/octet-stream";
-  @NotNull
+  @Nonnull
   public static final String PATH_OBJECTS = "objects";
-  @NotNull
+  @Nonnull
   public static final String PATH_BATCH = "objects/batch";
-  @NotNull
+  @Nonnull
   public static final String PATH_LOCKS = "locks";
 
   /**

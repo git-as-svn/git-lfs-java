@@ -2,8 +2,8 @@ package ru.bozaro.gitlfs.client;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,24 +14,24 @@ import java.util.List;
  * @author Artem V. Navrotskiy
  */
 public class HttpRecorder implements HttpExecutor {
-  @NotNull
+  @Nonnull
   private final HttpExecutor executor;
-  @NotNull
+  @Nonnull
   private final List<HttpRecord> records = new ArrayList<>();
 
-  public HttpRecorder(@NotNull HttpExecutor executor) {
+  public HttpRecorder(@Nonnull HttpExecutor executor) {
     this.executor = executor;
   }
 
-  @NotNull
+  @Nonnull
   @Override
-  public CloseableHttpResponse executeMethod(@NotNull HttpUriRequest request) throws IOException {
+  public CloseableHttpResponse executeMethod(@Nonnull HttpUriRequest request) throws IOException {
     final CloseableHttpResponse response = executor.executeMethod(request);
     records.add(new HttpRecord(request, response));
     return response;
   }
 
-  @NotNull
+  @Nonnull
   public List<HttpRecord> getRecords() {
     return records;
   }
