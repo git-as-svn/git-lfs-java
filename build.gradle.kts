@@ -25,8 +25,8 @@ allprojects {
     group = "ru.bozaro.gitlfs"
     version = "0.17.0-SNAPSHOT"
 
-    apply<IdeaPlugin>()
-    apply<VersionsPlugin>()
+    apply(plugin = "idea")
+    apply(plugin = "com.github.ben-manes.versions")
 
     repositories {
         mavenCentral()
@@ -41,9 +41,9 @@ idea {
 }
 
 subprojects {
-    apply<JavaPlugin>()
-    apply<MavenPublishPlugin>()
-    apply<SigningPlugin>()
+    apply(plugin = "java")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
     apply(plugin = "de.marcphilipp.nexus-publish")
 
     configure<JavaPluginExtension> {
