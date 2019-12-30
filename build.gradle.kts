@@ -1,4 +1,3 @@
-import com.github.benmanes.gradle.versions.VersionsPlugin
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
@@ -165,7 +164,7 @@ subprojects {
     extra["signing.password"] = signingPassword
 
     configure<SigningExtension> {
-        isRequired = signingPassword != null && file(secretKeyRingFile).exists()
+        isRequired = signingPassword != null && file(secretKeyRingFile).exists() && !project.version.toString().endsWith("-SNAPSHOT")
 
         // TODO: Is it possible to access publishing extension in a safer way?
         val publishing: PublishingExtension by project.extensions
