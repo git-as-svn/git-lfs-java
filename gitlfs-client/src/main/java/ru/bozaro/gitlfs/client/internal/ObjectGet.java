@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.client.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import ru.bozaro.gitlfs.client.io.StreamHandler;
 
 import javax.annotation.Nonnull;
@@ -24,8 +23,9 @@ public class ObjectGet<T> implements Request<T> {
 
   @Nonnull
   @Override
-  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) {
-    return new HttpGet(url);
+  public LfsRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) {
+    final HttpGet req = new HttpGet(url);
+    return new LfsRequest(req, null);
   }
 
   @Override

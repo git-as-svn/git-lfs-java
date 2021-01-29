@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import ru.bozaro.gitlfs.common.data.*;
@@ -30,16 +29,15 @@ public final class LockCreate implements Request<LockCreate.Res> {
 
   @Nonnull
   @Override
-  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
+  public LfsRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost req = new HttpPost(url);
     req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
 
     final CreateLockReq createLockReq = new CreateLockReq(path, ref);
     final AbstractHttpEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(createLockReq));
     entity.setContentType(MIME_LFS_JSON);
-
     req.setEntity(entity);
-    return req;
+    return new LfsRequest(req, entity);
   }
 
   @Override

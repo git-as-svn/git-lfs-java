@@ -17,7 +17,7 @@ public final class ClientLocksTest {
     final Ref ref = Ref.create("refs/heads/master");
 
     final HttpReplay replay = YamlHelper.createReplay("/ru/bozaro/gitlfs/client/locking-01.yml");
-    final Client client = new Client(new FakeAuthProvider(), replay);
+    final Client client = new Client(new FakeAuthProvider(false), replay);
 
     final Lock lock = client.lock("build.gradle", ref);
     Assert.assertNotNull(lock);

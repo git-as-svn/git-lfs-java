@@ -23,7 +23,7 @@ public class ClientBatchTest {
    */
   @Test
   public void batchUpload01() throws IOException {
-    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-01.yml");
+    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-01.yml", false);
   }
 
   /**
@@ -31,12 +31,17 @@ public class ClientBatchTest {
    */
   @Test
   public void batchUpload02() throws IOException {
-    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-02.yml");
+    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-02.yml", false);
   }
 
-  private void batchUpload(@Nonnull String path) throws IOException {
+  @Test
+  public void batchUploadChunked() throws IOException {
+    batchUpload("/ru/bozaro/gitlfs/client/batch-upload-chunked.yml", true);
+  }
+
+  private void batchUpload(@Nonnull String path, boolean chunked) throws IOException {
     final HttpReplay replay = YamlHelper.createReplay(path);
-    final Client client = new Client(new FakeAuthProvider(), replay);
+    final Client client = new Client(new FakeAuthProvider(chunked), replay);
     final BatchRes result = client.postBatch(new BatchReq(
         Operation.Upload,
         Arrays.asList(
@@ -86,17 +91,9 @@ public class ClientBatchTest {
     batchDownload("/ru/bozaro/gitlfs/client/batch-download-01.yml");
   }
 
-  /**
-   * Simple download (JFrog Artifactory).
-   */
-  @Test
-  public void batchDownload02() throws IOException {
-    batchDownload("/ru/bozaro/gitlfs/client/batch-download-02.yml");
-  }
-
   private void batchDownload(@Nonnull String path) throws IOException {
     final HttpReplay replay = YamlHelper.createReplay(path);
-    final Client client = new Client(new FakeAuthProvider(), replay);
+    final Client client = new Client(new FakeAuthProvider(false), replay);
     final BatchRes result = client.postBatch(new BatchReq(
         Operation.Download,
         Arrays.asList(
@@ -127,5 +124,13 @@ public class ClientBatchTest {
         )
     )));
     replay.close();
+  }
+
+  /**
+   * Simple download (JFrog Artifactory).
+   */
+  @Test
+  public void batchDownload02() throws IOException {
+    batchDownload("/ru/bozaro/gitlfs/client/batch-download-02.yml");
   }
 }

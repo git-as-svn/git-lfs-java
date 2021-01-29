@@ -20,8 +20,13 @@ public class FakeAuthProvider implements AuthProvider {
   private final Object lock = new Object();
   @Nonnull
   private final AtomicInteger id = new AtomicInteger(0);
+  private final boolean chunkedUpload;
   @CheckForNull
-  private Link auth = null;
+  private Link[] auth = null;
+
+  public FakeAuthProvider(boolean chunkedUpload) {
+    this.chunkedUpload = chunkedUpload;
+  }
 
   @Nonnull
   @Override
@@ -30,23 +35,31 @@ public class FakeAuthProvider implements AuthProvider {
       if (auth == null) {
         auth = createAuth();
       }
-      return auth;
+      return auth[operation.ordinal()];
     }
   }
 
   @Override
   public void invalidateAuth(@Nonnull Operation operation, @Nonnull Link auth) {
     synchronized (lock) {
-      if (this.auth == auth) {
+      if (this.auth != null && (this.auth[0] == auth || this.auth[1] == auth)) {
         this.auth = null;
       }
     }
   }
 
   @Nonnull
-  private Link createAuth() {
-    return new Link(URI.create("http://gitlfs.local/test.git/info/lfs"), ImmutableMap.<String, String>builder()
-        .put("Authorization", "RemoteAuth Token-" + id.incrementAndGet())
-        .build(), null);
+  private Link[] createAuth() {
+    final URI uri = URI.create("http://gitlfs.local/test.git/info/lfs");
+    final ImmutableMap.Builder<String, String> headers = ImmutableMap.<String, String>builder()
+        .put("Authorization", "RemoteAuth Token-" + id.incrementAndGet());
+
+    final Link downloadAuth = new Link(uri, headers.build(), null);
+
+    if (chunkedUpload) {
+      headers.put("Transfer-Encoding", "chunked");
+    }
+    final Link uploadAuth = new Link(uri, headers.build(), null);
+    return new Link[]{downloadAuth, uploadAuth};
   }
 }
