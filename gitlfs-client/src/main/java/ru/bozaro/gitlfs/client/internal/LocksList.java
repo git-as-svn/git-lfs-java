@@ -3,7 +3,6 @@ package ru.bozaro.gitlfs.client.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import ru.bozaro.gitlfs.common.data.LocksRes;
 
 import javax.annotation.Nonnull;
@@ -15,10 +14,10 @@ import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;
 public final class LocksList implements Request<LocksRes> {
   @Nonnull
   @Override
-  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) {
+  public LfsRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) {
     final HttpGet req = new HttpGet(url);
     req.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
-    return req;
+    return new LfsRequest(req, null);
   }
 
   @Override

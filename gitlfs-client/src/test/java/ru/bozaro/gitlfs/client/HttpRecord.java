@@ -2,12 +2,12 @@ package ru.bozaro.gitlfs.client;
 
 import com.google.common.base.Utf8;
 import com.google.common.io.BaseEncoding;
-import com.google.common.net.HttpHeaders;
 import org.apache.http.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.protocol.HTTP;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -152,9 +152,12 @@ public class HttpRecord {
       final HttpEntityEnclosingRequest entityRequest = request instanceof HttpEntityEnclosingRequest ? (HttpEntityEnclosingRequest) request : null;
       final HttpEntity entity = entityRequest != null ? entityRequest.getEntity() : null;
       if (entity != null) {
-        if (entity.getContentLength() >= 0) {
-          headers.put(HttpHeaders.CONTENT_LENGTH, String.valueOf(entity.getContentLength()));
+        if (entity.isChunked() || entity.getContentLength() < 0) {
+          request.addHeader(HTTP.TRANSFER_ENCODING, HTTP.CHUNK_CODING);
+        } else {
+          request.addHeader(HTTP.CONTENT_LEN, Long.toString(entity.getContentLength()));
         }
+
         final Header contentType = entity.getContentType();
         if (contentType != null) {
           headers.put(contentType.getName(), contentType.getValue());
@@ -170,8 +173,8 @@ public class HttpRecord {
       for (Header header : request.getAllHeaders()) {
         headers.put(header.getName(), header.getValue());
       }
-      headers.remove(HttpHeaders.HOST);
-      headers.remove(HttpHeaders.USER_AGENT);
+      headers.remove(HTTP.TARGET_HOST);
+      headers.remove(HTTP.USER_AGENT);
     }
 
     @Override

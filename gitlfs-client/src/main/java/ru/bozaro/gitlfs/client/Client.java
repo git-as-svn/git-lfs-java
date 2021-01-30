@@ -28,8 +28,8 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static ru.bozaro.gitlfs.common.Constants.*;
 
@@ -110,9 +110,8 @@ public class Client implements Closeable {
     int redirectCount = 0;
     int retryCount = 0;
     while (true) {
-      final HttpUriRequest request = task.createRequest(mapper, url.toString());
-      addHeaders(request, link);
-
+      final LfsRequest lfsRequest = task.createRequest(mapper, url.toString());
+      final HttpUriRequest request = lfsRequest.addHeaders(link == null ? Collections.emptyMap() : link.getHeader());
       final CloseableHttpResponse response = http.executeMethod(request);
       boolean needClose = true;
       try {
@@ -157,14 +156,6 @@ public class Client implements Closeable {
       } finally {
         if (needClose)
           response.close();
-      }
-    }
-  }
-
-  protected void addHeaders(@Nonnull HttpUriRequest req, @CheckForNull Link link) {
-    if (link != null) {
-      for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
-        req.setHeader(entry.getKey(), entry.getValue());
       }
     }
   }

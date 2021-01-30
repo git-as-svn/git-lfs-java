@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
 import ru.bozaro.gitlfs.client.io.StreamProvider;
@@ -30,12 +29,12 @@ public class ObjectPut implements Request<Void> {
 
   @Nonnull
   @Override
-  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws IOException {
+  public LfsRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws IOException {
     final HttpPut req = new HttpPut(url);
     final AbstractHttpEntity entity = new InputStreamEntity(streamProvider.getStream(), size);
     entity.setContentType(MIME_BINARY);
     req.setEntity(entity);
-    return req;
+    return new LfsRequest(req, entity);
   }
 
   @Override

@@ -38,6 +38,11 @@ See link:gitlfs-server/src/test/java/ru/bozaro/gitlfs/server/ServerTest.java[] f
 
 == Changelog
 
+=== 0.17.0
+
+* Properly handle `Transfer-Encoding: chunked`.
+See https://github.com/bozaro/git-as-svn/issues/365[bozaro/git-as-svn#365]
+
 === 0.16.0
 
 * Update dependencies

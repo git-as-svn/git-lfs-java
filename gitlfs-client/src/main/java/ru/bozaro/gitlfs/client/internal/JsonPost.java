@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 
 import javax.annotation.Nonnull;
@@ -31,13 +30,13 @@ public class JsonPost<Req, Res> implements Request<Res> {
 
   @Nonnull
   @Override
-  public HttpUriRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
+  public LfsRequest createRequest(@Nonnull ObjectMapper mapper, @Nonnull String url) throws JsonProcessingException {
     final HttpPost method = new HttpPost(url);
     method.addHeader(HEADER_ACCEPT, MIME_LFS_JSON);
     final ByteArrayEntity entity = new ByteArrayEntity(mapper.writeValueAsBytes(req));
     entity.setContentType(MIME_LFS_JSON);
     method.setEntity(entity);
-    return method;
+    return new LfsRequest(method, entity);
   }
 
   @Override
