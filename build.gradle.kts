@@ -22,7 +22,7 @@ plugins {
 
 allprojects {
     group = "ru.bozaro.gitlfs"
-    version = "0.17.0-SNAPSHOT"
+    version = "0.17.0"
 
     apply(plugin = "idea")
     apply(plugin = "com.github.ben-manes.versions")
