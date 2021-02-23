@@ -1,12 +1,11 @@
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import org.ajoberstar.grgit.Grgit
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.time.Duration
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
-val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
-val gitCommit = System.getenv("TRAVIS_COMMIT") ?: ""
 
 tasks.wrapper {
     gradleVersion = "6.8.1"
@@ -17,6 +16,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.36.0"
     id("de.marcphilipp.nexus-publish") version "0.4.0" apply false
     id("io.codearte.nexus-staging") version "0.22.0"
+    id("org.ajoberstar.grgit") version "4.1.0"
     idea
 }
 
@@ -42,7 +42,6 @@ idea {
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
-    apply(plugin = "signing")
     apply(plugin = "de.marcphilipp.nexus-publish")
 
     configure<JavaPluginExtension> {
@@ -100,7 +99,7 @@ subprojects {
     }
 
     configure<NexusPublishExtension> {
-        // We're constantly getting socket timeouts on Travis
+        // We're constantly getting socket timeouts on CI
         connectTimeout.set(Duration.ofMinutes(3))
         clientTimeout.set(Duration.ofMinutes(3))
 
@@ -129,7 +128,7 @@ subprojects {
 
                     scm {
                         connection.set("scm:git:git://github.com/bozaro/git-lfs-java.git")
-                        tag.set(gitCommit)
+                        tag.set(Grgit.open(mapOf("dir" to rootDir)).head().id)
                         url.set("https://github.com/bozaro/git-lfs-java")
                     }
 
@@ -156,19 +155,6 @@ subprojects {
                 }
             }
         }
-    }
-
-    val secretKeyRingFile = "${rootProject.projectDir}/secring.gpg"
-    extra["signing.secretKeyRingFile"] = secretKeyRingFile
-    extra["signing.keyId"] = "4B49488E"
-    extra["signing.password"] = signingPassword
-
-    configure<SigningExtension> {
-        isRequired = signingPassword != null && file(secretKeyRingFile).exists() && !project.version.toString().endsWith("-SNAPSHOT")
-
-        // TODO: Is it possible to access publishing extension in a safer way?
-        val publishing: PublishingExtension by project.extensions
-        sign(publishing.publications)
     }
 }
 

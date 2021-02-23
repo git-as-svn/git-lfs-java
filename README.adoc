@@ -1,6 +1,10 @@
 = git-lfs-java
+:project-handle: git-lfs-java
+:slug: bozaro/{project-handle}
+:uri-project: https://github.com/{slug}
+:uri-ci: {uri-project}/actions?query=branch%3Amaster
 
-image:https://travis-ci.org/bozaro/git-lfs-java.svg?branch=master[Build Status,link=https://travis-ci.org/bozaro/git-lfs-java]
+image:{uri-project}/workflows/CI/badge.svg?branch=master[Build Status,link={uri-ci}]
 image:https://img.shields.io/maven-central/v/ru.bozaro.gitlfs/gitlfs-common.svg[Maven Central,link=http://mvnrepository.com/artifact/ru.bozaro.gitlfs]
 
 == What is this?
