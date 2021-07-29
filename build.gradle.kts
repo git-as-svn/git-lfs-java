@@ -8,7 +8,7 @@ val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
 
 tasks.wrapper {
-    gradleVersion = "6.8.1"
+    gradleVersion = "7.1.1"
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -32,7 +32,7 @@ allprojects {
     }
 }
 
-val javaVersion = JavaVersion.VERSION_1_8
+val javaVersion = JavaVersion.VERSION_11
 
 idea {
     project.jdkName = javaVersion.name

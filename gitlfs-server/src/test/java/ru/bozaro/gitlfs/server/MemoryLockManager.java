@@ -1,6 +1,7 @@
 package ru.bozaro.gitlfs.server;
 
 import com.google.common.base.Strings;
+import jakarta.servlet.http.HttpServletRequest;
 import ru.bozaro.gitlfs.common.LockConflictException;
 import ru.bozaro.gitlfs.common.VerifyLocksResult;
 import ru.bozaro.gitlfs.common.data.Lock;
@@ -9,7 +10,6 @@ import ru.bozaro.gitlfs.common.data.User;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

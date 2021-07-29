@@ -1,5 +1,6 @@
 package ru.bozaro.gitlfs.server;
 
+import jakarta.servlet.Servlet;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -7,7 +8,6 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import javax.annotation.Nonnull;
-import javax.servlet.Servlet;
 import java.net.URI;
 import java.net.URISyntaxException;
 

@@ -1,12 +1,12 @@
 package ru.bozaro.gitlfs.server;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.bozaro.gitlfs.common.Constants;
 import ru.bozaro.gitlfs.common.data.Error;
 import ru.bozaro.gitlfs.common.data.*;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
 import java.util.EnumMap;

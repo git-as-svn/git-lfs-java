@@ -1,9 +1,9 @@
 package ru.bozaro.gitlfs.server.internal;
 
+import jakarta.servlet.http.HttpServletResponse;
 import ru.bozaro.gitlfs.common.JsonHelper;
 
 import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static ru.bozaro.gitlfs.common.Constants.MIME_LFS_JSON;

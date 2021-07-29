@@ -3,6 +3,7 @@ package ru.bozaro.gitlfs.server;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
+import jakarta.servlet.http.HttpServletRequest;
 import org.testng.Assert;
 import ru.bozaro.gitlfs.client.Client;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -15,7 +16,6 @@ import ru.bozaro.gitlfs.common.data.Operation;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

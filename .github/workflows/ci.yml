@@ -7,7 +7,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - java: 8
           - java: 11
           - java: 15
     runs-on: ubuntu-latest
@@ -34,7 +33,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: 8 # Build releases using oldest supported jdk
+          java-version: 11 # Build releases using oldest supported jdk
       - name: Publish to Sonatype
         uses: eskatos/gradle-command-action@v1
         env:

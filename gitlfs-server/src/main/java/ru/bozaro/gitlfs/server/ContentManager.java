@@ -1,10 +1,10 @@
 package ru.bozaro.gitlfs.server;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.bozaro.gitlfs.common.data.Meta;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
