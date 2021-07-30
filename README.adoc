@@ -20,25 +20,25 @@ This project contains:
 
 == How to use?
 
-You can download latest stable from http://mvnrepository.com/artifact/ru.bozaro.gitlfs[Maven Central].
+You can download the latest stable from http://mvnrepository.com/artifact/ru.bozaro.gitlfs[Maven Central].
 
 === Downloading object from Git LFS server
 
 [source,java]
 ----
-include::gitlfs-client/src/test/java/ru/bozaro/gitlfs/client/Examples.java[tags=download]
+include::gitlfs-client/src/test/kotlin/ru/bozaro/gitlfs/client/Examples.kt[tags=download]
 ----
 
 === Uploading object to Git LFS server
 
 [source,java]
 ----
-include::gitlfs-client/src/test/java/ru/bozaro/gitlfs/client/Examples.java[tags=upload]
+include::gitlfs-client/src/test/kotlin/ru/bozaro/gitlfs/client/Examples.kt[tags=upload]
 ----
 
 === Embedded LFS server
 
-See link:gitlfs-server/src/test/java/ru/bozaro/gitlfs/server/ServerTest.java[] for example.
+See link:gitlfs-server/src/test/kotlin/ru/bozaro/gitlfs/server/ServerTest.kt[] for example.
 
 == Changelog
 

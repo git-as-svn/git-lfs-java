@@ -2,6 +2,7 @@ import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Duration
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
@@ -17,6 +18,7 @@ plugins {
     id("de.marcphilipp.nexus-publish") version "0.4.0" apply false
     id("io.codearte.nexus-staging") version "0.30.0"
     id("org.ajoberstar.grgit") version "4.1.0"
+    kotlin("jvm") version "1.5.21" apply false
     idea
 }
 
@@ -26,6 +28,7 @@ allprojects {
 
     apply(plugin = "idea")
     apply(plugin = "com.github.ben-manes.versions")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
 
     repositories {
         mavenCentral()
@@ -33,6 +36,10 @@ allprojects {
 }
 
 val javaVersion = JavaVersion.VERSION_11
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = javaVersion.toString()
+}
 
 idea {
     project.jdkName = javaVersion.name
