@@ -42,6 +42,12 @@ See link:gitlfs-server/src/test/kotlin/ru/bozaro/gitlfs/server/ServerTest.kt[] f
 
 == Changelog
 
+=== 0.18.0
+
+* Drop Java 8 support
+* Upgrade to Jakarta Servlet 5.0
+* Upgrade to Jetty 11
+
 === 0.17.0
 
 * Properly handle `Transfer-Encoding: chunked`.
