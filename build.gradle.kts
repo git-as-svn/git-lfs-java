@@ -1,9 +1,7 @@
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.time.Duration
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
@@ -15,8 +13,7 @@ tasks.wrapper {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.39.0"
-    id("de.marcphilipp.nexus-publish") version "0.4.0" apply false
-    id("io.codearte.nexus-staging") version "0.30.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.ajoberstar.grgit") version "4.1.0"
     kotlin("jvm") version "1.5.21" apply false
     idea
@@ -49,7 +46,6 @@ idea {
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
-    apply(plugin = "de.marcphilipp.nexus-publish")
 
     configure<JavaPluginExtension> {
         sourceCompatibility = javaVersion
@@ -105,16 +101,6 @@ subprojects {
         archiveClassifier.set("sources")
     }
 
-    configure<NexusPublishExtension> {
-        // We're constantly getting socket timeouts on CI
-        connectTimeout.set(Duration.ofMinutes(3))
-        clientTimeout.set(Duration.ofMinutes(3))
-
-        repositories {
-            sonatype()
-        }
-    }
-
     configure<PublishingExtension> {
         publications {
             create<MavenPublication>(project.name) {
@@ -142,7 +128,7 @@ subprojects {
                     licenses {
                         license {
                             name.set("Lesser General Public License, version 3 or greater")
-                            url.set("http://www.gnu.org/licenses/lgpl.html")
+                            url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
                         }
                     }
 
@@ -165,17 +151,13 @@ subprojects {
     }
 }
 
-tasks.closeRepository.configure {
-    onlyIf { !project.version.toString().endsWith("-SNAPSHOT") }
-}
-
-tasks.releaseRepository.configure {
-    onlyIf { !project.version.toString().endsWith("-SNAPSHOT") }
-}
-
-nexusStaging {
-    packageGroup = "ru.bozaro"
-    stagingProfileId = "365bc6dc8b7aa3"
-    username = ossrhUsername
-    password = ossrhPassword
+nexusPublishing {
+    repositories {
+        sonatype {
+            packageGroup.set("ru.bozaro")
+            stagingProfileId.set("365bc6dc8b7aa3")
+            username.set(ossrhUsername)
+            password.set(ossrhPassword)
+        }
+    }
 }

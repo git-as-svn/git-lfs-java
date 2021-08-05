@@ -41,4 +41,4 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         with:
-          arguments: publish closeAndReleaseRepository
+          arguments: publish closeAndReleaseStagingRepository
