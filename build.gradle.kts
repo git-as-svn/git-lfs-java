@@ -5,6 +5,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val ossrhUsername: String? = System.getenv("OSSRH_USERNAME")
 val ossrhPassword: String? = System.getenv("OSSRH_PASSWORD")
+val signingKey: String? = System.getenv("SIGNING_KEY")
+val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
 
 tasks.wrapper {
     gradleVersion = "7.1.1"
@@ -46,6 +48,7 @@ idea {
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
+    apply(plugin = "signing")
 
     configure<JavaPluginExtension> {
         sourceCompatibility = javaVersion
@@ -148,6 +151,15 @@ subprojects {
                 }
             }
         }
+    }
+
+    configure<SigningExtension> {
+        isRequired = signingKey != ""
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+
+        val publishing: PublishingExtension by project.extensions
+        sign(publishing.publications)
     }
 }
 
