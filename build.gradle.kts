@@ -21,6 +21,8 @@ plugins {
     idea
 }
 
+val javaVersion = JavaVersion.VERSION_11
+
 allprojects {
     group = "ru.bozaro.gitlfs"
     version = "0.19.0-SNAPSHOT"
@@ -29,15 +31,13 @@ allprojects {
     apply(plugin = "com.github.ben-manes.versions")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = javaVersion.toString()
+    }
+
     repositories {
         mavenCentral()
     }
-}
-
-val javaVersion = JavaVersion.VERSION_11
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = javaVersion.toString()
 }
 
 idea {
