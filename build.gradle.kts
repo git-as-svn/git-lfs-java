@@ -9,7 +9,7 @@ val signingKey: String? = System.getenv("SIGNING_KEY")
 val signingPassword: String? = System.getenv("SIGNING_PASSWORD")
 
 tasks.wrapper {
-    gradleVersion = "7.1.1"
+    gradleVersion = "7.2"
     distributionType = Wrapper.DistributionType.ALL
 }
 
