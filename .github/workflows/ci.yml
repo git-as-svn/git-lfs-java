@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ test ]
     # See https://github.com/actions/runner/issues/491#issuecomment-850884422 for explanation on why always() is needed
-    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && github.repository == 'bozaro/git-lfs-java' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && github.repository == 'git-as-svn/git-lfs-java' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
     steps:
       - name: Checkout
         uses: actions/checkout@v2
