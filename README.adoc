@@ -42,7 +42,7 @@ See link:gitlfs-server/src/test/kotlin/ru/bozaro/gitlfs/server/ServerTest.kt[] f
 
 == Changelog
 
-== Unreleased
+== 0.19.0
 
 * Downgrade SLF4J to 1.7.x
 
