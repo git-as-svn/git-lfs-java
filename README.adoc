@@ -42,6 +42,10 @@ See link:gitlfs-server/src/test/kotlin/ru/bozaro/gitlfs/server/ServerTest.kt[] f
 
 == Changelog
 
+== Unreleased
+
+* Downgrade SLF4J to 1.7.x
+
 === 0.18.0
 
 * Drop Java 8 support
