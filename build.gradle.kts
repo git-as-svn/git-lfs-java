@@ -25,7 +25,7 @@ val javaVersion = JavaVersion.VERSION_11
 
 allprojects {
     group = "ru.bozaro.gitlfs"
-    version = "0.19.0"
+    version = "0.20.0-SNAPSHOT"
 
     apply(plugin = "idea")
     apply(plugin = "com.github.ben-manes.versions")
