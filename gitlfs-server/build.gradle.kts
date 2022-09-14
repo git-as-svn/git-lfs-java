@@ -5,6 +5,6 @@ dependencies {
     api("org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2")
 
     testImplementation(project(":gitlfs-client"))
-    testImplementation("org.eclipse.jetty:jetty-servlet:11.0.7")
-    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.32")
+    testImplementation("org.eclipse.jetty:jetty-servlet:11.0.11")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.36")
 }
