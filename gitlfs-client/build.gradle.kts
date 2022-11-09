@@ -5,6 +5,6 @@ dependencies {
     api("org.apache.httpcomponents:httpclient:4.5.13")
     implementation("org.slf4j:slf4j-api:1.7.36")
 
-    testImplementation("org.yaml:snakeyaml:1.32")
+    testImplementation("org.yaml:snakeyaml:1.33")
     testRuntimeOnly("org.slf4j:slf4j-simple:1.7.36")
 }
