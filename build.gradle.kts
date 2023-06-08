@@ -17,7 +17,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.46.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("org.ajoberstar.grgit") version "5.2.0"
-    kotlin("jvm") version "1.8.21" apply false
+    kotlin("jvm") version "1.8.22" apply false
     idea
 }
 
