@@ -19,7 +19,7 @@ jobs:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
       - name: Run tests
-        uses: eskatos/gradle-command-action@v2
+        uses: eskatos/gradle-command-action@v3
         with:
           arguments: test
   publish:
@@ -36,7 +36,7 @@ jobs:
           distribution: 'adopt'
           java-version: 11 # Build releases using oldest supported jdk
       - name: Publish to Sonatype
-        uses: eskatos/gradle-command-action@v2
+        uses: eskatos/gradle-command-action@v3
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
