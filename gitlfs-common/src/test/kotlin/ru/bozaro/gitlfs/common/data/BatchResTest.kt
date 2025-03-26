@@ -33,7 +33,7 @@ class BatchResTest {
             Assert.assertEquals(link.href, URI("https://some-download.com"))
             Assert.assertEquals(
                 link.header,
-                ImmutableMap.builder<Any?, Any?>()
+                ImmutableMap.builder<Any, Any>()
                     .put("Authorization", "Basic ...")
                     .build()
             )

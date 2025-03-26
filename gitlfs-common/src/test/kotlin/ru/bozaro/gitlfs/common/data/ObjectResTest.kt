@@ -32,7 +32,7 @@ class ObjectResTest {
         Assert.assertNotNull(link)
         Assert.assertEquals(link.href, URI("https://storage-server.com/OID"))
         Assert.assertEquals(link.header,
-                ImmutableMap.builder<Any?, Any?>()
+                ImmutableMap.builder<Any, Any>()
                         .put("Authorization", "Basic ...")
                         .build()
         )
@@ -49,7 +49,7 @@ class ObjectResTest {
         Assert.assertNotNull(link)
         Assert.assertEquals(link.href, URI("https://some-upload.com"))
         Assert.assertEquals(link.header,
-                ImmutableMap.builder<Any?, Any?>()
+                ImmutableMap.builder<Any, Any>()
                         .put("Authorization", "Basic ...")
                         .build()
         )
