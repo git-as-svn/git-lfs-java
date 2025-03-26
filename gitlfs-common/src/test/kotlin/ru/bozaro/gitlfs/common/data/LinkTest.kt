@@ -22,7 +22,7 @@ class LinkTest {
         Assert.assertNotNull(link)
         Assert.assertEquals(link.href, URI("https://storage-server.com/OID"))
         Assert.assertEquals(link.header,
-                ImmutableMap.builder<Any?, Any?>()
+                ImmutableMap.builder<Any, Any>()
                         .put("Authorization", "Basic ...")
                         .build()
         )
@@ -35,7 +35,7 @@ class LinkTest {
         Assert.assertNotNull(link)
         Assert.assertEquals(link.href, URI("https://api.github.com/lfs/bozaro/git-lfs-java"))
         Assert.assertEquals(link.header,
-                ImmutableMap.builder<Any?, Any?>()
+                ImmutableMap.builder<Any, Any>()
                         .put("Authorization", "RemoteAuth secret")
                         .build()
         )
