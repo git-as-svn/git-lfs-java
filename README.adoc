@@ -4,7 +4,7 @@
 :uri-project: https://github.com/{slug}
 :uri-ci: {uri-project}/actions?query=branch%3Amaster
 
-image:{uri-project}/workflows/CI/badge.svg?branch=master[Build Status,link={uri-ci}]
+image:{uri-project}/actions/workflows/ci.yml/badge.svg?branch=master[Build Status,link={uri-ci}]
 image:https://img.shields.io/maven-central/v/ru.bozaro.gitlfs/gitlfs-common.svg[Maven Central,link=http://mvnrepository.com/artifact/ru.bozaro.gitlfs]
 
 == What is this?
