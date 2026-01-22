@@ -62,7 +62,7 @@ subprojects {
         api("com.google.code.findbugs:jsr305:3.0.2")
 
         testImplementation("com.google.guava:guava:33.4.8-jre")
-        testImplementation("org.testng:testng:7.11.0")
+        testImplementation("org.testng:testng:7.12.0")
     }
 
     idea {
