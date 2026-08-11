@@ -14,7 +14,7 @@ tasks.wrapper {
 }
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.54.0"
+    id("com.github.ben-manes.versions") version "0.60.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.ajoberstar.grgit") version "5.3.3"
     kotlin("jvm") version "2.1.21" apply false
